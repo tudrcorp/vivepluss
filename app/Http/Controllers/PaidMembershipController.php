@@ -1,0 +1,467 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use Carbon\Carbon;
+use App\Models\Sale;
+use App\Models\User;
+use App\Models\Collection;
+use Illuminate\Http\Request;
+use App\Jobs\SendAvisoDePago;
+use App\Jobs\CreateAvisoDeCobro;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Auth;
+use Filament\Notifications\Notification;
+
+class PaidMembershipController extends Controller
+{
+    public static function approvePayment($record, $data)
+    {
+        // DD($data, $record);
+        try {
+
+            if (!isset($data['collections'])) {
+
+                $record->status = 'APROBADO';
+                $record->save();
+
+                /**
+                 *  Notificacion
+                 * 
+                 * 
+                 *  ----------------------------------------------------------------------------------------------------
+                 */
+
+                /**
+                 * Actualizamos el registro en la tabla de afiliaciones
+                 * cambiamos el estatus y cargamos la fecha de aceptacion
+                 * ----------------------------------------------------------------------------------------------------
+                 */
+                if ($record->affiliation->activated_at == null) {
+                    $record->affiliation->activated_at = now()->format('d/m/Y');
+                    $record->affiliation->effective_date = Carbon::createFromFormat('d/m/Y', now()->format('d/m/Y'))->addYear()->format('d/m/Y');
+                    $record->affiliation->status = 'ACTIVA';
+                    $record->affiliation->save();
+                }
+
+                /**
+                 * Creamos el registro en la tabla de sales
+                 * ----------------------------------------------------------------------------------------------------
+                 */
+
+                //Pregunto cual es el ultimo numero de factura
+                $lastInvoiceNumber = Sale::latest()->first();
+
+                $sales = new Sale();
+                $sales->date_activation         = $record->affiliation->activated_at;
+                $sales->owner_code              = $record->affiliation->owner_code;
+                $sales->code_agency             = $record->affiliation->code_agency;
+                $sales->plan_id                 = $record->affiliation->plan_id;
+                $sales->coverage_id             = $record->affiliation->coverage_id ?? null;
+                $sales->agent_id                = $record->affiliation->agent_id;
+                $sales->invoice_number          = UtilsController::generateCorrelativeSale($lastInvoiceNumber->invoice_number);
+                $sales->affiliation_code        = $record->affiliation->code;
+                $sales->affiliate_full_name     = $record->affiliation->full_name_ti;
+                $sales->affiliate_contact       = $record->affiliation->full_name_con;
+                $sales->affiliate_ci_rif        = $record->affiliation->nro_identificacion_ti;
+                $sales->affiliate_phone         = $record->affiliation->phone_ti;
+                $sales->affiliate_email         = $record->affiliation->email_ti;
+                $sales->service                 = 'servicio';
+                $sales->persons                 = $record->affiliation->family_members;
+                $sales->total_amount            = $record->total_amount;
+                $sales->type                    = 'AFILIACION INDIVIDUAL';
+                $sales->payment_method          = $record->payment_method;
+                $sales->payment_frequency       = $record->affiliation->payment_frequency;
+                $sales->created_by              = Auth::user()->name;
+                $sales->pay_amount_usd          = $record->pay_amount_usd;
+                $sales->pay_amount_ves          = $record->pay_amount_ves;
+                $sales->payment_method_usd      = $record->payment_method_usd;
+                $sales->payment_method_ves      = $record->payment_method_ves;
+                $sales->bank_usd                = $record->bank_usd;
+                $sales->bank_ves                = $record->bank_ves;
+                $sales->type_roll               = $record->type_roll;
+                $sales->payment_date            = $record->payment_date;
+                $sales->save();
+
+                /**
+                 * Creamos el registro en la tabla de cobros
+                 * ----------------------------------------------------------------------------------------------------
+                 */
+                if ($record->affiliation->payment_frequency == 'ANUAL') {
+                    
+                    //Pregunto cual es el ultimo numero de factura
+                    $lastInvoiceNumberCollection = Collection::where('id', Collection::max('id'))->get()->toArray();
+                    
+                    $collections = new Collection();
+                    $collections->sale_id                 = $sales->id;
+                    $collections->include_date            = $record->affiliation->activated_at;
+                    $collections->owner_code              = $record->affiliation->owner_code;
+                    $collections->code_agency             = $record->affiliation->code_agency;
+                    $collections->plan_id                 = $record->affiliation->plan_id;
+                    $collections->coverage_id             = $record->affiliation->coverage_id ?? null;
+                    $collections->agent_id                = $record->affiliation->agent_id;
+                    $collections->collection_invoice_number     = UtilsController::generateCorrelativeCollection($lastInvoiceNumberCollection[0]['collection_invoice_number']);
+                    $collections->quote_number                  = $record->affiliation->individual_quote->code;
+                    $collections->affiliation_code        = $record->affiliation->code;
+                    $collections->affiliate_full_name     = $record->affiliation->full_name_ti;
+                    $collections->affiliate_contact       = $record->affiliation->full_name_con;
+                    $collections->affiliate_ci_rif        = $record->affiliation->nro_identificacion_ti;
+                    $collections->affiliate_phone         = $record->affiliation->phone_ti;
+                    $collections->affiliate_email         = $record->affiliation->email_ti;
+                    $collections->affiliate_status        = $record->affiliation->status;
+                    $collections->type                    = 'AFILIACION INDIVIDUAL';
+                    $collections->service                 = 'servicio';
+                    $collections->persons                 = $record->affiliation->family_members;
+                    $collections->total_amount            = $record->total_amount;
+                    $collections->payment_method          = $record->payment_method;
+
+                    $collections->pay_amount_usd          = 0.00;
+                    $collections->pay_amount_ves          = 0.00;
+                    $collections->bank_usd                = 'N/A';
+                    $collections->bank_ves                = 'N/A';
+
+
+                    $collections->payment_frequency       = $record->affiliation->payment_frequency;
+                    $collections->reference               = $record->reference_payment;
+                    $collections->created_by              = Auth::user()->name;
+                    $collections->next_payment_date       = $record->prox_payment_date;
+                    $collections->expiration_date         = date($collections->next_payment_date, strtotime('+5 days'));
+                    $collections->created_by              = Auth::user()->name;
+                    $collections->save();
+
+                    /**Ejecutamos el Job para crea el aviso de cobro */
+                    $array_data = [
+                        'invoice_number'    => $collections->collection_invoice_number,
+                        'emission_date'     => $record->prox_payment_date,
+                        'full_name_ti'      => $sales->affiliate_full_name,
+                        'ci_rif_ti'         => $sales->affiliate_ci_rif,
+                        'address_ti'        => $record->affiliation->adress_ti,
+                        'phone_ti'          => $sales->affiliate_phone,
+                        'email_ti'          => $sales->affiliate_email,
+                        'total_amount'      => $record->total_amount,
+                        'plan'              => $record->plan->description,
+                        'coverage'          => $record->coverage->price ?? null,
+                        'frequency'         => $record->affiliation->payment_frequency,
+                    ];
+
+                    dispatch(new CreateAvisoDeCobro($array_data, Auth::user()));
+                }
+
+                if ($record->affiliation->payment_frequency == 'TRIMESTRAL') {
+                    
+                    $trimestral = 3;
+                    for ($i = 0; $i < $trimestral; $i++) {
+                        /**Seleccion de fecha para calculo*/
+                        $prox_date = Collection::select('id', 'include_date', 'next_payment_date')->where('affiliation_code', $record->affiliation->code)->orderBy('id', 'desc')->first();
+                        
+                        if ($prox_date == null) {
+                            $prox_date = $record->affiliation->activated_at;
+                        } else {
+                            $prox_date = $prox_date->next_payment_date;
+                        }
+                        //Pregunto cual es el ultimo numero de factura
+                        $lastInvoiceNumberCollection = Collection::where('id', Collection::max('id'))->get()->toArray();
+
+                        $collections = new Collection();
+                        $collections->sale_id                 = $sales->id;
+                        $collections->include_date            = $record->affiliation->activated_at;
+                        $collections->owner_code              = $record->affiliation->owner_code;
+                        $collections->code_agency             = $record->affiliation->code_agency;
+                        $collections->plan_id                 = $record->affiliation->plan_id;
+                        $collections->coverage_id             = $record->affiliation->coverage_id ?? null;
+                        $collections->agent_id                = $record->affiliation->agent_id;
+                        $collections->collection_invoice_number     = UtilsController::generateCorrelativeCollection($lastInvoiceNumberCollection[0]['collection_invoice_number']);
+                        $collections->quote_number                  = $record->affiliation->individual_quote->code;
+                        $collections->affiliation_code        = $record->affiliation->code;
+                        $collections->affiliate_full_name     = $record->affiliation->full_name_ti;
+                        $collections->affiliate_contact       = $record->affiliation->full_name_con;
+                        $collections->affiliate_ci_rif        = $record->affiliation->nro_identificacion_ti;
+                        $collections->affiliate_phone         = $record->affiliation->phone_ti;
+                        $collections->affiliate_email         = $record->affiliation->email_ti;
+                        $collections->affiliate_status        = $record->affiliation->status;
+                        $collections->type                    = 'AFILIACION INDIVIDUAL';
+                        $collections->service                 = 'servicio';
+                        $collections->persons                 = $record->affiliation->family_members;
+                        $collections->total_amount            = $record->total_amount;
+                        $collections->payment_method          = $record->payment_method;
+
+                        $collections->pay_amount_usd          = 0.00;
+                        $collections->pay_amount_ves          = 0.00;
+                        $collections->bank_usd                = 'N/A';
+                        $collections->bank_ves                = 'N/A';
+
+
+                        $collections->payment_frequency       = $record->affiliation->payment_frequency;
+                        $collections->reference               = $record->reference_payment;
+                        $collections->created_by              = Auth::user()->name;
+                        $collections->next_payment_date       = Carbon::createFromFormat('d/m/Y', $prox_date)->addMonth(3)->format('d/m/Y');
+                        $collections->expiration_date         = date($collections->next_payment_date, strtotime('+5 days'));
+                        $collections->created_by              = Auth::user()->name;
+                        // dd($collections);
+                        $collections->save();
+
+                        /**Ejecutamos el Job para crea el aviso de cobro */
+                        $array_data = [
+                            'invoice_number'    => $collections->collection_invoice_number,
+                            'emission_date'     => $collections->next_payment_date,
+                            'full_name_ti'      => $sales->affiliate_full_name,
+                            'ci_rif_ti'         => $sales->affiliate_ci_rif,
+                            'address_ti'        => $record->affiliation->adress_ti,
+                            'phone_ti'          => $sales->affiliate_phone,
+                            'email_ti'          => $sales->affiliate_email,
+                            'total_amount'      => $record->total_amount,
+                            'plan'              => $record->plan->description,
+                            'coverage'          => $record->coverage->price ?? null,
+                            'frequency'         => $record->affiliation->payment_frequency,
+                        ];
+
+                        Log::info($array_data);
+
+                        /** Ejecutamos el job */
+                        dispatch(new CreateAvisoDeCobro($array_data, Auth::user()));
+                    }
+                }
+
+                if ($record->affiliation->payment_frequency == 'SEMESTRAL') {
+
+                    //Pregunto cual es el ultimo numero de factura
+                    $lastInvoiceNumberCollection = Collection::where('id', Collection::max('id'))->get()->toArray();
+                    
+                    $collections = new Collection();
+                    $collections->sale_id                 = $sales->id;
+                    $collections->include_date            = $record->affiliation->activated_at;
+                    $collections->owner_code              = $record->affiliation->owner_code;
+                    $collections->code_agency             = $record->affiliation->code_agency;
+                    $collections->plan_id                 = $record->affiliation->plan_id;
+                    $collections->coverage_id             = $record->affiliation->coverage_id ?? null;
+                    $collections->agent_id                = $record->affiliation->agent_id;
+                    $collections->collection_invoice_number     = UtilsController::generateCorrelativeCollection($lastInvoiceNumberCollection[0]['collection_invoice_number']);
+                    $collections->quote_number                  = $record->affiliation->individual_quote->code;
+                    $collections->affiliation_code        = $record->affiliation->code;
+                    $collections->affiliate_full_name     = $record->affiliation->full_name_ti;
+                    $collections->affiliate_contact       = $record->affiliation->full_name_con;
+                    $collections->affiliate_ci_rif        = $record->affiliation->nro_identificacion_ti;
+                    $collections->affiliate_phone         = $record->affiliation->phone_ti;
+                    $collections->affiliate_email         = $record->affiliation->email_ti;
+                    $collections->affiliate_status        = $record->affiliation->status;
+                    $collections->type                    = 'AFILIACION INDIVIDUAL';
+                    $collections->service                 = 'servicio';
+                    $collections->persons                 = $record->affiliation->family_members;
+                    $collections->total_amount            = $record->total_amount;
+                    $collections->payment_method          = $record->payment_method;
+
+                    $collections->pay_amount_usd          = 0.00;
+                    $collections->pay_amount_ves          = 0.00;
+                    $collections->bank_usd                = 'N/A';
+                    $collections->bank_ves                = 'N/A';
+
+
+                    $collections->payment_frequency       = $record->affiliation->payment_frequency;
+                    $collections->reference               = $record->reference_payment;
+                    $collections->created_by              = Auth::user()->name;
+                    $collections->next_payment_date       = $record->prox_payment_date;
+                    $collections->expiration_date         = date($collections->next_payment_date, strtotime('+5 days')); //Carbon::createFromFormat('d/m/Y', $prox_date)->addMonth(3)->format('d/m/Y');
+                    $collections->created_by              = Auth::user()->name;
+                    $collections->save();
+
+                    /**Ejecutamos el Job para crea el aviso de cobro */
+                    $array_data = [
+                        'invoice_number'    => $collections->collection_invoice_number,
+                        'emission_date'     => $collections->next_payment_date,
+                        'full_name_ti'      => $sales->affiliate_full_name,
+                        'ci_rif_ti'         => $sales->affiliate_ci_rif,
+                        'address_ti'        => $record->affiliation->adress_ti,
+                        'phone_ti'          => $sales->affiliate_phone,
+                        'email_ti'          => $sales->affiliate_email,
+                        'total_amount'      => $record->total_amount,
+                        'plan'              => $record->plan->description,
+                        'coverage'          => $record->coverage->price ?? null,
+                        'frequency'         => $record->affiliation->payment_frequency,
+                    ];
+
+                    /** Ejecutamos el job */
+                    dispatch(new CreateAvisoDeCobro($array_data, Auth::user()));
+                }
+
+                if ($record->affiliation->payment_frequency == 'MENSUAL') {
+
+                    //Pregunto cual es el ultimo numero de factura
+                    $lastInvoiceNumberCollection = Collection::latest()->first();
+                    
+                    $mensual = 11;
+                    for ($i = 0; $i < $mensual; $i++) {
+                        $collections = new Collection();
+                        $collections->sale_id                 = $sales->id;
+                        $collections->include_date            = $record->affiliation->activated_at;
+                        $collections->owner_code              = $record->affiliation->owner_code;
+                        $collections->code_agency             = $record->affiliation->code_agency;
+                        $collections->plan_id                 = $record->affiliation->plan_id;
+                        $collections->coverage_id             = $record->affiliation->coverage_id ?? null;
+                        $collections->agent_id                = $record->affiliation->agent_id;
+                        $collections->collection_invoice_number     = UtilsController::generateCorrelativeCollection($lastInvoiceNumber->invoice_number);
+                        $collections->quote_number                  = $record->affiliation->individual_quote->code;
+                        $collections->affiliation_code        = $record->affiliation->code;
+                        $collections->affiliate_full_name     = $record->affiliation->full_name_ti;
+                        $collections->affiliate_contact       = $record->affiliation->full_name_con;
+                        $collections->affiliate_ci_rif        = $record->affiliation->nro_identificacion_ti;
+                        $collections->affiliate_phone         = $record->affiliation->phone_ti;
+                        $collections->affiliate_email         = $record->affiliation->email_ti;
+                        $collections->affiliate_status        = $record->affiliation->status;
+                        $collections->type                    = 'AFILIACION INDIVIDUAL';
+                        $collections->service                 = 'servicio';
+                        $collections->persons                 = $record->affiliation->family_members;
+                        $collections->total_amount            = $record->total_amount;
+                        $collections->payment_method          = $record->payment_method;
+
+                        $collections->pay_amount_usd          = 0.00;
+                        $collections->pay_amount_ves          = 0.00;
+                        $collections->bank_usd                = 'N/A';
+                        $collections->bank_ves                = 'N/A';
+
+
+                        $collections->payment_frequency       = $record->affiliation->payment_frequency;
+                        $collections->reference               = $record->reference_payment;
+                        $collections->created_by              = Auth::user()->name;
+                        $collections->next_payment_date       = $record->prox_payment_date;
+                        $collections->expiration_date         = date($collections->next_payment_date, strtotime('+30 days')); //Carbon::createFromFormat('d/m/Y', $prox_date)->addMonth(3)->format('d/m/Y');
+                        $collections->created_by              = Auth::user()->name;
+                        $collections->save();
+
+                        /**Ejecutamos el Job para crea el aviso de cobro */
+                        $array_data = [
+                            'invoice_number'    => $collections->collection_invoice_number,
+                            'emission_date'     => $record->prox_payment_date,
+                            'full_name_ti'      => $sales->affiliate_full_name,
+                            'ci_rif_ti'         => $sales->affiliate_ci_rif,
+                            'address_ti'        => $record->affiliation->adress_ti,
+                            'phone_ti'          => $sales->affiliate_phone,
+                            'email_ti'          => $sales->affiliate_email,
+                            'total_amount'      => $record->total_amount,
+                            'plan'              => $record->plan->description,
+                            'coverage'          => $record->coverage->price ?? null,
+                            'frequency'         => $record->affiliation->payment_frequency,
+                        ];
+
+                        /** Ejecutamos el job */
+                        dispatch(new CreateAvisoDeCobro($array_data, Auth::user()));
+                    }
+                }
+
+                /**Ejecutamos el Job para enviar el reporte de pago */
+                $array_data = [
+                    'invoice_number'    => $sales->invoice_number,
+                    'emission_date'     => now()->format('d/m/Y'),
+                    'payment_method'    => $sales->payment_method,
+                    'reference'         => $record->reference_payment,
+                    'full_name_ti'      => $sales->affiliate_full_name,
+                    'ci_rif_ti'         => $sales->affiliate_ci_rif,
+                    'address_ti'        => $record->affiliation->adress_ti,
+                    'phone_ti'          => $sales->affiliate_phone,
+                    'email_ti'          => $sales->affiliate_email,
+                    'total_amount'      => $record->total_amount,
+                    'currency'          => $record->currency,
+                    'plan'              => $record->plan->description,
+                    'coverage'          => $record->coverage->price ?? null,
+                    'frequency'         => $record->affiliation->payment_frequency,
+                ];
+
+                dispatch(new SendAvisoDePago($array_data));
+
+                return [
+                    'firstRegister' => true
+                ];
+
+            }
+
+            if (isset($data['collections']) && count($data['collections']) > 0) {
+
+                /**ACTUALIZO EL ESTATUS DEL COMPROBANTE */
+                $record->status = 'APROBADO';
+                $record->save();
+
+                /**
+                 * Creamos el registro en la tabla de sales
+                 * ----------------------------------------------------------------------------------------------------
+                 */
+
+                //Pregunto cual es el ultimo numero de factura
+                $lastInvoiceNumber = Sale::latest()->first();
+
+                $sales = new Sale();
+                $sales->date_activation         = $record->affiliation->activated_at;
+                $sales->owner_code              = $record->affiliation->owner_code;
+                $sales->code_agency             = $record->affiliation->code_agency;
+                $sales->plan_id                 = $record->affiliation->plan_id;
+                $sales->coverage_id             = $record->affiliation->coverage_id ?? null;
+                $sales->agent_id                = $record->affiliation->agent_id;
+                $sales->invoice_number          = UtilsController::generateCorrelativeSale($lastInvoiceNumber->invoice_number);
+                $sales->affiliation_code        = $record->affiliation->code;
+                $sales->affiliate_full_name     = $record->affiliation->full_name_ti;
+                $sales->affiliate_contact       = $record->affiliation->full_name_con;
+                $sales->affiliate_ci_rif        = $record->affiliation->nro_identificacion_ti;
+                $sales->affiliate_phone         = $record->affiliation->phone_ti;
+                $sales->affiliate_email         = $record->affiliation->email_ti;
+                $sales->service                 = 'servicio';
+                $sales->persons                 = $record->affiliation->family_members;
+                $sales->total_amount            = $record->total_amount;
+                $sales->type                    = 'AFILIACION INDIVIDUAL';
+                $sales->payment_method          = $record->payment_method;
+                $sales->payment_frequency       = $record->affiliation->payment_frequency;
+                $sales->created_by              = Auth::user()->name;
+
+                $sales->pay_amount_usd          = $record->pay_amount_usd;
+                $sales->pay_amount_ves          = $record->pay_amount_ves;
+                $sales->payment_method_usd      = $record->payment_method_usd;
+                $sales->payment_method_ves      = $record->payment_method_ves;
+                $sales->bank_usd                = $record->bank_usd;
+                $sales->bank_ves                = $record->bank_ves;
+                $sales->type_roll               = $record->type_roll;
+                $sales->payment_date            = $record->payment_date;
+                $sales->save();
+
+                /**ACTUALIZO EL ESTATUS DE LOS AVISOS DE COBROS */
+                for ($i = 0; $i < count($data['collections']); $i++) {
+                    $collection = Collection::find($data['collections'][$i]);
+                    $collection->sale_id =  $sales->id;
+                    $collection->status  = 'PAGADO';
+                    $collection->save();
+                }
+
+
+
+                /**Ejecutamos el Job para enviar el reporte de pago */
+                $array_data = [
+                    'invoice_number'    => $sales->invoice_number,
+                    'emission_date'     => now()->format('d/m/Y'),
+                    'payment_method'    => $sales->payment_method,
+                    'reference'         => $record->reference_payment,
+                    'full_name_ti'      => $sales->affiliate_full_name,
+                    'ci_rif_ti'         => $sales->affiliate_ci_rif,
+                    'address_ti'        => $record->affiliation->adress_ti,
+                    'phone_ti'          => $sales->affiliate_phone,
+                    'email_ti'          => $sales->affiliate_email,
+                    'total_amount'      => $record->total_amount,
+                    'currency'          => $record->currency,
+                    'plan'              => $record->plan->description,
+                    'coverage'          => $record->coverage->price ?? null,
+                    'frequency'         => $record->affiliation->payment_frequency,
+                ];
+
+                SendAvisoDePago::dispatch($array_data);
+
+                return [
+                    'nextRegister' => true
+                ];
+                
+            }
+            
+        } catch (\Throwable $th) {
+            dd($th);
+            Notification::make()
+                ->title('EXCEPCION')
+                ->body($th->getMessage())
+                ->warning()
+                ->send();
+        }
+    }
+}
