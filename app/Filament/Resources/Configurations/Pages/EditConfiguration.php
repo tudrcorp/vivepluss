@@ -2,9 +2,12 @@
 
 namespace App\Filament\Resources\Configurations\Pages;
 
-use App\Filament\Resources\Configurations\ConfigurationResource;
+use App\Models\Configuration;
 use Filament\Actions\DeleteAction;
+use Illuminate\Database\Eloquent\Model;
 use Filament\Resources\Pages\EditRecord;
+use App\Filament\Resources\Configurations\ConfigurationResource;
+
 
 class EditConfiguration extends EditRecord
 {
@@ -12,8 +15,6 @@ class EditConfiguration extends EditRecord
 
     protected function getHeaderActions(): array
     {
-        return [
-            DeleteAction::make(),
-        ];
+        return []; // Opcional: quita el botón "Volver"
     }
 }

@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
+use App\Models\Configuration;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\ActionGroup;
@@ -49,8 +50,8 @@ class AffiliationCorporatesTable
                 return AffiliationCorporate::query();
             })
             ->defaultSort('created_at', 'desc')
-            ->heading('AFILIACIONES CORPORATIVAS')
-            ->description('Lista de afiliaciones corporativas registradas en el sistema')
+            ->heading(fn(): string      => Configuration::first()->table_af_corp_table_title == NULL ? 'Afiliaciones' : Configuration::first()->table_af_corp_table_title)
+            ->description(fn(): string  => Configuration::first()->table_af_corp_table_description == NULL ? '.....' : Configuration::first()->table_af_corp_table_description)
             ->columns([
                 TextColumn::make('code')
                     ->label('Codigo')

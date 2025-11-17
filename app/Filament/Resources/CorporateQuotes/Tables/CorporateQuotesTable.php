@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
+use App\Models\Configuration;
 use App\Models\CorporateQuote;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -55,8 +56,8 @@ class CorporateQuotesTable
                 return CorporateQuote::query();
             })
             ->defaultSort('created_at', 'desc')
-            ->heading('COTIZACIONES CORPORATIVAS')
-            ->description('Lista de cotizaciones corporativas generadas por el agente')
+            ->heading(fn(): string      => Configuration::first()->table_quote_corp_table_title == NULL ? 'Cotizaciones' : Configuration::first()->table_quote_corp_table_title)
+            ->description(fn(): string  => Configuration::first()->table_quote_corp_table_description == NULL ? '.....' : Configuration::first()->table_quote_corp_table_description)
             ->columns([
                 TextColumn::make('code')
                     ->label('Código')

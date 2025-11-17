@@ -28,8 +28,27 @@ class CorporateQuoteRequest extends Model
         'created_by',
         'observations',
         'poblation',
-        'ownerAccountManagers'
+        'ownerAccountManagers',
+        'state_id',
+        'city_id',
+        'country_id',
+        'region',
     ];
+
+    public function country()
+    {
+        return $this->belongsTo(Country::class, 'country_id', 'id');
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city_id', 'id');
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * Get the user that owns the Agent
@@ -60,11 +79,6 @@ class CorporateQuoteRequest extends Model
     public function state()
     {
         return $this->belongsTo(State::class);
-    }
-
-    public function detailsData()
-    {
-        return $this->hasMany(CorporateQuoteRequestData::class);
     }
 
     /**

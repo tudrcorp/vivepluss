@@ -132,10 +132,10 @@ class IndividualQuoteForm
                                                 ->prefixIcon('heroicon-s-user-group')
                                                 ->preload(),
                                         ])->columnSpanFull(),
-                                    Hidden::make('created_by')->default(Auth::user()->name),
-                                    Hidden::make('code_agency')->default('TDG-100'),
-                                    Hidden::make('owner_code')->default('TDG-100'),
                                     Hidden::make('status')->default('PRE-APROBADA'),
+                                    Hidden::make('created_by')->default(Auth::user()->name),
+                                    Hidden::make('code_agency')->default(fn(): string => Auth::user()->code_agency),
+                                    Hidden::make('owner_code')->default(fn(): string => Agency::where('code', Auth::user()->code_agency)->value('owner_code')),
                                 ])
                                 ->columns(3)
                                 ->columnSpanFull()

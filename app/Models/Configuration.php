@@ -75,6 +75,29 @@ class Configuration extends Model
 
         'web_plansTitle',
         'web_plansSubTitle',
+
+        'table_af_corp_table_title',
+        'table_af_corp_table_description',
+
+        'table_af_ind_table_title',
+        'table_af_ind_table_description',
+
+        'table_quote_corp_table_title',
+        'table_quote_corp_table_description',
+
+        'table_quote_ind_table_title',
+        'table_quote_ind_table_description',
+
+        'table_request_table_title',
+        'table_request_table_description',
+
+        'table_agency_title',
+        'table_agency_description',
+
+        'menu_top',
+
+        
+        
           
     ];
 

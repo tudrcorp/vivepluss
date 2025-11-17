@@ -8,6 +8,7 @@ use App\Models\Agency;
 use App\Models\Bitacora;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
+use App\Models\Configuration;
 use App\Models\IndividualQuote;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
@@ -51,7 +52,8 @@ class IndividualQuotesTable
             //     return IndividualQuote::query();
             // })
             ->defaultSort('created_at', 'desc')
-            ->description('Lista de cotizaciones generadas por las agencias y/o agentes.')
+            ->heading(fn(): string      => Configuration::first()->table_quote_ind_table_title == NULL ? 'Cotizaciones' : Configuration::first()->table_quote_ind_table_title)
+            ->description(fn(): string  => Configuration::first()->table_quote_ind_table_description == NULL ? '.....' : Configuration::first()->table_quote_ind_table_description)
             ->columns([
                 TextColumn::make('code_agency')
                     ->prefix(function ($record) {

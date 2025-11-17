@@ -10,10 +10,6 @@ class ListAffiliations extends ListRecords
 {
     protected static string $resource = AffiliationResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            CreateAction::make(),
-        ];
-    }
+    protected static ?string $title = 'Afiliaciones Individuales';
+
 }

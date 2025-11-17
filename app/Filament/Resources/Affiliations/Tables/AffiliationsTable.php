@@ -2,18 +2,15 @@
 
 namespace App\Filament\Resources\Affiliations\Tables;
 
-use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
-
 use Carbon\Carbon;
 use App\Models\User;
+use Filament\Tables\Table;
 use App\Models\Affiliation;
 use Filament\Actions\Action;
+use App\Models\Configuration;
+
 use Filament\Actions\BulkAction;
+use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\ActionGroup;
 use Filament\Support\Enums\Width;
@@ -23,10 +20,14 @@ use Illuminate\Support\Facades\Log;
 use Filament\Forms\Components\Radio;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DetailIndividualQuote;
+use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Grid;
 use Filament\Support\Enums\Alignment;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
@@ -35,11 +36,11 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Tables\Filters\SelectFilter;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use App\Http\Controllers\AffiliationController;
 use App\Filament\Resources\Affiliations\AffiliationResource;
-use Illuminate\Database\Eloquent\Builder;
 
 class AffiliationsTable
 {
@@ -54,8 +55,8 @@ class AffiliationsTable
                 return Affiliation::query();
             })
             ->defaultSort('created_at', 'desc')
-            ->heading('AFILIACIONES INDIVIDUALES')
-            ->description('Lista de afiliaciones individuales registradas en el sistema')
+            ->heading(fn(): string      => Configuration::first()->table_af_ind_table_title == NULL ? 'Afiliaciones' : Configuration::first()->table_af_ind_table_title)
+            ->description(fn(): string  => Configuration::first()->table_af_ind_table_description == NULL ? '.....' : Configuration::first()->table_af_ind_table_description)
             ->columns([
                 TextColumn::make('code')
                     ->label('Codigo')

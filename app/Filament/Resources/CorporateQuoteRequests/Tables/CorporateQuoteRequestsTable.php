@@ -1,0 +1,156 @@
+<?php
+
+namespace App\Filament\Resources\CorporateQuoteRequests\Tables;
+
+use Filament\Tables\Table;
+use Filament\Actions\Action;
+use App\Models\Configuration;
+use Filament\Actions\EditAction;
+use Filament\Actions\ViewAction;
+
+use Filament\Actions\ActionGroup;
+use Filament\Support\Enums\Width;
+use Illuminate\Support\Facades\Auth;
+use App\Models\CorporateQuoteRequest;
+use Filament\Actions\BulkActionGroup;
+use Filament\Forms\Components\Select;
+use Filament\Schemas\Components\Grid;
+use Filament\Actions\DeleteBulkAction;
+use App\Http\Controllers\LogController;
+use Filament\Forms\Components\Textarea;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
+use Filament\Schemas\Components\Section;
+use App\Http\Controllers\UtilsController;
+use App\Jobs\ResendEmailPropuestaEconomica;
+use Filament\Schemas\Components\Utilities\Get;
+
+
+class CorporateQuoteRequestsTable
+{
+    public static function configure(Table $table): Table
+    {
+        return $table
+            // ->query(CorporateQuoteRequest::query()->where('agent_id', Auth::user()->agent_id))
+            ->defaultSort('created_at', 'desc')
+            ->heading(fn(): string      => Configuration::first()->table_request_table_title == NULL ? 'Solicitudes' : Configuration::first()->table_request_table_title)
+            ->description(fn(): string  => Configuration::first()->table_request_table_description == NULL ? '.....' : Configuration::first()->table_request_table_description)
+            ->columns([
+                TextColumn::make('code')
+                    ->label('Codigo')
+                    ->badge()
+                    ->color('primary')
+                    ->searchable(),
+                TextColumn::make('full_name')
+                    ->label('Solicitante')
+                    ->searchable(),
+                TextColumn::make('rif')
+                    ->label('RIF')
+                    ->searchable(),
+                TextColumn::make('phone')
+                    ->label('Número de teléfono')
+                    ->searchable(),
+                TextColumn::make('email')
+                    ->label('Correo Electrónico')
+                    ->searchable(),
+                TextColumn::make('state.definition')
+                    ->label('Estado')
+                    ->numeric()
+                    ->sortable(),
+                TextColumn::make('region')
+                    ->label('Región')
+                    ->searchable(),
+                TextColumn::make('poblation')
+                    ->label('Poblacion')
+                    ->suffix(' Personas')
+                    ->searchable(),
+                TextColumn::make('status')
+                    ->label('Estatus')
+                    ->badge()
+                    ->color('warning')
+                    ->sortable(),
+            ])
+            ->filters([
+                //
+            ])
+            ->recordActions([
+                ActionGroup::make([
+
+                    Action::make('view')
+                        ->label('Ver Detalles')
+                        ->color('success')
+                        ->icon('heroicon-s-eye')
+                        ->modalHeading('Detalles de la Cotización')
+                        ->modalIcon('heroicon-s-eye')
+                        ->modalWidth(Width::ExtraLarge)
+                        ->modalSubmitAction(false)
+                        ->form([
+                            Textarea::make('observations')
+                                ->label('Descripción:')
+                                ->disabled()
+                                ->autoSize()
+                                ->default(fn(CorporateQuoteRequest $record) => $record->observations)
+                                ->required(),
+                        ]),
+
+                    Action::make('add_observations')
+                        ->label('Agregar Observaciones')
+                        ->icon('heroicon-s-hand-raised')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->requiresConfirmation()
+                        ->modalHeading('OBSERVACIONES DEL AGENTE')
+                        ->modalIcon('heroicon-s-hand-raised')
+                        ->modalWidth(Width::ExtraLarge)
+                        ->modalDescription('Envíanos su inquietud o comentarios!')
+                        ->form([
+                            Section::make()
+                                ->schema([
+                                    Textarea::make('description')
+                                        ->label('Observaciones')
+                                        ->rows(4)
+                                ])
+                        ])
+                        ->action(function (CorporateQuoteRequest $record, array $data) {
+
+                            // try {
+
+                            //     $bitacora = new Bitacora();
+                            //     $bitacora->individual_quote()->associate($record);
+                            //     $bitacora->user()->associate(Auth::user());
+                            //     $bitacora->details = $data['description'];
+                            //     $bitacora->save();
+
+                            //     Notification::make()
+                            //         ->body('Las observaciones fueron registradas exitosamente.')
+                            //         ->success()
+                            //         ->send();
+
+                            //     $notoficationWp = NotificationController::saddObervationToIndividualQuote($record->code, Auth::user()->name, $data['description']);
+                            // } catch (\Throwable $th) {
+                            //     LogController::log(Auth::user()->id, 'EXCEPTION', 'agents.IndividualQuoteResource.action.enit', $th->getMessage());
+                            //     Notification::make()
+                            //         ->title('ERROR')
+                            //         ->body($th->getMessage())
+                            //         ->icon('heroicon-s-x-circle')
+                            //         ->iconColor('danger')
+                            //         ->danger()
+                            //         ->send();
+                            // }
+                        }),
+                ])
+                    ->icon('heroicon-c-ellipsis-vertical')
+                    ->color('azulOscuro')
+                    ->hidden(function (CorporateQuoteRequest $record) {
+                        return $record->status == 'ANULADA' || $record->status == 'DECLINADA';
+                    })
+            ])
+            ->toolbarActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ])
+            ->striped();
+    }
+}

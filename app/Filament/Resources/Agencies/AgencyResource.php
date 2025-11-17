@@ -21,7 +21,7 @@ class AgencyResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-library';
 
-    protected static ?string $navigationLabel = 'Agencias';
+    protected static ?string $navigationLabel = 'Agencias Generales';
 
     protected static string | UnitEnum | null $navigationGroup = 'ORGANIZACIÓN';
 
@@ -49,5 +49,13 @@ class AgencyResource extends Resource
             'create' => CreateAgency::route('/create'),
             'edit' => EditAgency::route('/{record}/edit'),
         ];
+    }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        if(auth()->user()->agency_type == 'GENERAL') {
+            return false; // ← Muestra el recurso del menú
+        }
+        return true; // ← Oculta el recurso del menú
     }
 }

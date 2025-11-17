@@ -50,4 +50,10 @@ class ConfigurationResource extends Resource
             'edit' => EditConfiguration::route('/{record}/edit'),
         ];
     }
+
+    public static function shouldRegisterNavigation(): bool
+    {
+        return false; // ← Oculta el recurso del menú
+    }
+
 }

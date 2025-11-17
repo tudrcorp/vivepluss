@@ -8,6 +8,7 @@ use App\Models\Agency;
 use App\Models\AgencyType;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
+use App\Models\Configuration;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\ActionGroup;
@@ -38,8 +39,8 @@ class AgenciesTable
             //     return Agency::query();
             // })
             ->defaultSort('created_at', 'desc')
-            ->heading('AGENCIAS')
-            ->description('Lista de agencias registradas en el sistema')
+            ->heading(fn (): string     => Configuration::first()->table_af_corp_table_title == NULL ? 'Agencias' : Configuration::first()->table_af_corp_table_title)
+            ->description(fn(): string  => Configuration::first()->table_af_corp_table_description == NULL ? '.....' : Configuration::first()->table_af_corp_table_description)
             ->columns([
                 TextColumn::make('owner_code')
                     ->label('De:')

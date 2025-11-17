@@ -3,7 +3,9 @@
 namespace App\Providers\Filament;
 
 use Filament\Panel;
+use Livewire\Component;
 use Filament\PanelProvider;
+use Filament\Actions\Action;
 use App\Models\Configuration;
 use Filament\Pages\Dashboard;
 use Filament\Support\Enums\Width;
@@ -21,6 +23,7 @@ use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use App\Filament\Resources\Configurations\ConfigurationResource;
 
 class ViveadminPanelProvider extends PanelProvider
 {
@@ -36,7 +39,7 @@ class ViveadminPanelProvider extends PanelProvider
             ->id('viveadmin')
             ->path('viveadmin')
             ->login()
-            ->spa(hasPrefetching: true)
+            ->spa()
             ->passwordReset()
             ->colors([
                 'primary'   => $primaryColor,
@@ -65,6 +68,24 @@ class ViveadminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+            ])
+            ->userMenuItems([
+                // 'profile' => fn(Action $action) => $action->label('Configuración')
+                    Action::make('edit_configuration')
+                    ->label('Configuración')
+                    ->icon('heroicon-s-cog')
+                    ->color('primary')
+                    ->hidden(fn () => !auth()->user()->agency_type == 'MASTER')
+                    ->url(function (Component $livewire) {
+                        return ConfigurationResource::getUrl('edit', ['record' => 1], panel: 'viveadmin');
+                    }),
+                // ...
+                // 'logout' => fn(Action $action) => $action
+                //     ->label('Cerrar Sesión')
+                //     ->color('danger')
+                //     ->url(route('external')),
+                // // ...
+                // // ...
             ])
             ->databaseNotifications()
             ->databaseTransactions()
