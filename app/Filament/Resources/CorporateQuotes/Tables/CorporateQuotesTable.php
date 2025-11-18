@@ -48,12 +48,14 @@ class CorporateQuotesTable
     public static function configure(Table $table): Table
     {
         return $table
-            // ->query(CorporateQuote::query()->where('ownerAccountManagers', Auth::user()->id))
             ->query(function (Builder $query) {
-                if (Auth::user()->is_accountManagers) {
-                    return CorporateQuote::query()->where('ownerAccountManagers', Auth::user()->id);
+                if (Auth::user()->agency_type == 'GENERAL') {
+                    $cotizacionesCorporativas = CorporateQuote::query()->where('code_agency', Auth::user()->code_agency);
                 }
-                return CorporateQuote::query();
+                if (Auth::user()->agency_type == 'MASTER') {
+                    $cotizacionesCorporativas = CorporateQuote::query()->where('owner_code', Auth::user()->code_agency);
+                }
+                return $cotizacionesCorporativas;
             })
             ->defaultSort('created_at', 'desc')
             ->heading(fn(): string      => Configuration::first()->table_quote_corp_table_title == NULL ? 'Cotizaciones' : Configuration::first()->table_quote_corp_table_title)

@@ -28,6 +28,23 @@ class User extends Authenticatable implements FilamentUser
         'name',
         'email',
         'password',
+        'email_verified_at',
+        'is_admin',
+        'is_agent',
+        'is_agency',
+        'is_doctor',
+        'is_subagent',
+        'is_patient',
+        'is_designer',
+        'is_business_admin',
+        'is_superAdmin',
+        'is_accountManagers',
+        'code_agency',
+        'link_agency',
+        'link_agent',
+        'agency_type',
+        'departament',
+        'birthday_date',
     ];
 
     /**
@@ -74,7 +91,7 @@ class User extends Authenticatable implements FilamentUser
     {
         if ($panel->getId() === 'viveadmin') {
             // return str_ends_with($this->email, '@vivepluss.com') && $this->is_white_label_company && $this->agency_type === 'MASTER';
-            return str_ends_with($this->email, '@viveplus.com') || str_ends_with($this->email, '@tudrencasa.com');
+            return str_ends_with($this->email, '@vivepluss.com');
         }
 
         return true;

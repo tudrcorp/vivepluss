@@ -50,7 +50,7 @@ class AgencyForm
                             ->maxLength(255),
                         Select::make('agency_type_id')
                             ->label('Tipo de agencia')
-                            ->options(AgencyType::all()->pluck('definition', 'id'))
+                            ->options(AgencyType::where('id' , 3)->pluck('definition', 'id'))
                             ->searchable()
                             ->live()
                             ->required()
@@ -58,39 +58,9 @@ class AgencyForm
                                 'required' => 'Campo requerido',
                             ])
                             ->preload(),
-                        Select::make('select_owner_code')
-                            ->label('Jerarquia')
-                            ->options(function (Get $get) {
-                                return Agency::select('code', 'agency_type_id')
-                                    ->where('agency_type_id', 1)
-                                    ->get()
-                                    ->mapWithKeys(function ($agency) {
-                                        $type = AgencyType::find($agency->agency_type_id)->definition;
-                                        return [$agency->code => "{$type} - {$agency->code}"];
-                                    });
-                            })
-                            ->hidden(fn(Get $get) => $get('agency_type_id') == 1 || $get('agency_type_id') == null)
-                            ->helperText('Esta lista despliega solo las agencias master. Si Usted decide dejar este campo vacio, el sistema tomara TDG-100 como agencia master.')
-                            ->afterStateUpdated(function (Set $set, $state) {
-                                if ($state == null) {
-                                    return $set('owner_code', 'TDG-100');
-                                }
-                                return $set('owner_code', $state);
-                            })
-                            ->searchable()
-                            ->live()
-                            ->preload(),
-                        Hidden::make('owner_code')
-                            ->live()
-                            ->default('TDG-100'),
+                        Hidden::make('owner_code')->default(fn () => Auth::user()->code_agency),
                         Hidden::make('created_by')->default(Auth::user()->name),
-                        Select::make('ownerAccountManagers')
-                            ->label('Acount Manager')
-                            ->options(function (Get $get) {
-                                return User::where('is_accountManagers', true)->get()->pluck('name', 'id');
-                            })
-                            ->searchable()
-                            ->preload(),
+                        Hidden::make('status')->default('POR REVISION'),
 
                     ])->columnSpanFull()->columns(4),
                 Section::make('INFORMACION PRINCIPAL')

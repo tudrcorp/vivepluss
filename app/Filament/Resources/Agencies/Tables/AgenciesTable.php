@@ -13,6 +13,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Actions\ActionGroup;
 use Filament\Tables\Filters\Filter;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Filament\Actions\BulkActionGroup;
@@ -32,12 +33,10 @@ class AgenciesTable
     public static function configure(Table $table): Table
     {
         return $table
-            // ->query(function (Builder $query) {
-            //     if (Auth::user()->is_accountManagers) {
-            //         return Agency::query()->where('ownerAccountManagers', Auth::user()->id);
-            //     }
-            //     return Agency::query();
-            // })
+            ->query(function (Builder $query) {
+                $agencies = Agency::query()->where('owner_code', Auth::user()->code_agency);
+                return $agencies;
+            })
             ->defaultSort('created_at', 'desc')
             ->heading(fn (): string     => Configuration::first()->table_af_corp_table_title == NULL ? 'Agencias' : Configuration::first()->table_af_corp_table_title)
             ->description(fn(): string  => Configuration::first()->table_af_corp_table_description == NULL ? '.....' : Configuration::first()->table_af_corp_table_description)
@@ -225,98 +224,52 @@ class AgenciesTable
             ])
             ->recordActions([
                 ActionGroup::make([
-                    EditAction::make()
-                        ->color('warning'),
                     Action::make('Activate')
+                        ->label('ACTIVAR AGENCIA')
                         ->action(function (Agency $record) {
 
                             try {
 
-                                if ($record->status == 'ACTIVO') {
-                                    Notification::make()
-                                        ->title('AGENTE YA ACTIVADO')
-                                        ->body('El agente ya se encuentra activo.')
-                                        ->color('danger')
-                                        ->icon('heroicon-o-x-circle')
-                                        ->iconColor('danger')
-                                        ->send();
+                                //1. creamos el usuario en la tabla users para la agencia tipo master o general
+                                $user = new User();
+                                $user->name = $record->name_corporative;
+                                $user->email = $record->email;
+                                $user->password = Hash::make('12345678');
+                                $user->is_agency = true;
+                                $user->code_agency = $record->code;
+                                $user->agency_type = $record->agency_type_id == 1 ? 'MASTER' : 'GENERAL';
+                                $user->link_agency = env('APP_URL') . '/ay/lk/' . Crypt::encryptString($record->code);
+                                $user->status = 'ACTIVO';
+                                $user->save();
 
-                                    return true;
+                                if ($user->save()) {
+                                    $record->update(['status' => 'ACTIVO']);
                                 }
-
-                                if (Agency::where('email', $record->email)->exists()) {
-                                    Notification::make()
-                                        ->title('AGENTE YA REGISTRADO')
-                                        ->body('El correo electronico del agente ya se encuentra registrado.')
-                                        ->color('danger')
-                                        ->send();
-
-                                    return true;
-                                }
-
-                                // //1. Generamos el codigo y la activamos, cambiado el estatus
-                                // $code = AgencyController::generate_code_agency();
-
-                                // //2. Guardamos los cambios en la tabla agencies
-                                // $record->code = $code;
-                                // $record->status = 'ACTIVO';
-                                // $record->save();
-
-                                // //3. Guardamos los cambios en la tabla logs
-                                // LogController::log(Auth::user()->id, 'ACTIVACION DE AGENTE', 'AgencyResource:Action:Activate()', $record->save());
-
-                                // //4. creamos el usuario en la tabla users para la agencia tipo master o general
-                                // $user = new User();
-                                // $user->name = $record->name_corporative;
-                                // $user->email = $record->email;
-                                // $user->password = Hash::make('12345678');
-                                // $user->is_agency = true;
-                                // $user->code_agency = $record->code;
-                                // $user->agency_type = $record->agency_type_id == 1 ? 'MASTER' : 'GENERAL';
-                                // $user->link_agency = env('APP_URL') . '/ay/lk/' . Crypt::encryptString($record->code);
-                                // $user->status = 'ACTIVO';
-                                // $user->save();
-
-                                // /**
-                                //  * Notificacion por whatsapp
-                                //  * @param Agency $record
-                                //  */
-                                // $phone = $record->phone;
-                                // $email = $record->email;
-                                // $nofitication = NotificationController::agency_activated($record->code, $phone, $email, $record->agency_type_id == 1 ? config('parameters.PATH_MASTER') : config('parameters.PATH_GENERAL'));
 
                                 /**
-                                 * Notificacion por correo electronico
-                                 * CARTA DE BIENVENIDA
+                                 * Notificacion por whatsapp
                                  * @param Agency $record
                                  */
-                                // $record->sendCartaBienvenida($record->code, $record->name, $record->email);
+                                $phone = $record->phone;
+                                $email = $record->email;
+                                $nofitication = NotificationController::agency_activated($record->code, $phone, $email, $record->agency_type_id == 1 ? config('parameters.PATH_MASTER') : config('parameters.PATH_GENERAL'));
 
-                                // if ($nofitication['success'] == true) {
-                                //     Notification::make()
-                                //         ->title('AGENTE ACTIVADO')
-                                //         ->body('Notificacion de activacion enviada con exito.')
-                                //         ->icon('heroicon-s-check-circle')
-                                //         ->iconColor('success')
-                                //         ->color('success')
-                                //         ->send();
-                                // } else {
-                                //     Notification::make()
-                                //         ->title('AGENTE ACTIVADO')
-                                //         ->body('La notificacion de activacion no pudo ser enviada.')
-                                //         ->icon('heroicon-s-x-circle')
-                                //         ->iconColor('warning')
-                                //         ->color('warning')
-                                //         ->send();
-                                // }
+                                Notification::make()
+                                    ->title('ACTIVACION DE AGENCIA')
+                                    ->body('Se ha activado la agencia correctamente.')
+                                    ->icon('heroicon-s-check-circle')
+                                    ->iconColor('success')
+                                    ->color('success')
+                                    ->send();
+                                    
                             } catch (\Throwable $th) {
-                                LogController::log(Auth::user()->id, 'EXCEPCION', 'AgencyResource:Tables\Actions\Action::make(Activate)', $th->getMessage());
+                                Log::error($th->getMessage());
                                 Notification::make()
                                     ->title('EXCEPCION')
-                                    ->body('Falla al realizar la activacion. Por favor comuniquese con el administrador.')
+                                    ->body($th->getMessage())
                                     ->icon('heroicon-s-x-circle')
-                                    ->iconColor('error')
-                                    ->color('error')
+                                    ->iconColor('danger')
+                                    ->color('danger')
                                     ->send();
                             }
                         })
@@ -326,7 +279,9 @@ class AgenciesTable
                     Action::make('Inactivate')
                         ->action(fn(Agency $record) => $record->update(['status' => 'INACTIVO']))
                         ->icon('heroicon-s-x-circle')
-                        ->color('danger'),
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->hidden(fn() => Auth::user()->is_business_admin != 1),
                 ])
                     ->icon('heroicon-c-ellipsis-vertical')
                     ->color('azulOscuro')

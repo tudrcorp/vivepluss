@@ -47,12 +47,14 @@ class AffiliationsTable
     public static function configure(Table $table): Table
     {
         return $table
-            // ->query(Affiliation::query()->where('ownerAccountManagers', Auth::user()->id))
             ->query(function (Builder $query) {
-                if (Auth::user()->is_accountManagers) {
-                    return Affiliation::query()->where('ownerAccountManagers', Auth::user()->id);
+                if (Auth::user()->agency_type == 'GENERAL') {
+                    $afiliaciones = Affiliation::query()->where('code_agency', Auth::user()->code_agency);
                 }
-                return Affiliation::query();
+                if (Auth::user()->agency_type == 'MASTER') {
+                    $afiliaciones = Affiliation::query()->where('owner_code', Auth::user()->code_agency);
+                }
+                return $afiliaciones;
             })
             ->defaultSort('created_at', 'desc')
             ->heading(fn(): string      => Configuration::first()->table_af_ind_table_title == NULL ? 'Afiliaciones' : Configuration::first()->table_af_ind_table_title)

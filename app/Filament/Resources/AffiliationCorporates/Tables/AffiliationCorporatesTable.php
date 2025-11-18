@@ -4,6 +4,7 @@ namespace App\Filament\Resources\AffiliationCorporates\Tables;
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Agency;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
 use App\Models\Configuration;
@@ -42,12 +43,14 @@ class AffiliationCorporatesTable
     public static function configure(Table $table): Table
     {
         return $table
-            // ->query(AffiliationCorporate::query()->where('ownerAccountManagers', Auth::user()->id))
             ->query(function (Builder $query) {
-                if (Auth::user()->is_accountManagers) {
-                    return AffiliationCorporate::query()->where('ownerAccountManagers', Auth::user()->id);
+                if(Auth::user()->agency_type == 'GENERAL') {
+                    $afiliacionesCorporativas = AffiliationCorporate::query()->where('code_agency', Auth::user()->code_agency);
                 }
-                return AffiliationCorporate::query();
+                if (Auth::user()->agency_type == 'MASTER') {
+                    $afiliacionesCorporativas = AffiliationCorporate::query()->where('owner_code', Auth::user()->code_agency);
+                }
+                return $afiliacionesCorporativas;
             })
             ->defaultSort('created_at', 'desc')
             ->heading(fn(): string      => Configuration::first()->table_af_corp_table_title == NULL ? 'Afiliaciones' : Configuration::first()->table_af_corp_table_title)

@@ -54,8 +54,8 @@ class AgencyResource extends Resource
     public static function shouldRegisterNavigation(): bool
     {
         if(auth()->user()->agency_type == 'GENERAL') {
-            return false; // ← Muestra el recurso del menú
+            return false; // ← No Muestra el recurso del menú
         }
-        return true; // ← Oculta el recurso del menú
+        return true; // ← Muestra el recurso del menú
     }
 }

@@ -177,14 +177,29 @@ class CorporateQuoteRequestForm
                                                 ->required()
                                                 ->autosize()
                                         ])->columnSpanFull(),
-                                    // Hidden::make('ownerAccountManagers')->default(function () {
-                                    //     $user_id = Auth::user()->agent_id;
-                                    //     return Agent::where('id', $user_id)->first()->ownerAccountManagers;
-                                    // }),
                                     Hidden::make('status')->default('PRE-APROBADA'),
                                     Hidden::make('created_by')->default(Auth::user()->name),
-                                    Hidden::make('code_agency')->default(fn (): string => Auth::user()->code_agency),
-                                    Hidden::make('owner_code')->default(fn (): string => Agency::where('code', Auth::user()->code_agency)->value('owner_code')),
+                                    //Calculo de la jerarquia segun la agencia que esta conectada
+                                    //Codigo de agencia
+                                    Hidden::make('code_agency')->default(function () {
+                                        if (Auth::user()->agency_type == 'GENERAL') {
+                                            return Auth::user()->code_agency;
+                                        }
+                                        if (Auth::user()->agency_type == 'MASTER') {
+                                            return Auth::user()->code_agency;
+                                        }
+                                    }),
+
+                                    //owner code
+                                    Hidden::make('owner_code')->default(function () {
+                                        if (Auth::user()->agency_type == 'GENERAL') {
+                                            $owner = Agency::where('code', Auth::user()->code_agency)->first()->owner_code;
+                                            return $owner;
+                                        }
+                                        if (Auth::user()->agency_type == 'MASTER') {
+                                            return Auth::user()->code_agency;
+                                        }
+                                    }),
                                 ])
                                 ->columns(3)
                                 ->columnSpanFull()

@@ -44,13 +44,15 @@ class IndividualQuotesTable
     public static function configure(Table $table): Table
     {
         return $table
-            // ->query(IndividualQuote::query()->where('ownerAccountManagers', Auth::user()->id))
-            // ->query(function (Builder $query) {
-            //     if (Auth::user()->is_accountManagers) {
-            //         return IndividualQuote::query()->where('ownerAccountManagers', Auth::user()->id);
-            //     }
-            //     return IndividualQuote::query();
-            // })
+            ->query(function (Builder $query) {
+                if (Auth::user()->agency_type == 'GENERAL') {
+                    $cotizacionesIndividuales = IndividualQuote::query()->where('code_agency', Auth::user()->code_agency);
+                }
+                if (Auth::user()->agency_type == 'MASTER') {
+                    $cotizacionesIndividuales = IndividualQuote::query()->where('owner_code', Auth::user()->code_agency);
+                }
+                return $cotizacionesIndividuales;
+            })
             ->defaultSort('created_at', 'desc')
             ->heading(fn(): string      => Configuration::first()->table_quote_ind_table_title == NULL ? 'Cotizaciones' : Configuration::first()->table_quote_ind_table_title)
             ->description(fn(): string  => Configuration::first()->table_quote_ind_table_description == NULL ? '.....' : Configuration::first()->table_quote_ind_table_description)
