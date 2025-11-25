@@ -25,6 +25,7 @@ use Filament\Schemas\Components\Section;
 use App\Http\Controllers\UtilsController;
 use App\Jobs\ResendEmailPropuestaEconomica;
 use Filament\Schemas\Components\Utilities\Get;
+use Illuminate\Database\Eloquent\Builder;
 
 
 class CorporateQuoteRequestsTable
@@ -32,7 +33,19 @@ class CorporateQuoteRequestsTable
     public static function configure(Table $table): Table
     {
         return $table
-            // ->query(CorporateQuoteRequest::query()->where('agent_id', Auth::user()->agent_id))
+            ->query(function (Builder $query) {
+                    if (Auth::user()->agency_type == 'GENERAL') {
+                        $data = CorporateQuoteRequest::query()->where('code_agency', Auth::user()->code_agency);
+                    }
+                    if (Auth::user()->agency_type == 'MASTER') {
+                        $data = CorporateQuoteRequest::query()->where('owner_code', Auth::user()->code_agency);
+                    }
+                    //Validamos que sea un agente y que pertenezca a la estructura de la agencia Master de la marca Blanca
+                    if (Auth::user()->is_agent == 1 || Auth::user()->is_subagent == 1) {
+                        $data = CorporateQuoteRequest::query()->where('agent_id', Auth::user()->agent_id);
+                    }
+                    return $data;
+                })
             ->defaultSort('created_at', 'desc')
             ->heading(fn(): string      => Configuration::first()->table_request_table_title == NULL ? 'Solicitudes' : Configuration::first()->table_request_table_title)
             ->description(fn(): string  => Configuration::first()->table_request_table_description == NULL ? '.....' : Configuration::first()->table_request_table_description)

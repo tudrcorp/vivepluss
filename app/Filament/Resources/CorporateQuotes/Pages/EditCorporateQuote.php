@@ -10,10 +10,5 @@ class EditCorporateQuote extends EditRecord
 {
     protected static string $resource = CorporateQuoteResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            DeleteAction::make(),
-        ];
-    }
+    protected static ?string $title = 'Editar Cotización Corporativa';
 }

@@ -74,7 +74,14 @@ class AffiliationForm
                                     ->disabled()
                                     ->dehydrated()
                                     ->prefixIcon('heroicon-m-clipboard-document-check')
-                                    ->options(IndividualQuote::all()->pluck('full_name', 'id'))
+                                    ->options(IndividualQuote::select('id', 'code_agency', 'status', 'full_name')->where('code_agency', Auth::user()->code_agency)->where('status', 'APROBADA')->pluck('full_name', 'id'))
+                                    ->default(function () {
+                                        $id = request()->query('id');
+                                        if (isset($id)) {
+                                            return $id;
+                                        }
+                                        return null;
+                                    })
                                     ->searchable()
                                     ->preload()
                                     ->afterStateUpdated(function (Set $set, $state) {
@@ -154,11 +161,23 @@ class AffiliationForm
                                 Select::make('payment_frequency')
                                     ->label('Frecuencia de pago')
                                     ->live()
-                                    ->options([
-                                        'ANUAL'      => 'ANUAL',
-                                        'SEMESTRAL'  => 'SEMESTRAL',
-                                        'TRIMESTRAL' => 'TRIMESTRAL',
-                                    ])
+                                    ->options(function (Get $get) {
+                                        $simpleArray = [
+                                            'ANUAL'      => 'ANUAL',
+                                            'SEMESTRAL'  => 'SEMESTRAL',
+                                            'TRIMESTRAL' => 'TRIMESTRAL',
+                                        ];
+                                        $simpleArrayMonth = [
+                                            'ANUAL'      => 'ANUAL',
+                                            'SEMESTRAL'  => 'SEMESTRAL',
+                                            'TRIMESTRAL' => 'TRIMESTRAL',
+                                            'MENSUAL'    => 'MENSUAL',
+                                        ];
+                                        if (Agency::where('code', Auth::user()->code_agency)->first()->activate_monthly_frequency == 1) {
+                                            return $simpleArrayMonth;
+                                        }
+                                        return $simpleArray;
+                                    })
                                     ->searchable()
                                     ->live()
                                     ->prefixIcon('heroicon-s-globe-europe-africa')
@@ -204,6 +223,18 @@ class AffiliationForm
 
                                             $set('total_amount', $data_quote->sum('subtotal_biannual'));
                                         }
+                                        if ($get('payment_frequency') == 'MENSUAL') {
+
+                                            $data_quote = DetailIndividualQuote::select('individual_quote_id', 'plan_id', 'coverage_id', 'subtotal_monthly')
+                                                ->where('individual_quote_id', $get('individual_quote_id'))
+                                                ->where('plan_id', $get('plan_id'))
+                                                ->when($get('plan_id') != 1, function ($query) use ($get) {
+                                                    return $query->where('coverage_id', $get('coverage_id'));
+                                                })
+                                                ->get();
+
+                                            $set('total_amount', $data_quote->sum('subtotal_monthly'));
+                                        }
 
                                         $fee_anual = DetailIndividualQuote::select('individual_quote_id', 'plan_id', 'coverage_id', 'subtotal_anual')
                                             ->where('individual_quote_id', $get('individual_quote_id'))
@@ -230,32 +261,6 @@ class AffiliationForm
                                     ->disabled()
                                     ->dehydrated()
                                     ->live(),
-                                Fieldset::make('Asociar Agencia y/o Agente')
-                                    ->schema([
-                                        Select::make('code_agency')
-                                            ->hidden(fn($state) => $state == 'TDG-100')
-                                            ->label('Lista de Agencias')
-                                            ->options(function (Get $get) {
-                                                return Agency::all()->pluck('name_corporative', 'code');
-                                            })
-                                            ->live()
-                                            ->searchable()
-                                            ->prefixIcon('heroicon-c-building-library')
-                                            ->preload(),
-                                        Select::make('agent_id')
-                                            ->label('Agentes')
-                                            ->options(function (Get $get) {
-                                                if ($get('code_agency') == null) {
-                                                    return Agent::where('owner_code', 'TDG-100')->pluck('name', 'id');
-                                                }
-                                                return Agent::where('owner_code', $get('code_agency'))->pluck('name', 'id');
-                                            })
-                                            ->live()
-                                            ->searchable()
-                                            ->prefixIcon('heroicon-s-briefcase')
-                                            ->preload(),
-                                    ])->columnSpanFull(),
-
                                 Fieldset::make('Información adicional de la Afiliación')
                                     ->schema([
                                         Select::make('business_unit_id')
@@ -289,26 +294,43 @@ class AffiliationForm
                                     ])->columnSpanFull()->columns(3),
                                 Hidden::make('created_by')->default(Auth::user()->name),
                                 Hidden::make('status')->default('PRE-APROBADA'),
-                                //Calculo de la jerarquia segun la agencia que esta conectada
+                                
                                 //Codigo de agencia
                                 Hidden::make('code_agency')->default(function () {
                                     if (Auth::user()->agency_type == 'GENERAL') {
                                         return Auth::user()->code_agency;
                                     }
-                                    if (Auth::user()->agency_type == 'MASTER') {
-                                        return Auth::user()->code_agency;
-                                    }
+                                    return null;
                                 }),
 
-                                //owner code
+                                //Calculo de OWNER_CODE segun la agencia que esta conectada o el agente que esta conectado
                                 Hidden::make('owner_code')->default(function () {
+                                    
+                                    //1.- Agencia GENERAL
                                     if (Auth::user()->agency_type == 'GENERAL') {
-                                        $owner = Agency::where('code', Auth::user()->code_agency)->first()->owner_code;
+                                        $owner = Agency::where('code', Auth::user()->code_agency)->value('owner_code');
                                         return $owner;
                                     }
+
+                                    //2.- Agencia MASTER
                                     if (Auth::user()->agency_type == 'MASTER') {
                                         return Auth::user()->code_agency;
                                     }
+
+                                    //3.- Agente o Subagente
+                                    if (Auth::user()->is_agent == 1 || Auth::user()->is_subagent == 1) {
+                                        $agent = Agent::where('id', Auth::user()->agent_id)->value('owner_code');
+                                        return $agent;
+                                    }
+                                    return null;
+                                }),
+
+                                //Si manejan agentes
+                                Hidden::make('agent_id')->default(function () {
+                                    if (Auth::user()->is_agent == 1) {
+                                        return Auth::user()->agent_id;
+                                    }
+                                    return null;
                                 }),
                             ])
                         ]),

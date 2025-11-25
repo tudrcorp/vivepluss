@@ -4,6 +4,7 @@ namespace App\Filament\Resources\CorporateQuotes\Tables;
 
 use Carbon\Carbon;
 use App\Models\User;
+use App\Models\Agency;
 use Filament\Tables\Table;
 use Filament\Actions\Action;
 use App\Models\Configuration;
@@ -37,6 +38,7 @@ use Filament\Schemas\Components\Fieldset;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Jobs\ResendEmailPropuestaEconomica;
+use App\Mail\SendMailPropuestaPlanEspecial;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use App\Http\Controllers\NotificationController;
@@ -55,40 +57,47 @@ class CorporateQuotesTable
                 if (Auth::user()->agency_type == 'MASTER') {
                     $cotizacionesCorporativas = CorporateQuote::query()->where('owner_code', Auth::user()->code_agency);
                 }
+                //Validamos que sea un agente y que pertenezca a la estructura de la agencia Master de la marca Blanca
+                if (Auth::user()->is_agent == 1 || Auth::user()->is_subagent == 1) {
+                    $cotizacionesCorporativas = CorporateQuote::query()->where('agent_id', Auth::user()->agent_id);
+                }
                 return $cotizacionesCorporativas;
             })
             ->defaultSort('created_at', 'desc')
             ->heading(fn(): string      => Configuration::first()->table_quote_corp_table_title == NULL ? 'Cotizaciones' : Configuration::first()->table_quote_corp_table_title)
             ->description(fn(): string  => Configuration::first()->table_quote_corp_table_description == NULL ? '.....' : Configuration::first()->table_quote_corp_table_description)
             ->columns([
-                TextColumn::make('code')
-                    ->label('Código')
-                    ->badge()
-                    ->color('azulOscuro')
-                    ->searchable(),
-                TextColumn::make('accountManager.name')
-                    ->label('Account Manager')
-                    ->icon('heroicon-o-shield-check')
-                    ->badge()
-                    ->default(fn($record): string => $record->accountManager ? $record->accountManager : '-----')
-                    ->color(function (string $state): string {
-                        return match ($state) {
-                            '-----' => 'info',
-                            default => 'success',
-                        };
-                    }),
-                TextColumn::make('agent.name')
-                    ->label('Agente')
-                    ->badge()
-                    ->default(fn($record): string => $record->agent_id ? $record->agent_id : '-----')
-                    ->color(function (string $state): string {
-                        return match ($state) {
-                            '-----' => 'info',
-                            default => 'success',
-                        };
+                TextColumn::make('code_agency')
+                    ->prefix(function ($record) {
+                        $agency_type = Agency::select('agency_type_id')
+                            ->where('code', $record->code_agency)
+                            ->with('typeAgency')
+                            ->first();
+                        return isset($agency_type) ? $agency_type->typeAgency->definition . ' - ' : 'MASTER - ';
                     })
-                    ->icon('heroicon-m-user')
+                    ->label('Agencia')
+                    ->alignCenter()
+                    ->badge()
+                    ->color('success')
+                    ->icon('heroicon-s-building-library')
                     ->searchable(),
+                TextColumn::make('code')
+                    ->label('Código de Cotización')
+                    ->badge()
+                    ->color('primary')
+                    ->searchable(),
+                // TextColumn::make('agent.name')
+                //     ->label('Agente')
+                //     ->badge()
+                //     ->default(fn($record): string => $record->agent_id ? $record->agent_id : '-----')
+                //     ->color(function (string $state): string {
+                //         return match ($state) {
+                //             '-----' => 'info',
+                //             default => 'success',
+                //         };
+                //     })
+                //     ->icon('heroicon-m-user')
+                //     ->searchable(),
                 TextColumn::make('full_name')
                     ->label('Solicitada por:')
                     ->searchable(),
@@ -115,7 +124,7 @@ class CorporateQuotesTable
                     ->badge()
                     ->color(function (string $state): string {
                         return match ($state) {
-                            'PRE-APROBADA'  => 'verdeOpaco',
+                            'PRE-APROBADA'  => 'info',
                             'APROBADA'      => 'success',
                             'ANULADA'       => 'warning',
                             'DECLINADA'     => 'danger',
@@ -238,7 +247,7 @@ class CorporateQuotesTable
                              * Notificacion via email
                              * JOB
                              */
-                            SendNotificacionUploadDataCorporate::dispatch($record->data_doc, Auth::user()->name, $record->code);
+                            // SendNotificacionUploadDataCorporate::dispatch($record->data_doc, Auth::user()->name, $record->code);
                         })
                         ->hidden(fn($record): bool => $record->status == 'APROBADA-DATA-ENVIADA' || $record->status == 'APROBADA' || $record->observation_dress_tailor == null),
 
@@ -315,7 +324,7 @@ class CorporateQuotesTable
                              * Notificacion via email
                              * JOB
                              */
-                            SendNotificacionUploadDataCorporate::dispatch($record->data_doc, Auth::user()->name, $record->code);
+                            // SendNotificacionUploadDataCorporate::dispatch($record->data_doc, Auth::user()->name, $record->code);
                         })
                         ->hidden(fn($record): bool => $record->status == 'APROBADA-DATA-ENVIADA' || $record->status == 'APROBADA' || $record->observation_dress_tailor != null),
 
@@ -365,6 +374,7 @@ class CorporateQuotesTable
 
                                 $email = null;
                                 $phone = null;
+                                $name_pdf = public_path('storage/quotes/' . $record->code . '.pdf');
 
                                 if (isset($data['email'])) {
                                     $email = $data['email'];
@@ -375,19 +385,18 @@ class CorporateQuotesTable
                                 }
 
                                 /**
-                                 * JOB
+                                 * Email
                                  */
-                                $job = ResendEmailPropuestaEconomica::dispatch($record, $email, $phone);
-
-                                if ($job) {
-                                    Notification::make()
-                                        ->title('RE-ENVIADO EXITOSO')
-                                        ->body('La informacion fue re-enviada exitosamente.')
-                                        ->icon('heroicon-s-check-circle')
-                                        ->iconColor('verde')
-                                        ->success()
-                                        ->send();
-                                }
+                                Mail::to($email)->send(new SendMailPropuestaPlanEspecial($record['full_name'], $name_pdf));
+                                
+                                Notification::make()
+                                    ->title('RE-ENVIADO EXITOSO')
+                                    ->body('La informacion fue re-enviada exitosamente.')
+                                    ->icon('heroicon-s-check-circle')
+                                    ->iconColor('verde')
+                                    ->success()
+                                    ->send();
+                                    
                             } catch (\Throwable $th) {
                                 LogController::log(Auth::user()->id, 'EXCEPTION', 'agents.IndividualQuoteResource.action.enit', $th->getMessage());
                                 Notification::make()
@@ -434,116 +443,6 @@ class CorporateQuotesTable
                                 $path = public_path('storage/quotes/' . $record->code . '.pdf');
                                 return response()->download($path);
                             } catch (\Throwable $th) {
-                                LogController::log(Auth::user()->id, 'EXCEPTION', 'agents.IndividualQuoteResource.action.enit', $th->getMessage());
-                                Notification::make()
-                                    ->title('ERROR')
-                                    ->body($th->getMessage())
-                                    ->icon('heroicon-s-x-circle')
-                                    ->iconColor('danger')
-                                    ->danger()
-                                    ->send();
-                            }
-                        })
-                        ->hidden(fn($record): bool => $record->observation_dress_tailor != null),
-
-                    /**FORWARD */
-                    Action::make('link')
-                        ->label('Link Interactivo')
-                        ->icon('heroicon-s-link')
-                        ->color('primary')
-                        ->requiresConfirmation()
-                        ->modalIcon('heroicon-s-link')
-                        ->modalHeading('Link Interactivo de Cotización')
-                        ->modalDescription('El link será enviado por email y/o teléfono!')
-                        ->modalWidth(Width::ExtraLarge)
-                        ->form([
-                            Section::make()
-                                // ->heading('Informacion')
-                                // ->description('El link puede sera enviado por email y/o telefono!')
-                                ->schema([
-                                    TextInput::make('email')
-                                        ->label('Email')
-                                        ->email(),
-                                    Grid::make(2)->schema([
-                                        Select::make('country_code')
-                                            ->label('Código de país')
-                                            ->options(fn() => UtilsController::getCountries())
-                                            ->searchable()
-                                            ->default('+58')
-                                            ->required()
-                                            ->live(onBlur: true)
-                                            ->validationMessages([
-                                                'required'  => 'Campo Requerido',
-                                            ]),
-                                        TextInput::make('phone')
-                                            ->prefixIcon('heroicon-s-phone')
-                                            ->tel()
-                                            ->label('Número de teléfono')
-                                            ->required()
-                                            ->validationMessages([
-                                                'required'  => 'Campo Requerido',
-                                            ])
-                                            ->live(onBlur: true)
-                                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
-                                                $countryCode = $get('country_code');
-                                                if ($countryCode) {
-                                                    $cleanNumber = ltrim(preg_replace('/[^0-9]/', '', $state), '0');
-                                                    $set('phone', $countryCode . $cleanNumber);
-                                                }
-                                            }),
-                                    ])
-                                ])
-                        ])
-                        ->action(function (CorporateQuote $record, array $data) {
-
-                            try {
-
-                                $email = null;
-                                $phone = null;
-                                $link = config('parameters.INTEGRACORP_URL') . '/in/' . Crypt::encryptString($record->id) . '/w';
-
-                                if (isset($data['email'])) {
-
-                                    $email = $data['email'];
-
-                                    $email = Mail::to($email)->send(new MailLinkIndividualQuote($link));
-
-                                    if ($email) {
-                                        Notification::make()
-                                            ->title('ENVIADO EXITOSO')
-                                            ->body('El link fue enviado por email exitosamente.')
-                                            ->icon('heroicon-s-check-circle')
-                                            ->iconColor('verde')
-                                            ->success()
-                                            ->send();
-                                    }
-                                }
-
-                                if (isset($data['phone'])) {
-                                    $phone = $data['phone'];
-                                    $wp = NotificationController::sendLinkIndividualQuote($phone, $link);
-                                    if ($wp) {
-
-                                        Notification::make()
-                                            ->title('ENVIADO EXITOSO')
-                                            ->body('El link fue enviado por whatsapp exitosamente.')
-                                            ->icon('heroicon-s-check-circle')
-                                            ->iconColor('verde')
-                                            ->success()
-                                            ->send();
-                                    } else {
-
-                                        Notification::make()
-                                            ->title('ERROR')
-                                            ->body('El link no pudo ser enviado por whatsapp. Por favor, contacte con el administrador del Sistema.')
-                                            ->icon('heroicon-s-x-circle')
-                                            ->iconColor('danger')
-                                            ->danger()
-                                            ->send();
-                                    }
-                                }
-                            } catch (\Throwable $th) {
-                                dd($th);
                                 LogController::log(Auth::user()->id, 'EXCEPTION', 'agents.IndividualQuoteResource.action.enit', $th->getMessage());
                                 Notification::make()
                                     ->title('ERROR')

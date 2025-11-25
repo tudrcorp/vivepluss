@@ -54,6 +54,10 @@ class AffiliationsTable
                 if (Auth::user()->agency_type == 'MASTER') {
                     $afiliaciones = Affiliation::query()->where('owner_code', Auth::user()->code_agency);
                 }
+                //Validamos que sea un agente y que pertenezca a la estructura de la agencia Master de la marca Blanca
+                if (Auth::user()->is_agent == 1 || Auth::user()->is_subagent == 1) {
+                    $afiliaciones = Affiliation::query()->where('agent_id', Auth::user()->agent_id);
+                }
                 return $afiliaciones;
             })
             ->defaultSort('created_at', 'desc')
@@ -64,38 +68,22 @@ class AffiliationsTable
                     ->label('Codigo')
                     ->icon('heroicon-s-user-group')
                     ->badge()
-                    ->color('azulOscuro')
+                    ->color('primary')
                     ->searchable(),
-                TextColumn::make('individual_quote.code')
-                    ->label('Nro. de cotización')
-                    ->badge()
-                    ->color('verde')
-                    ->icon('heroicon-m-tag')
-                    ->searchable(),
-                TextColumn::make('accountManager.name')
-                    ->label('Account Manager')
-                    ->icon('heroicon-o-shield-check')
-                    ->badge()
-                    ->default(fn($record): string => $record->accountManager ? $record->accountManager : '-----')
-                    ->color(function (string $state): string {
-                        return match ($state) {
-                            '-----' => 'info',
-                            default => 'success',
-                        };
-                    }),
+                
                 TextColumn::make('agency.name_corporative')
-                    ->label('CO-Agencia')
+                    ->label('Agencia')
                     ->badge()
                     ->default(fn($record): string => $record->code_agency == 'TDG-100' ? 'TUDRENCASA' : '-----')
-                    ->color('azulOscuro')
+                    ->color('info')
                     ->searchable(),
-                TextColumn::make('agent.name')
-                    ->label('Nombre del agente')
-                    ->badge()
-                    ->default(fn($record): string => $record->agent_id == null ? '-----' : $record->agent->name)
-                    ->color('azulOscuro')
-                    ->icon('heroicon-m-user')
-                    ->searchable(),
+                // TextColumn::make('agent.name')
+                //     ->label('Nombre del agente')
+                //     ->badge()
+                //     ->default(fn($record): string => $record->agent_id == null ? '-----' : $record->agent->name)
+                //     ->color('azulOscuro')
+                //     ->icon('heroicon-m-user')
+                //     ->searchable(),
 
                 //...  
                 ColumnGroup::make('Plan Afiliado', [

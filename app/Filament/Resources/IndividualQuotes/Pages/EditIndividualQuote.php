@@ -10,10 +10,5 @@ class EditIndividualQuote extends EditRecord
 {
     protected static string $resource = IndividualQuoteResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            DeleteAction::make(),
-        ];
-    }
+    protected static ?string $title = 'Editar Cotización Individual';
 }

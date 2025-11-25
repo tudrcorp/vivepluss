@@ -19,6 +19,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Components\Section;
 use App\Http\Controllers\UtilsController;
+use Filament\Schemas\Components\Fieldset;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 
@@ -29,6 +30,7 @@ class AgencyForm
         return $schema
             ->components([
                 Section::make('AGENCIAS')
+                    ->hidden(fn () => Auth::user()->agency_type == 'GENERAL')
                     ->collapsible()
                     ->description('Fomulario para el registro de agencias. Campo Requerido(*)')
                     ->icon('heroicon-s-building-library')
@@ -69,6 +71,7 @@ class AgencyForm
                     ->icon('heroicon-s-building-office-2')
                     ->schema([
                         TextInput::make('name_corporative')
+                            ->disabled(fn() => Auth::user()->agency_type == 'GENERAL')
                             ->label('Razon Social')
                             ->afterStateUpdated(function (Set $set, $state) {
                                 $set('name', strtoupper($state));
@@ -97,6 +100,7 @@ class AgencyForm
                             ])
                             ->required(),
                         TextInput::make('email')
+                            ->disabled(fn() => Auth::user()->agency_type == 'GENERAL')
                             ->label('Correo electrónico')
                             ->prefixIcon('heroicon-s-at-symbol')
                             ->email()
@@ -219,82 +223,82 @@ class AgencyForm
                             ->prefixIcon('heroicon-s-user')
                             ->maxLength(255),
                     ])->columnSpanFull()->columns(4),
-                Section::make('INFORMACION DE CONTACTO SECUNDARIO')
-                    ->description('Fomulario. Campo Requerido(*)')
-                    ->collapsed()
-                    ->icon('heroicon-s-building-office-2')
-                    ->schema([
-                        TextInput::make('name_contact_2')
-                            ->label('Nombre/Razon Social')
-                            ->afterStateUpdated(function (Set $set, $state) {
-                                $set('name_contact_2', strtoupper($state));
-                            })
-                            ->live(onBlur: true)
-                            ->prefixIcon('heroicon-s-identification')
-                            ->maxLength(255),
-                        TextInput::make('email_contact_2')
-                            ->label('Email secundario')
-                            ->prefixIcon('heroicon-s-at-symbol')
-                            ->email()
-                            ->validationMessages([
-                                'email'  => 'Campo formato email',
-                            ])
-                            ->maxLength(255),
-                        Select::make('country_code_2')
-                            ->label('Código de país')
-                            ->options(UtilsController::getCountries())
-                            ->live(onBlur: true)
-                            ->searchable()
-                            ->preload()
-                            ->default('+58'),
-                        TextInput::make('phone_contact_2')
-                            ->prefixIcon('heroicon-s-phone')
-                            ->tel()
-                            ->label('Número de teléfono')
-                            ->live(onBlur: true)
-                            ->validationMessages([
-                                'numeric'   => 'El campo es numerico',
-                            ])
-                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
-                                $countryCode = $get('country_code_2');
-                                if ($countryCode) {
-                                    $cleanNumber = ltrim(preg_replace('/[^0-9]/', '', $state), '0');
-                                    $set('phone_contact_2', $countryCode . $cleanNumber);
-                                }
-                            }),
-                    ])->columnSpanFull()->columns(4),
-                Section::make('DATOS BANCARIOS MONEDA NACIONAL')
-                    ->description('Fomulario. Campo Requerido(*)')
-                    ->collapsed()
-                    ->icon('heroicon-s-building-office-2')
-                    ->schema([
+                    
+                        Section::make('INFORMACION DE CONTACTO SECUNDARIO')
+                            ->description('Fomulario. Campo Requerido(*)')
+                            ->collapsed()
+                            ->icon('heroicon-s-building-office-2')
+                            ->schema([
+                                TextInput::make('name_contact_2')
+                                    ->label('Nombre/Razon Social')
+                                    ->afterStateUpdated(function (Set $set, $state) {
+                                        $set('name_contact_2', strtoupper($state));
+                                    })
+                                    ->live(onBlur: true)
+                                    ->prefixIcon('heroicon-s-identification')
+                                    ->maxLength(255),
+                                TextInput::make('email_contact_2')
+                                    ->label('Email secundario')
+                                    ->prefixIcon('heroicon-s-at-symbol')
+                                    ->email()
+                                    ->validationMessages([
+                                        'email'  => 'Campo formato email',
+                                    ])
+                                    ->maxLength(255),
+                                Select::make('country_code_2')
+                                    ->label('Código de país')
+                                    ->options(UtilsController::getCountries())
+                                    ->live(onBlur: true)
+                                    ->searchable()
+                                    ->preload()
+                                    ->default('+58'),
+                                TextInput::make('phone_contact_2')
+                                    ->prefixIcon('heroicon-s-phone')
+                                    ->tel()
+                                    ->label('Número de teléfono')
+                                    ->live(onBlur: true)
+                                    ->validationMessages([
+                                        'numeric'   => 'El campo es numerico',
+                                    ])
+                                    ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                        $countryCode = $get('country_code_2');
+                                        if ($countryCode) {
+                                            $cleanNumber = ltrim(preg_replace('/[^0-9]/', '', $state), '0');
+                                            $set('phone_contact_2', $countryCode . $cleanNumber);
+                                        }
+                                    }),
+                            ])->columnSpanFull()->columns(4),
+                        Section::make('DATOS BANCARIOS MONEDA NACIONAL')
+                            ->description('Fomulario. Campo Requerido(*)')
+                            ->collapsed()
+                            ->icon('heroicon-s-building-office-2')
+                            ->schema([
                         TextInput::make('local_beneficiary_name')
-                            ->label('Nombre/Razon Social del Beneficiario')
-                            ->afterStateUpdated(function (Set $set, $state) {
-                                $set('local_beneficiary_name', strtoupper($state));
-                            })
+                            ->label('Nombre/Razón Social del Beneficiario')
+                            ->afterStateUpdatedJs(<<<'JS'
+                                                $set('local_beneficiary_name', $state.toUpperCase());
+                                            JS)
                             ->live(onBlur: true)
                             ->prefixIcon('heroicon-s-identification')
-
                             ->maxLength(255),
                         TextInput::make('local_beneficiary_rif')
                             ->label('CI/RIF del Beneficiario')
                             ->prefixIcon('heroicon-s-identification')
-                            ->numeric()
-                            ->validationMessages([
-                                'required'  => 'Campo Requerido',
-                                'numeric'  => 'Campo tipo numerico',
-                            ])
-                            ->maxLength(255),
-                        TextInput::make('local_beneficiary_account_number')
-                            ->label('Número de Cuenta del Beneficiario')
-                            ->prefixIcon('heroicon-s-identification')
-                            ->numeric()
                             ->validationMessages([
                                 'numeric'  => 'Campo tipo numerico',
                             ])
                             ->maxLength(255),
-                        Grid::make(4)->schema([
+                        TextInput::make('local_beneficiary_phone_pm')
+                            ->label('Teléfono Pago Movil del Beneficiario')
+                            ->prefixIcon('heroicon-s-phone')
+                            ->tel()
+                            ->helperText('Formato: 04121234567, 04241869168')
+                            ->mask('09999999999'),
+
+                        Fieldset::make('Cuenta Nacional, Moneda Nacional(Bs.)')->schema([
+                            TextInput::make('local_beneficiary_account_number')
+                                ->label('Número de Cuenta del Beneficiario')
+                                ->prefixIcon('heroicon-s-identification'),
                             Select::make('local_beneficiary_account_bank')
                                 ->label('Banco del Beneficiario')
                                 ->prefixIcon('heroicon-s-identification')
@@ -327,29 +331,45 @@ class AgencyForm
                                     'AHORRO'      => 'AHORRO',
                                     'CORRIENTE'   => 'CORRIENTE',
                                 ]),
-                            Select::make('country_code_beneficiary')
-                                ->label('Código de país')
-                                ->options(UtilsController::getCountries())
-                                ->searchable()
-                                ->default('+58')
-                                ->live(onBlur: true)
-                                ->hiddenOn('edit'),
-                            TextInput::make('local_beneficiary_phone_pm')
-                                ->label('Teléfono Pago Movil del Beneficiario')
-                                ->prefixIcon('heroicon-s-phone')
-                                ->tel()
-                                ->validationMessages([
-                                    'numeric'  => 'Campo tipo numeric',
-                                ])
-                                ->live(onBlur: true)
-                                ->afterStateUpdated(function ($state, callable $set, Get $get) {
-                                    $countryCode = $get('country_code_beneficiary');
-                                    if ($countryCode) {
-                                        $cleanNumber = ltrim(preg_replace('/[^0-9]/', '', $state), '0');
-                                        $set('local_beneficiary_phone_pm', $countryCode . $cleanNumber);
-                                    }
-                                }),
-                        ])->columnSpanFull(),
+                        ])->columnSpanFull()->columns(3),
+
+                        Fieldset::make('Cuenta Nacional, Moneda Intenacional(US$, EUR)')->schema([
+                            TextInput::make('local_beneficiary_account_number_mon_inter')
+                                ->label('Número de Cuenta del Beneficiario')
+                                ->prefixIcon('heroicon-s-identification'),
+                            Select::make('local_beneficiary_account_bank_mon_inter')
+                                ->label('Banco del Beneficiario')
+                                ->prefixIcon('heroicon-s-identification')
+                                ->options([
+                                    'BANCO DE VENEZUELA'            => 'BANCO DE VENEZUELA',
+                                    'BANCO BICENTENARIO'            => 'BANCO BICENTENARIO',
+                                    'BANCO MERCANTIL'               => 'BANCO MERCANTIL',
+                                    'BANCO PROVINCIAL'              => 'BANCO PROVINCIAL',
+                                    'BANCO CARONI'                  => 'BANCO CARONI',
+                                    'BANCO DEL CARIBE'              => 'BANCO DEL CARIBE',
+                                    'BANCO DEL TESORO'              => 'BANCO DEL TESORO',
+                                    'BANCO NACIONAL DE CREDITO'     => 'BANCO NACIONAL DE CREDITO',
+                                    'BANESCO'                       => 'BANESCO',
+                                    'BANCO CARONI'                  => 'BANCO CARONI',
+                                    'FONDO COMUN'                   => 'FONDO COMUN',
+                                    'BANCO CANARIAS'                => 'BANCO CANARIAS',
+                                    'BANCO DEL SUR'                 => 'BANCO DEL SUR',
+                                    'BANCO AGRICOLA DE VENEZUELA'   => 'BANCO AGRICOLA DE VENEZUELA',
+                                    'BANPLUS'                       => 'BANPLUS',
+                                    'MI BANCO'                      => 'MI BANCO',
+                                    'BANCAMIGA'                     => 'BANCAMIGA',
+                                    'BANFANB'                       => 'BANFANB',
+                                    'BANCARIBE'                     => 'BANCARIBE',
+                                    'BANCO ACTIVO'                  => 'BANCO ACTIVO',
+                                ]),
+                            Select::make('local_beneficiary_account_type_mon_inter')
+                                ->label('Tipo de Cuenta del Beneficiario')
+                                ->prefixIcon('heroicon-s-identification')
+                                ->options([
+                                    'AHORRO'      => 'AHORRO',
+                                    'CORRIENTE'   => 'CORRIENTE',
+                                ]),
+                        ])->columnSpanFull()->columns(3),
 
                     ])->columnSpanFull()->columns(3),
                 Section::make('DATOS BANCARIOS MONEDA EXTRANJERA')
@@ -481,10 +501,17 @@ class AgencyForm
                     ->icon('heroicon-m-chart-pie')
                     ->schema([
                         Toggle::make('tdec')
+                            ->hidden(fn () => Auth::user()->agency_type == 'GENERAL')
+                            ->live()
+                            ->default(false)
                             ->label('TDEC'),
                         Toggle::make('tdev')
+                            ->hidden(fn () => Auth::user()->agency_type == 'GENERAL')
+                            ->live()
+                            ->default(false)
                             ->label('TDEV'),
                         TextInput::make('commission_tdec')
+                            ->disabled(fn () => Auth::user()->agency_type == 'GENERAL')
                             ->label('Comisión TDEC US$')
                             ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
                             ->prefix('%')
@@ -493,6 +520,7 @@ class AgencyForm
                                 'numeric'   => 'Campo tipo numerico.',
                             ]),
                         TextInput::make('commission_tdec_renewal')
+                            ->disabled(fn () => Auth::user()->agency_type == 'GENERAL')
                             ->label('Comisión Renovacion TDEC US$')
                             ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
                             ->prefix('%')
@@ -501,6 +529,7 @@ class AgencyForm
                                 'numeric'   => 'Campo tipo numerico.',
                             ]),
                         TextInput::make('commission_tdev')
+                            ->disabled(fn () => Auth::user()->agency_type == 'GENERAL')
                             ->label('Comisión TDEV US$')
                             ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
                             ->prefix('%')
@@ -509,6 +538,7 @@ class AgencyForm
                                 'numeric'   => 'Campo tipo numerico.',
                             ]),
                         TextInput::make('commission_tdev_renewal')
+                            ->disabled(fn () => Auth::user()->agency_type == 'GENERAL')
                             ->label('Comisión Renovacion TDEV US$')
                             ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
                             ->prefix('%')

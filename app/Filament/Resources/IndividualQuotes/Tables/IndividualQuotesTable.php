@@ -45,11 +45,14 @@ class IndividualQuotesTable
     {
         return $table
             ->query(function (Builder $query) {
+                if (Auth::user()->agency_type == 'MASTER') {
+                    $cotizacionesIndividuales = IndividualQuote::query()->where('owner_code', Auth::user()->code_agency);
+                }
                 if (Auth::user()->agency_type == 'GENERAL') {
                     $cotizacionesIndividuales = IndividualQuote::query()->where('code_agency', Auth::user()->code_agency);
                 }
-                if (Auth::user()->agency_type == 'MASTER') {
-                    $cotizacionesIndividuales = IndividualQuote::query()->where('owner_code', Auth::user()->code_agency);
+                if (Auth::user()->is_agent == 1 || Auth::user()->is_subagent == 1) {
+                    $cotizacionesIndividuales = IndividualQuote::query()->where('agent_id', Auth::user()->agent_id);
                 }
                 return $cotizacionesIndividuales;
             })
@@ -58,46 +61,25 @@ class IndividualQuotesTable
             ->description(fn(): string  => Configuration::first()->table_quote_ind_table_description == NULL ? '.....' : Configuration::first()->table_quote_ind_table_description)
             ->columns([
                 TextColumn::make('code_agency')
-                    ->prefix(function ($record) {
-                        $agency_type = Agency::select('agency_type_id')
-                            ->where('code', $record->code_agency)
-                            ->with('typeAgency')
-                            ->first();
-                        return isset($agency_type) ? $agency_type->typeAgency->definition . ' - ' : 'MASTER - ';
-                    })
+                    ->default(fn($record): string => $record->code_agency ?? '-----')
+                    ->label('Agencia')
                     ->alignCenter()
                     ->badge()
                     ->color('success')
                     ->icon('heroicon-s-building-library')
+                    ->searchable(),
+                TextColumn::make('agent.name')
+                    ->default(fn($record): string => $record->agent_id ?? '-----')
+                    ->label('Agente')
+                    ->alignCenter()
+                    ->badge()
+                    ->color('success')
                     ->searchable(),
                 TextColumn::make('code')
                     ->label('Código de Cotización')
                     ->badge()
                     ->alignCenter()
                     ->color('primary')
-                    ->searchable(),
-                TextColumn::make('accountManager.name')
-                    ->label('Account Manager')
-                    ->icon('heroicon-o-shield-check')
-                    ->badge()
-                    ->default(fn($record): string => $record->accountManager ? $record->accountManager : '-----')
-                    ->color(function (string $state): string {
-                        return match ($state) {
-                            '-----' => 'info',
-                            default => 'success',
-                        };
-                    }),
-                TextColumn::make('agent.name')
-                    ->label('Agente')
-                    ->badge()
-                    ->default(fn($record): string => $record->agent_id ? $record->agent_id : '-----')
-                    ->color(function (string $state): string {
-                        return match ($state) {
-                            '-----' => 'info',
-                            default => 'success',
-                        };
-                    })
-                    ->icon('heroicon-m-user')
                     ->searchable(),
                 TextColumn::make('full_name')
                     ->label('Solicitada por:')
@@ -263,31 +245,18 @@ class IndividualQuotesTable
                                     ->persistent()
                                     ->success()
                                     ->send();
-
-                                /**
-                                 * Logica para enviar una notificacion a la sesion del administrador despues de crear la corizacion
-                                 * ----------------------------------------------------------------------------------------------------
-                                 * $record [Data de la cotizacion guardada en la base de dastos]
-                                 */
-
-
-                                /**
-                                 * LOG
-                                 */
-                                LogController::log(Auth::user()->id, 'Aprobacion directa de la cotizacion Nro.' . $record->code, 'Modulo Cotizacion Individual', 'APROBADA');
-
                                 /**
                                  * Redirecciono a la pagina para crear la afiliacion
                                  */
                                 $count_plans = $record->detailsQuote()->distinct()->pluck('plan_id');
                                 // dd($count_plans[0]);
                                 if ($count_plans->count() == 1) {
-                                    return redirect()->route('filament.resources.affiliations.create', ['id' => $record->id, 'plan_id' => $count_plans[0]]);
+                                    return redirect()->route('filament.viveadmin.resources.affiliations.create', ['id' => $record->id, 'plan_id' => $count_plans[0]]);
                                 }
 
-                                return redirect()->route('filament.resources.affiliations.create', ['id' => $record->id, 'plan_id' => null]);
+                                return redirect()->route('filament.viveadmin.resources.affiliations.create', ['id' => $record->id, 'plan_id' => null]);
                             } catch (\Throwable $th) {
-                                LogController::log(Auth::user()->id, 'EXCEPTION', 'agents.IndividualQuoteResource.action.emit', $th->getMessage());
+                                
                                 Notification::make()
                                     ->title('ERROR')
                                     ->body($th->getMessage())
@@ -442,17 +411,16 @@ class IndividualQuotesTable
                                 /**
                                  * JOB
                                  */
-                                $job = ResendEmailPropuestaEconomica::dispatch($record, $email, $phone);
+                                // $job = ResendEmailPropuestaEconomica::dispatch($record, $email, $phone);
 
-                                if ($job) {
-                                    Notification::make()
-                                        ->title('RE-ENVIADO EXITOSO')
-                                        ->body('La informacion fue re-enviada exitosamente.')
-                                        ->icon('heroicon-s-check-circle')
-                                        ->iconColor('verde')
-                                        ->success()
-                                        ->send();
-                                }
+                                Notification::make()
+                                    ->title('RE-ENVIADO EXITOSO')
+                                    ->body('La informacion fue re-enviada exitosamente.')
+                                    ->icon('heroicon-s-check-circle')
+                                    ->iconColor('verde')
+                                    ->success()
+                                    ->send();
+                                    
                             } catch (\Throwable $th) {
                                 LogController::log(Auth::user()->id, 'EXCEPTION', 'agents.IndividualQuoteResource.action.enit', $th->getMessage());
                                 Notification::make()

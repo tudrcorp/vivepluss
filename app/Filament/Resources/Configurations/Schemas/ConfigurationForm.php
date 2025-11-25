@@ -3,13 +3,17 @@
 namespace App\Filament\Resources\Configurations\Schemas;
 
 use Filament\Schemas\Schema;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Components\Fieldset;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\CheckboxList;
+use Filament\Forms\Components\ToggleButtons;
 
 class ConfigurationForm
 {
@@ -315,7 +319,30 @@ class ConfigurationForm
                                     ->maxLength(255),
                             ]),
 
-                    ])->columnSpanFull(),             
+                    ])->columnSpanFull(),
+                    
+                Fieldset::make('Estructura de Agentes')
+                    ->schema([
+                        ToggleButtons::make('agents_module_enabled')
+                            ->label('Posse estructura de Agentes?')
+                            ->boolean()
+                            ->inline()
+                            ->helperText('Si esta opción está desactivada, el sistema no mostrará ninguna funcionalidad relacionada con agentes.'),
+                    ])->columnSpanFull(),
+
+                Fieldset::make('Seguridad del Sistema')
+                    ->schema([
+                        Radio::make('duplicatedSession')
+                            ->label('Manejo de Sesiones de Usuarios')
+                            ->options([
+                                1 => 'Restringir Sesiones Duplicadas',
+                                0 => 'Permitir Sesiones Duplicadas',
+                            ])
+                            ->descriptions([
+                                1 => 'El sistema no permite que el usuario tenga dos sesiones abiertas al mismo tiempo.',
+                                0 => 'El sistema permite que el usuario tenga dos sesiones abiertas al mismo tiempo.',
+                            ])
+                    ])->columnSpanFull(),
             ]);
     }
 }

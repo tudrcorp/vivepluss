@@ -47,7 +47,7 @@ class AgentForm
                             ->preload(),
                         Select::make('owner_agent')
                             ->label('Agente Responsable')
-                            ->options(DB::table('agents')->select('name', 'id', 'status', 'agent_type_id')->where('agent_type_id', 2)->where('status', 'ACTIVO')->pluck('name', 'id'))
+                            ->options(DB::table('agents')->select('name', 'id', 'status', 'agent_type_id', 'owner_code')->where('agent_type_id', 2)->where('status', 'ACTIVO')->where('owner_code', Auth::user()->code_agency)->pluck('name', 'id'))
                             ->searchable()
                             ->live()
                             ->hidden(fn(Get $get) => $get('agent_type_id') == 2)
@@ -56,8 +56,9 @@ class AgentForm
                         Select::make('owner_code')
                             ->label('Jerarquia')
                             ->options(function (Get $get) {
-                                return Agency::select('code', 'id', 'agency_type_id', 'status')
+                                return Agency::select('code', 'id', 'agency_type_id', 'status', 'owner_code')
                                     ->where('status', 'ACTIVO')
+                                    ->where('owner_code', Auth::user()->code_agency)
                                     ->get()
                                     ->mapWithKeys(function ($agency) {
                                         $type = AgencyType::find($agency->agency_type_id)->definition;
@@ -66,14 +67,6 @@ class AgentForm
                             })
                             ->searchable()
                             ->preload(),
-                        Select::make('ownerAccountManagers')
-                            ->label('Acount Manager')
-                            ->options(function (Get $get) {
-                                return User::where('is_accountManagers', true)->get()->pluck('name', 'id');
-                            })
-                            ->searchable()
-                            ->preload()
-                            ->hidden(fn(Get $get) => Auth::user()->is_accountManagers == true),
                     ])->columnSpanFull()->columns(4),
                 Section::make('INFORMACION PRINCIPAL')
                     ->description('Fomulario. Campo Requerido(*)')

@@ -2,18 +2,21 @@
 
 namespace App\Filament\Resources\Agents;
 
-use App\Filament\Resources\Agents\Pages\CreateAgent;
+use UnitEnum;
+use BackedEnum;
+use PSpell\Config;
+use App\Models\Agent;
+use Filament\Tables\Table;
+use Filament\Schemas\Schema;
+use App\Models\Configuration;
+use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
+use Illuminate\Support\Facades\Auth;
 use App\Filament\Resources\Agents\Pages\EditAgent;
 use App\Filament\Resources\Agents\Pages\ListAgents;
+use App\Filament\Resources\Agents\Pages\CreateAgent;
 use App\Filament\Resources\Agents\Schemas\AgentForm;
 use App\Filament\Resources\Agents\Tables\AgentsTable;
-use App\Models\Agent;
-use BackedEnum;
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
-use UnitEnum;
 
 class AgentResource extends Resource
 {
@@ -51,9 +54,14 @@ class AgentResource extends Resource
         ];
     }
 
-    public static function canAccess(): bool
+    public static function shouldRegisterNavigation(): bool
     {
-        // Deshabilitado temporalmente por mantenimiento
-        return false;
+        //SI ES UNA AGENCIA MASTER O ES ADMINISTRADOR DE WHITE COMPANY MOSTRAR EL RECURSO EN EL MENÚ
+        if (Auth::user()->is_whiteCompanyAdmin == 1 || Auth::user()->agency_type == 'MASTER') {
+            if(Configuration::where('white_company_id', Auth::user()->white_company_id)->first()->agents_module_enabled == 1) {
+                return true; // ← Muestra el recurso del menú
+            }
+        }
+        return false; // ← No Muestra el recurso del menú
     }
 }

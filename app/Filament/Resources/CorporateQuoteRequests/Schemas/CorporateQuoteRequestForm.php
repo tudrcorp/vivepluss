@@ -179,27 +179,45 @@ class CorporateQuoteRequestForm
                                         ])->columnSpanFull(),
                                     Hidden::make('status')->default('PRE-APROBADA'),
                                     Hidden::make('created_by')->default(Auth::user()->name),
-                                    //Calculo de la jerarquia segun la agencia que esta conectada
-                                    //Codigo de agencia
+                                    
+                                    //Codigo de agencia que crea la solicitud
                                     Hidden::make('code_agency')->default(function () {
                                         if (Auth::user()->agency_type == 'GENERAL') {
                                             return Auth::user()->code_agency;
                                         }
-                                        if (Auth::user()->agency_type == 'MASTER') {
-                                            return Auth::user()->code_agency;
-                                        }
+                                        return null;
                                     }),
 
-                                    //owner code
+                                    //Calculo de OWNER_CODE segun la agencia que esta conectada o el agente que esta conectado
                                     Hidden::make('owner_code')->default(function () {
+                                        
+                                        //1.- Agencia GENERAL
                                         if (Auth::user()->agency_type == 'GENERAL') {
-                                            $owner = Agency::where('code', Auth::user()->code_agency)->first()->owner_code;
+                                            $owner = Agency::where('code', Auth::user()->code_agency)->value('owner_code');
                                             return $owner;
                                         }
+
+                                        //2.- Agencia MASTER
                                         if (Auth::user()->agency_type == 'MASTER') {
                                             return Auth::user()->code_agency;
                                         }
+
+                                        //3.- Agente o Subagente
+                                        if (Auth::user()->is_agent == 1 || Auth::user()->is_subagent == 1) {
+                                            $agent = Agent::where('id', Auth::user()->agent_id)->value('owner_code');
+                                            return $agent;
+                                        }
+                                        return null;
                                     }),
+
+                                    //Si manejan agentes
+                                    Hidden::make('agent_id')->default(function () {
+                                        if (Auth::user()->is_agent == 1) {
+                                            return Auth::user()->agent_id;
+                                        }
+                                        return null;
+                                    }),
+                                    
                                 ])
                                 ->columns(3)
                                 ->columnSpanFull()

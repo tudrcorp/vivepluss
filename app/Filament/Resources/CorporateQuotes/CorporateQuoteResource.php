@@ -2,18 +2,19 @@
 
 namespace App\Filament\Resources\CorporateQuotes;
 
-use App\Filament\Resources\CorporateQuotes\Pages\CreateCorporateQuote;
+use UnitEnum;
+use BackedEnum;
+use Filament\Tables\Table;
+use Filament\Schemas\Schema;
+use App\Models\CorporateQuote;
+use Filament\Resources\Resource;
+use Filament\Support\Icons\Heroicon;
 use App\Filament\Resources\CorporateQuotes\Pages\EditCorporateQuote;
 use App\Filament\Resources\CorporateQuotes\Pages\ListCorporateQuotes;
+use App\Filament\Resources\CorporateQuotes\Pages\CreateCorporateQuote;
 use App\Filament\Resources\CorporateQuotes\Schemas\CorporateQuoteForm;
 use App\Filament\Resources\CorporateQuotes\Tables\CorporateQuotesTable;
-use App\Models\CorporateQuote;
-use BackedEnum;
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
-use Filament\Tables\Table;
-use UnitEnum;
+use App\Filament\Resources\CorporateQuotes\RelationManagers\DetailCoporateQuotesRelationManager;
 
 class CorporateQuoteResource extends Resource
 {
@@ -38,7 +39,7 @@ class CorporateQuoteResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            DetailCoporateQuotesRelationManager::class
         ];
     }
 

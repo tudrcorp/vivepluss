@@ -93,42 +93,9 @@ class CreateIndividualQuote extends CreateRecord
                 throw new \Exception('Error al guardar los detalles de la cotización.');
             }
 
-            /**
-             * Logica para enviar una notificacion a la sesion del administrador despues de crear la corizacion
-             * ----------------------------------------------------------------------------------------------------
-             * $record [Data de la cotizacion guardada en la base de datos]
-             */
-            // $recipient = User::where('is_admin', 1)->where('departament', 'NEGOCIOS')->get();
-            // foreach ($recipient as $user) {
-            //     $recipient_for_user = User::find($user->id);
-            //     Notification::make()
-            //         ->title('NUEVA COTIZACIÓN INDIVIDUAL')
-            //         ->body('Se ha registrado una nueva cotización individual de forma exitosa. Código: ' . $record->code)
-            //         ->icon('heroicon-m-tag')
-            //         ->iconColor('success')
-            //         ->success()
-            //         ->actions([
-            //             Action::make('view')
-            //                 ->label('Ver cotización individual')
-            //                 ->button()
-            //                 ->color('primary')
-            //                 ->url(IndividualQuoteResource::getUrl('edit', ['record' => $record->id], panel: 'admin')),
-            //             Action::make('link')
-            //                 ->label('Link Interactivo')
-            //                 ->button()
-            //                 ->color('success')
-            //                 ->url(route('volt.home', ['quote' => Crypt::encryptString($record->id)]), shouldOpenInNewTab: true),
-            //         ])
-            //         ->sendToDatabase($recipient_for_user);
-            // }
-
-            /**
-             * Notificación para el usuario que creo la cotización
-             * ----------------------------------------------------------------------------------
-             */
             NotificationController::createdIndividualQuote($record->code, Auth::user()->name);
+            
         } catch (\Throwable $th) {
-            dd($th);
             Notification::make()
                 ->title('ERROR')
                 ->body($th->getMessage())
@@ -145,7 +112,7 @@ class CreateIndividualQuote extends CreateRecord
         return Notification::make()
             ->title('NOTIFICACIÓN')
             ->body('Cotización Individual exitosa!. En breves segundos su cotización estará disponible en la opción de descargar cotización. ⬇️')
-            ->icon('heroicon-m-tag')
+            ->icon('heroicon-s-hand-thumb-up')
             ->iconColor('danger')
             ->success()
             ->persistent()

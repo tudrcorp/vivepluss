@@ -35,12 +35,10 @@ class AgentsTable
     public static function configure(Table $table): Table
     {
         return $table
-            // ->query(function (Builder $query) {
-            //     if (Auth::user()->is_accountManagers) {
-            //         return Agent::query()->where('ownerAccountManagers', Auth::user()->id);
-            //     }
-            //     return Agent::query();
-            // })
+            ->query(function (Builder $query) {
+                $agents = Agent::query()->where('owner_code', Auth::user()->code_agency);
+                return $agents;
+            })
             ->heading('AGENTES')
             ->description('Lista de agentes registrados en el sistema')
             ->columns([
@@ -235,25 +233,13 @@ class AgentsTable
             ->recordActions([
                 ActionGroup::make([
                     Action::make('Activate')
+                        ->label('Activar Agente')
                         ->action(function (Agent $record) {
 
                             try {
 
-                                if ($record->status == 'ACTIVO') {
-                                    Notification::make()
-                                        ->title('AGENTE YA ACTIVADO')
-                                        ->body('El agente ya se encuentra activo.')
-                                        ->color('danger')
-                                        ->icon('heroicon-o-x-circle')
-                                        ->iconColor('danger')
-                                        ->send();
-
-                                    return true;
-                                }
-
                                 $record->status = 'ACTIVO';
                                 $record->save();
-                                LogController::log(Auth::user()->id, 'ACTIVACION DE AGENTE', 'AgentResource:Action:Activate()', $record->save());
 
                                 //4. creamos el usuario en la tabla users (AGENTES)
                                 $user = new User();
@@ -268,36 +254,16 @@ class AgentsTable
                                 $user->status = 'ACTIVO';
                                 $user->save();
 
-                                /**
-                                 * Notificacion por correo electronico
-                                 * CARTA DE BIENVENIDA
-                                 * @param Agent $record
-                                 */
-                                $record->sendCartaBienvenida($record->id, $record->name, $record->email);
+                                Notification::make()
+                                    ->title('AGENTE ACTIVADO')
+                                    ->body('El agente ha sido activado exitosamente.')
+                                    ->icon('heroicon-s-check-circle')
+                                    ->iconColor('success')
+                                    ->color('success')
+                                    ->send();
 
-
-                                $phone = $record->phone;
-                                $email = $record->email;
-                                $nofitication = NotificationController::agent_activated($phone, $email, $record->agent_type_id == 2 ? config('parameters.PATH_AGENT') : config('parameters.PATH_SUBAGENT'));
-
-                                if ($nofitication['success'] == true) {
-                                    Notification::make()
-                                        ->title('AGENTE ACTIVADO')
-                                        ->body('Notificacion de activacion enviada con exito.')
-                                        ->icon('heroicon-s-check-circle')
-                                        ->iconColor('success')
-                                        ->color('success')
-                                        ->send();
-                                } else {
-                                    Notification::make()
-                                        ->title('AGENTE ACTIVADO')
-                                        ->body('La notificacion de activacion no pudo ser enviada.')
-                                        ->icon('heroicon-s-x-circle')
-                                        ->iconColor('warning')
-                                        ->color('warning')
-                                        ->send();
-                                }
                             } catch (\Throwable $th) {
+                                dd($th);
                                 Notification::make()
                                     ->title('EXCEPCION')
                                     ->body('Falla al realizar la activacion. Por favor comuniquese con el administrador.')
@@ -311,6 +277,8 @@ class AgentsTable
                         ->color('success')
                         ->requiresConfirmation(),
                     Action::make('Inactivate')
+                        ->label('Inactivar Agente')
+                        ->requiresConfirmation()
                         ->action(fn(Agent $record) => $record->update(['status' => 'INACTIVO']))
                         ->icon('heroicon-s-x-circle')
                         ->color('danger'),

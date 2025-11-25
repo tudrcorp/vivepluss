@@ -979,12 +979,8 @@
             </div> --}}
             <flux:navbar>
                 <flux:navbar.item href="https://viveplus.test/viveadmin" icon="home">VivePlusAdmin</flux:navbar.item>
-
-                {{-- <flux:navbar.item href="#" icon="puzzle-piece">Agencia Master</flux:navbar.item> --}}
-                <flux:navbar.item href="#" icon="puzzle-piece">Agencias</flux:navbar.item>
-                {{-- <flux:navbar.item href="#" icon="user">Agentes</flux:navbar.item> --}}
-                <flux:navbar.item href="#" icon="user">Asistencia en Viajes</flux:navbar.item>
-
+                <flux:navbar.item href="https://viveplus.test/viveadmin" icon="puzzle-piece">Agencias</flux:navbar.item>
+                <flux:navbar.item href="https://tudrenviajes.xyz/app/pages/login.php" icon="user">Asistencia en Viajes</flux:navbar.item>
             </flux:navbar>
         </div>
 

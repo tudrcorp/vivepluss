@@ -27,7 +27,6 @@ class Configuration extends Model
         'web_headXTitle',
         'web_headXDescription',
 
-
         'web_sectionOne_title',
         'web_icons_redSocial',
         'web_headerLogo',
@@ -95,6 +94,7 @@ class Configuration extends Model
         'table_agency_description',
 
         'menu_top',
+        'duplicatedSession',
 
         
         

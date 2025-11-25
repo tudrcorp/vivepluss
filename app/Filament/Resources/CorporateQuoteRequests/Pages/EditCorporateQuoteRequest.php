@@ -10,10 +10,6 @@ class EditCorporateQuoteRequest extends EditRecord
 {
     protected static string $resource = CorporateQuoteRequestResource::class;
 
-    protected function getHeaderActions(): array
-    {
-        return [
-            DeleteAction::make(),
-        ];
-    }
+    protected static ?string $title = 'Formulario de edición de solicitud de cotización corporativa';
+
 }

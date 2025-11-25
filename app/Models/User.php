@@ -91,10 +91,9 @@ class User extends Authenticatable implements FilamentUser
     {
         if ($panel->getId() === 'viveadmin') {
             // return str_ends_with($this->email, '@vivepluss.com') && $this->is_white_label_company && $this->agency_type === 'MASTER';
-            return str_ends_with($this->email, '@vivepluss.com');
+            // return str_ends_with($this->email, '@vivepluss.com');
+            return true;
         }
-
-        return true;
 
     }
 }

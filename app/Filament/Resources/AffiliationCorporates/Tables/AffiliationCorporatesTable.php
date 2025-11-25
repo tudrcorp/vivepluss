@@ -50,6 +50,10 @@ class AffiliationCorporatesTable
                 if (Auth::user()->agency_type == 'MASTER') {
                     $afiliacionesCorporativas = AffiliationCorporate::query()->where('owner_code', Auth::user()->code_agency);
                 }
+                //Validamos que sea un agente y que pertenezca a la estructura de la agencia Master de la marca Blanca
+                if (Auth::user()->is_agent == 1) {
+                    $afiliacionesCorporativas = AffiliationCorporate::query()->where('agent_id', Auth::user()->agent_id);
+                }
                 return $afiliacionesCorporativas;
             })
             ->defaultSort('created_at', 'desc')
@@ -59,24 +63,24 @@ class AffiliationCorporatesTable
                 TextColumn::make('code')
                     ->label('Codigo')
                     ->badge()
-                    ->color('azulOscuro')
+                    ->color('primary')
                     ->searchable(),
                 TextColumn::make('name_corporate')
                     ->label('Cliente Corporativo')
                     ->badge()
-                    ->color('azulOscuro')
+                    ->color('info')
                     ->searchable(),
                 TextColumn::make('agency.name_corporative')
                     ->label('Agencia')
                     ->badge()
-                    ->color('azulOscuro')
+                    ->color('info')
                     ->searchable(),
-                TextColumn::make('agent.name')
-                    // ->prefix('AGT-000')
-                    ->label('Agente')
-                    ->badge()
-                    ->color('azulOscuro')
-                    ->searchable(),
+                // TextColumn::make('agent.name')
+                //     // ->prefix('AGT-000')
+                //     ->label('Agente')
+                //     ->badge()
+                //     ->color('azulOscuro')
+                //     ->searchable(),
 
                 //...  
                 ColumnGroup::make('Plan Afiliado', [

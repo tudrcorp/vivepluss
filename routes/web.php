@@ -1,12 +1,20 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use Laravel\Fortify\Features;
 use Livewire\Volt\Volt;
+use Laravel\Fortify\Features;
+use Filament\Facades\Filament;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return view('welcome');
 })->name('home');
+
+Route::post('/external', function () {
+    Filament::auth()->logout();
+    session()->invalidate();
+    session()->regenerateToken();
+    return redirect()->to(config('parametros.REDIRECT_LOGOUT_EXTERNAL_URL'));
+})->name('external');
 
 Route::view('dashboard', 'dashboard')
     ->middleware(['auth', 'verified'])
