@@ -28,6 +28,7 @@ class Configuration extends Model
         'web_headXDescription',
 
         'web_sectionOne_title',
+        'web_sectionOne_title_ln_2',
         'web_icons_redSocial',
         'web_headerLogo',
         'web_nosotros',
@@ -75,6 +76,12 @@ class Configuration extends Model
         'web_plansTitle',
         'web_plansSubTitle',
 
+        'web_ubicacionTitle',
+        'web_ubicacionSubTitle',
+        'web_ubicacionUrl',
+        'web_ubicacionDireccion',
+        'web_ubicacionHorarios',
+
         'table_af_corp_table_title',
         'table_af_corp_table_description',
 
@@ -95,6 +102,7 @@ class Configuration extends Model
 
         'menu_top',
         'duplicatedSession',
+        'agents_module_enabled',
 
         
         

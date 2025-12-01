@@ -105,6 +105,11 @@ class ConfigurationForm
                                     ->label('Título principal de la Sección')
                                     ->required()
                                     ->maxLength(255),
+                                TextInput::make('web_sectionOne_title_ln_2')
+                                    ->label('Linea 2 del Título principal de la Sección')
+                                    ->required()
+                                    ->helperText('Esta línea aparecerá justo debajo del título principal. Sino desea usarla, puede dejarla en blanco.')
+                                    ->maxLength(255),
                                 Select::make('web_icons_redSocial')
                                     ->label('Lista de Redes Sociales (Esquina Inferior Izquierda)')
                                     ->options([
@@ -233,6 +238,27 @@ class ConfigurationForm
                                         ->required(),
                                 ])->columnSpanFull(),
                             ])->columnSpanFull(),
+
+                        Fieldset::make('Sección Ubicación y Google Maps!')
+                        ->schema([
+                            TextInput::make('web_ubicacionTitle')
+                                ->label('Título')
+                                ->required()
+                                ->maxLength(255),
+                            TextInput::make('web_ubicacionSubTitle')
+                                ->label('Sub Título')
+                                ->required()
+                                ->maxLength(255),
+                            TextInput::make('web_ubicacionUrl')
+                                ->label('URL del Mapa Embebido de Google Maps')
+                                ->required(),
+                            TextInput::make('web_ubicacionDireccion')
+                                ->label('Dirección Principal')
+                                ->required(),
+                            TextInput::make('web_ubicacionHorarios')
+                                ->label('Horario de Atención')
+                                ->required()
+                        ])->columnSpanFull(),
 
                         Fieldset::make('Footer Web')
                             ->schema([
