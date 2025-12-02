@@ -437,7 +437,7 @@ class IndividualQuotesTable
                     Action::make('download')
                         ->label('Descargar cotización')
                         ->icon('heroicon-s-arrow-down-on-square-stack')
-                        ->color('verde')
+                        ->color('info')
                         ->requiresConfirmation()
                         ->modalHeading('DESCARGAR COTIZACION')
                         ->modalWidth(Width::FiveExtraLarge)
@@ -477,7 +477,7 @@ class IndividualQuotesTable
 
                     Action::make('change_status')
                         ->label('Actualizar estatus')
-                        ->color('azulOscuro')
+                        ->color('warning')
                         ->icon('heroicon-s-check-circle')
                         ->requiresConfirmation()
                         ->modalWidth(Width::ExtraLarge)

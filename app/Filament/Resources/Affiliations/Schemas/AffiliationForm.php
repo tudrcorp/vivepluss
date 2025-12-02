@@ -17,6 +17,7 @@ use Filament\Schemas\Schema;
 use App\Models\IndividualQuote;
 use App\Models\ServiceProvider;
 use Illuminate\Support\HtmlString;
+use Illuminate\Support\Facades\Log;
 use Filament\Forms\Components\Radio;
 use Illuminate\Support\Facades\Auth;
 use App\Models\DetailIndividualQuote;
@@ -74,9 +75,22 @@ class AffiliationForm
                                     ->disabled()
                                     ->dehydrated()
                                     ->prefixIcon('heroicon-m-clipboard-document-check')
-                                    ->options(IndividualQuote::select('id', 'code_agency', 'status', 'full_name')->where('code_agency', Auth::user()->code_agency)->where('status', 'APROBADA')->pluck('full_name', 'id'))
+                                    ->options(function () {
+                                        if(Auth::user()->agency_type == 'GENERAL'){
+                                            return IndividualQuote::select('id', 'code_agency', 'status', 'full_name')->where('code_agency', Auth::user()->code_agency)->where('status', 'APROBADA')->pluck('full_name', 'id');
+                                        }
+                                        if (Auth::user()->agency_type == 'MASTER') {
+                                            return IndividualQuote::select('id', 'owner_code', 'status', 'full_name')->where('owner_code', Auth::user()->code_agency)->where('status', 'APROBADA')->pluck('full_name', 'id');
+                                        }
+                                        if (Auth::user()->is_agent == 1) {
+                                            return IndividualQuote::select('id', 'agent_id', 'status', 'full_name')->where('agent_id', Auth::user()->agent_id)->where('status', 'APROBADA')->pluck('full_name', 'id');
+                                        }
+                                        return IndividualQuote::all()->pluck('full_name', 'id');
+                                        
+                                    })
                                     ->default(function () {
                                         $id = request()->query('id');
+                                        Log::info($id);
                                         if (isset($id)) {
                                             return $id;
                                         }
@@ -261,37 +275,6 @@ class AffiliationForm
                                     ->disabled()
                                     ->dehydrated()
                                     ->live(),
-                                Fieldset::make('Información adicional de la Afiliación')
-                                    ->schema([
-                                        Select::make('business_unit_id')
-                                            ->label('Unidad de Negocio')
-                                            ->options(function (Get $get) {
-                                                return BusinessUnit::all()->pluck('definition', 'id');
-                                            })
-                                            ->live()
-                                            ->searchable()
-                                            ->prefixIcon('heroicon-c-building-library')
-                                            ->preload(),
-                                        Select::make('business_line_id')
-                                            ->label('Lineas de Servicio')
-                                            ->options(function (Get $get) {
-                                                if ($get('business_unit_id') == null) {
-                                                    return [];
-                                                }
-                                                return BusinessLine::where('business_unit_id', $get('business_unit_id'))->pluck('definition', 'id'); //Agent::where('owner_code', $get('code_agency'))->pluck('name', 'id');
-                                            })
-                                            ->live()
-                                            ->searchable()
-                                            ->prefixIcon('heroicon-s-briefcase')
-                                            ->preload(),
-                                        Select::make('service_providers')
-                                            ->label('Provvedor(es) de Servicios')
-                                            ->multiple()
-                                            ->options(ServiceProvider::all()->pluck('name', 'name'))
-                                            ->searchable()
-                                            ->prefixIcon('heroicon-s-briefcase')
-                                            ->preload(),
-                                    ])->columnSpanFull()->columns(3),
                                 Hidden::make('created_by')->default(Auth::user()->name),
                                 Hidden::make('status')->default('PRE-APROBADA'),
                                 
@@ -300,7 +283,7 @@ class AffiliationForm
                                     if (Auth::user()->agency_type == 'GENERAL') {
                                         return Auth::user()->code_agency;
                                     }
-                                    return null;
+                                    return Auth::user()->code_agency;
                                 }),
 
                                 //Calculo de OWNER_CODE segun la agencia que esta conectada o el agente que esta conectado

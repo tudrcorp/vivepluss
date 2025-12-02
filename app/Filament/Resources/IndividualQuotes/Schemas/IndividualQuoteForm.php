@@ -117,7 +117,7 @@ class IndividualQuoteForm
                                         if (Auth::user()->agency_type == 'GENERAL') {
                                             return Auth::user()->code_agency;
                                         }
-                                        return null;
+                                        return Auth::user()->code_agency;
                                     }),
 
                                     //Calculo de OWNER_CODE segun la agencia que esta conectada o el agente que esta conectado
@@ -212,9 +212,7 @@ class IndividualQuoteForm
                                             Hidden::make('plan_id')->default(1),
                                             Radio::make('age_range_id')
                                                 ->label(false)
-
                                                 ->inLine()
-
                                                 ->disableOptionWhen(function ($value, $state, Get $get) {
                                                     return collect($get('../*.age_range_id'))
                                                         ->reject(fn($id) => $id == $state)

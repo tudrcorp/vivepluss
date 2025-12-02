@@ -185,7 +185,7 @@ class CorporateQuoteRequestForm
                                         if (Auth::user()->agency_type == 'GENERAL') {
                                             return Auth::user()->code_agency;
                                         }
-                                        return null;
+                                        return Auth::user()->code_agency;
                                     }),
 
                                     //Calculo de OWNER_CODE segun la agencia que esta conectada o el agente que esta conectado
