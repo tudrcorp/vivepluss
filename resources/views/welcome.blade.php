@@ -95,6 +95,81 @@
 
         }
 
+        /* Estilos personalizados usando las variables CSS */
+        .theme-primary-bg { background-color: var(--primary); }
+        .theme-primary-text { color: var(--primary); }
+        .theme-bg-light { background-color: var(--bg-light); }
+        .theme-text-dark { color: var(--text-dark); }
+        .theme-border-gray { border-color: #e5e7eb; } /* Un gris suave */
+
+        .slider-container {
+            overflow: hidden;
+            transform: translate3d(0, 0, 0);
+        }
+
+        .comments-list {
+            display: flex;
+            /* La animación es la clave del diseño moderno y minimalista */
+            transition: transform 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        }
+
+        .comment-card {
+            flex: 0 0 100%;
+            padding: 2.5rem;
+        }
+
+        /* Aplica la sombra de acento a los botones de navegación al hacer hover */
+        .nav-btn:hover {
+            box-shadow: 0 4px 15px var(--highlight-shadow);
+        }
+
+        /* Estilo para el botón principal */
+        .theme-btn {
+            background-color: var(--primary);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+        .theme-btn:hover {
+            background-color: var(--light-blue); /* Cambio de color al azul brillante */
+            box-shadow: 0 8px 20px var(--highlight-shadow);
+            transform: translateY(-2px);
+        }
+
+        /* Estilo para el efecto hover de las imágenes */
+        .instagram-post-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .instagram-post-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Capa de superposición de Instagram al pasar el ratón */
+        .instagram-post-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(161, 61, 219, 0.6); /* --primary con transparencia */
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        .instagram-post-card:hover .instagram-post-overlay {
+            opacity: 1;
+        }
+
+
+
         * {
             margin: 0;
             padding: 0;
@@ -916,6 +991,8 @@
             height: 100%;
         }
 
+        
+
 
 
 
@@ -1329,59 +1406,141 @@
 
     </section>
 
-    <!-- 4. Footer -->
-    {{-- <footer class="footer" id="contacto">
-        <div class="footer-content">
-            <p>&copy; 2024 Asistencia Médica en Casa. Todos los derechos reservados.</p>
-            <div class="footer-social">
-                <a href="#"><i class="fab fa-facebook-f"></i></a>
-                <a href="#"><i class="fab fa-instagram"></i></a>
-                <a href="#"><i class="fab fa-linkedin-in"></i></a>
-                <a href="#"><i class="fab fa-whatsapp"></i></a>
+    <section id="comments-section" class="w-full theme-bg-light py-16 px-4 md:px-12 lg:px-24">
+
+        <!-- Contenedor central (Slider) con ancho limitado y centrado -->
+        <div id="testimonial-slider-wrapper" class="max-w-6xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden relative theme-border-gray border">
+
+            <!-- Título de la Sección -->
+            <div class="p-6 text-center theme-border-gray border-b">
+                <h2 class="text-3xl font-bold theme-text-dark">La Voz de Nuestros Clientes</h2>
+                <p class="text-gray-500 mt-1">Más de una docena de usuarios confirman la calidad fenomenal de nuestro servicio.</p>
             </div>
-        </div>
-    </footer> --}}
-    <!-- Sección de Ubicación a Ancho Completo -->
-    {{-- <section id="ubicacion" class="w-full bg-[#f5f0fb] text-white py-16 shadow-2xl">
 
-
-        <div class="container mx-auto px-4">
-
-            <!-- Título Descriptivo de la Sección -->
-            <h2 class="text-4xl sm:text-5xl font-extrabold mb-3 text-center" style="color: var(--text-dark);">
-                {{ $setting->web_ubicacionTitle }}
-            </h2>
-
-            <!-- Subtítulo y Separador de Tema -->
-            <p class="text-center text-xl text-slate-300 mb-8" style="color: var(--text-dark);">
-                {{ $setting->web_ubicacionSubTitle }}
-            </p>
-            <div class="w-24 h-1 bg-accent mx-auto rounded-full mb-12"></div>
-        </div>
-
-        <!-- Contenedor del Mapa (Ancho Completo y Responsive) -->
-        <div class="w-full">
-            <div class="map-container">
-                <!-- 
-                    Asegúrate de reemplazar el 'src' con la URL de tu mapa real (ej. Google Maps).
-                    He usado un marcador de posición genérico para el ejemplo.
-                -->
-                <iframe src="{{ $setting->web_ubicacionUrl }}" frameborder="0" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade" title="Mapa de Ubicación VivePlus">
-                </iframe>
+            <!-- Contenedor del Slider con los Comentarios -->
+            <div class="slider-container" id="slider-viewport">
+                <div class="comments-list" id="comments-list">
+                    <!-- Los comentarios serán inyectados aquí por JavaScript -->
+                </div>
             </div>
-        </div>
 
-        <!-- Información de Contacto Adicional -->
-        <div class="container mx-auto px-4 mt-12 text-center">
+            <!-- Controles de Navegación (Flechas) -->
+            <div class="absolute inset-y-0 left-0 flex items-center p-4">
+                <button id="prev-btn" class="nav-btn p-3 bg-white/80 hover:bg-white rounded-full shadow-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-primarytailwind focus:ring-opacity-50 theme-text-dark">
+                    <!-- Ícono de flecha izquierda -->
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+            </div>
 
-            <p class="text-lg text-slate-300" style="color: var(--text-dark);">
-                {{ $setting->web_ubicacionDireccion }}
-            </p>
-            <p class="text-lg text-slate-300" style="color: var(--text-dark);">
-                {{ $setting->web_ubicacionHorarios }}
-            </p>
-        </div>
-    </section> --}}
+            <div class="absolute inset-y-0 right-0 flex items-center p-4">
+                <button id="next-btn" class="nav-btn p-3 bg-white/80 hover:bg-white rounded-full shadow-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-primarytailwind focus:ring-opacity-50 theme-text-dark">
+                    <!-- Ícono de flecha derecha -->
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Indicadores (Dots) -->
+            <div id="indicator-dots" class="flex justify-center space-x-2 p-4 theme-border-gray border-t">
+                <!-- Los dots se inyectarán aquí con JavaScript -->
+            </div>
+
+        </div> <!-- Fin del Contenedor Central -->
+
+    </section> <!-- Fin de la Sección Completa -->
+
+    <!-- SECCIÓN DEL FEED DE INSTAGRAM - Usa var(--bg-light) como fondo -->
+    <section id="instagram-feed-section" class="w-full theme-bg-light py-20 px-4 md:px-12 lg:px-24">
+
+        <!-- Contenedor central con ancho limitado y centrado -->
+        <div class="max-w-7xl mx-auto text-center">
+
+            <!-- Encabezado de la Sección -->
+            <div class="mb-12">
+                <p class="text-lg font-semibold theme-primary-text uppercase tracking-wider">
+                    Conéctate con nosotros
+                </p>
+                <h2 class="text-4xl md:text-5xl font-extrabold theme-text-dark mt-2">
+                    #NuestroContenidoReciente
+                </h2>
+                <p class="mt-4 text-lg theme-text-light max-w-3xl mx-auto">
+                    Síguenos en Instagram para ver lo último en noticias, eventos y detrás de cámaras.
+                </p>
+            </div>
+
+            <!-- CUERPO DEL FEED: GRID DE PUBLICACIONES -->
+            <div id="instagram-posts-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
+
+                <!-- PUBLICACIÓN 1 (Placeholder) -->
+                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-md hover:scale-105">
+                    <img src="https://placehold.co/600x600/A13DDB/ffffff?text=Post+1" alt="Publicación de Instagram 1" class="w-full h-full object-cover rounded-lg aspect-square">
+                    <div class="instagram-post-overlay rounded-lg">
+                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 00-1 1v5.586L6.707 7.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 9.586V4a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Ver Post
+                    </div>
+                </a>
+
+                <!-- PUBLICACIÓN 2 (Placeholder) -->
+                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-md hover:scale-105">
+                    <img src="https://placehold.co/600x600/71BAFF/ffffff?text=Post+2" alt="Publicación de Instagram 2" class="w-full h-full object-cover rounded-lg aspect-square">
+                    <div class="instagram-post-overlay rounded-lg">
+                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 00-1 1v5.586L6.707 7.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 9.586V4a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Ver Post
+                    </div>
+                </a>
+
+                <!-- PUBLICACIÓN 3 (Placeholder) -->
+                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-md hover:scale-105 hidden sm:block">
+                    <img src="https://placehold.co/600x600/096FFF/ffffff?text=Post+3" alt="Publicación de Instagram 3" class="w-full h-full object-cover rounded-lg aspect-square">
+                    <div class="instagram-post-overlay rounded-lg">
+                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 00-1 1v5.586L6.707 7.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 9.586V4a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Ver Post
+                    </div>
+                </a>
+
+                <!-- PUBLICACIÓN 4 (Placeholder) -->
+                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-md hover:scale-105 hidden lg:block">
+                    <img src="https://placehold.co/600x600/A13DDB/ffffff?text=Post+4" alt="Publicación de Instagram 4" class="w-full h-full object-cover rounded-lg aspect-square">
+                    <div class="instagram-post-overlay rounded-lg">
+                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+                            <path fill-rule="evenodd" d="M10 3a1 1 0 00-1 1v5.586L6.707 7.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 9.586V4a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                        Ver Post
+                    </div>
+                </a>
+
+                <!-- Puedes añadir más publicaciones si lo deseas. -->
+
+            </div>
+            <!-- FIN DEL CUERPO DEL FEED -->
+
+            <!-- Botón de CTA (Call to Action) -->
+            <div class="mt-12">
+                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="inline-flex items-center px-8 py-3 text-lg font-bold text-white rounded-full theme-btn">
+                    <!-- Icono de Instagram (SVG simple) -->
+                    <svg class="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                        <path d="M16 11.37A4 4 0 1 1 12 8a4 4 0 0 1 4 3.37z"></path>
+                        <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                    </svg>
+                    Síguenos en Instagram
+                </a>
+            </div>
+
+        </div> <!-- Fin del Contenedor Central -->
+
+    </section> <!-- Fin de la Sección Completa -->
+
+
 
 
     <footer class="bg-footer-dark text-gray-300 py-12 md:py-16 border-t-8 border-theme-primary shadow-2xl">
@@ -1487,6 +1646,200 @@
         closeMenu.addEventListener('click', closeMobileMenu);
 
     </script>
+
+<script>
+    // Array de 12 comentarios positivos
+    const positiveComments = [{
+            user: "Laura M."
+            , title: "Diseñadora UX"
+            , comment: "¡El servicio es absolutamente fenomenal! La atención fue rápida y la solución perfecta. Un 10/10."
+            , avatarClass: "bg-indigo-500"
+        }
+        , {
+            user: "Javier P."
+            , title: "Desarrollador Senior"
+            , comment: "Increíblemente satisfecho con la calidad que ofrecen. Sigan así, superaron mis expectativas con creces."
+            , avatarClass: "theme-primary-bg"
+        }, // Usando primary
+        {
+            user: "Sofía R."
+            , title: "Gerente de Proyectos"
+            , comment: "No puedo creer lo fácil y rápido que fue todo el proceso. De verdad, fenomenal y muy eficiente."
+            , avatarClass: "bg-pink-500"
+        }
+        , {
+            user: "Andrés B."
+            , title: "Emprendedor"
+            , comment: "Este es el mejor servicio que he usado en años. Totalmente fenomenal y recomendable a cualquier persona."
+            , avatarClass: "bg-sky-500"
+        }
+        , {
+            user: "Carmen D."
+            , title: "Consultora Financiera"
+            , comment: "Mi experiencia fue fantástica de principio a fin. Todo funcionó a la perfección y sin contratiempos, impecable."
+            , avatarClass: "theme-primary-bg"
+        }, // Usando primary
+        {
+            user: "Ricardo G."
+            , title: "Analista de Datos"
+            , comment: "Totalmente recomendado a mis colegas. Súper profesional, rápido y el resultado fue fenomenal."
+            , avatarClass: "bg-red-500"
+        }
+        , {
+            user: "Elena V."
+            , title: "Jefa de Operaciones"
+            , comment: "Una atención al cliente impecable y el servicio que recibí fue absolutamente fenomenal."
+            , avatarClass: "bg-purple-500"
+        }
+        , {
+            user: "Fernando A."
+            , title: "Arquitecto de Software"
+            , comment: "Simplemente excepcional. El equipo detrás de esto hace un trabajo fenomenal, ¡gracias por la dedicación!"
+            , avatarClass: "theme-primary-bg"
+        }, // Usando primary
+        {
+            user: "Marta H."
+            , title: "Coach de Negocios"
+            , comment: "Me quedé sin palabras por la eficiencia. Sinceramente, la plataforma es fenomenal y muy intuitiva."
+            , avatarClass: "bg-teal-500"
+        }
+        , {
+            user: "Daniel Z."
+            , title: "Director de TI"
+            , comment: "La plataforma es intuitiva, el soporte es rápido y el resultado final es fenomenal. Cinco estrellas en todo."
+            , avatarClass: "bg-blue-500"
+        }
+        , {
+            user: "Isabel Q."
+            , title: "Investigadora"
+            , comment: "No tengo ninguna queja, solo elogios. El servicio es de una calidad fenomenal, superando a la competencia."
+            , avatarClass: "bg-gray-500"
+        }
+        , {
+            user: "Héctor N."
+            , title: "CEO"
+            , comment: "Muy contento con la solución. Ha sido la mejor inversión que hemos hecho en la empresa. Fenomenal."
+            , avatarClass: "theme-primary-bg"
+        } // Usando primary
+    ];
+
+    // Función para generar la tarjeta de comentario HTML
+    function generateCommentCard(comment) {
+        const initials = comment.user.split(' ').map(n => n[0]).join('.');
+
+        // El icono de quote y el avatar (cuando se usa theme-primary-bg) ahora usan el color principal
+        return `
+            <div class="comment-card flex flex-col items-center text-center">
+                <!-- Icono que usa el color primario -->
+                <svg class="w-10 h-10 theme-primary-text mb-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M7.707 3.293a1 1 0 010 1.414L3.414 9H16a1 1 0 110 2H3.414l4.293 4.293a1 1 0 01-1.414 1.414l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg>
+                <p class="text-xl italic text-gray-700 mb-6 leading-relaxed">
+                    "${comment.comment}"
+                </p>
+                <!-- Avatar con colores variados o el color primario del tema -->
+                <div class="h-12 w-12 rounded-full ${comment.avatarClass} text-white flex items-center justify-center font-semibold text-lg mb-2 shadow-md">
+                    ${initials}
+                </div>
+                <p class="font-bold text-lg theme-text-dark">${comment.user}</p>
+                <p class="text-sm text-gray-500">${comment.title}</p>
+            </div>
+        `;
+    }
+
+    // Función para inyectar todos los comentarios en el DOM
+    function renderCommentsToSlider() {
+        const list = document.getElementById('comments-list');
+        list.innerHTML = positiveComments.map(generateCommentCard).join('');
+    }
+
+    // --- Lógica del Slider ---
+
+    document.addEventListener('DOMContentLoaded', () => {
+        renderCommentsToSlider(); // Carga los 12 comentarios
+
+        const list = document.getElementById('comments-list');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const indicatorDots = document.getElementById('indicator-dots');
+        const totalComments = positiveComments.length;
+        let currentIndex = 0;
+        const slideDuration = 5000;
+        let intervalId;
+
+        function updateSlider() {
+            const offset = -currentIndex * 100;
+            list.style.transform = `translateX(${offset}%)`;
+            updateIndicators();
+        }
+
+        function updateIndicators() {
+            indicatorDots.innerHTML = '';
+            // Color primario del tema para los indicadores activos
+            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+
+            for (let i = 0; i < totalComments; i++) {
+                const dot = document.createElement('button');
+                dot.classList.add('w-3', 'h-3', 'rounded-full', 'transition-colors', 'duration-300', 'focus:outline-none');
+                dot.setAttribute('aria-label', `Comentario ${i + 1}`);
+
+                if (i === currentIndex) {
+                    dot.style.backgroundColor = primaryColor; // Indicador activo usa --primary
+                } else {
+                    dot.classList.add('bg-gray-300', 'hover:bg-gray-400');
+                }
+
+                dot.addEventListener('click', () => {
+                    pauseAutoSlide();
+                    currentIndex = i;
+                    updateSlider();
+                    startAutoSlide();
+                });
+                indicatorDots.appendChild(dot);
+            }
+        }
+
+        function showPrev() {
+            pauseAutoSlide();
+            currentIndex = (currentIndex - 1 + totalComments) % totalComments;
+            updateSlider();
+            startAutoSlide();
+        }
+
+        function showNext() {
+            pauseAutoSlide();
+            currentIndex = (currentIndex + 1) % totalComments;
+            updateSlider();
+            startAutoSlide();
+        }
+
+        function startAutoSlide() {
+            if (!intervalId) {
+                intervalId = setInterval(showNext, slideDuration);
+            }
+        }
+
+        function pauseAutoSlide() {
+            if (intervalId) {
+                clearInterval(intervalId);
+                intervalId = null;
+            }
+        }
+
+        // Asigna los eventos a los botones
+        prevBtn.addEventListener('click', showPrev);
+        nextBtn.addEventListener('click', showNext);
+
+        // Pausa/Reanuda al pasar el ratón para una lectura interactiva
+        const sliderWrapper = document.getElementById('testimonial-slider-wrapper');
+        sliderWrapper.addEventListener('mouseenter', pauseAutoSlide);
+        sliderWrapper.addEventListener('mouseleave', startAutoSlide);
+
+        // Inicializa y comienza el carrusel
+        updateSlider();
+        startAutoSlide();
+    });
+
+</script>
+
 
 @fluxScripts
 
