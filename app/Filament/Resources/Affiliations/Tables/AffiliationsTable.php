@@ -754,11 +754,6 @@ class AffiliationsTable
                         ->label('Descargar Certificado')
                         ->icon('heroicon-s-arrow-down-on-square-stack')
                         ->color('info')
-                        ->requiresConfirmation()
-                        ->modalHeading('DESCARGAR CERTIFICADO')
-                        ->modalWidth(Width::ExtraLarge)
-                        ->modalIcon('heroicon-s-arrow-down-on-square-stack')
-                        ->modalDescription('Descargará un archivo PDF al hacer clic en confirmar!.')
                         ->action(function (Affiliation $record, array $data) {
 
                             try {

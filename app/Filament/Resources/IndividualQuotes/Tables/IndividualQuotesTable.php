@@ -411,7 +411,7 @@ class IndividualQuotesTable
                                             ->title('Certificado enviado')
                                             ->body('Certificado enviado a ' . $email)
                                             ->icon('heroicon-o-envelope')
-                                            ->iconColor('danger')
+                                            ->iconColor('success')
                                             ->success()
                                             ->send();
                                         // Mail::to('destinatario@example.com')->queue(new SendMailCertificado($certificado));
@@ -438,9 +438,6 @@ class IndividualQuotesTable
                         ->label('Descargar cotización')
                         ->icon('heroicon-s-arrow-down-on-square-stack')
                         ->color('info')
-                        ->requiresConfirmation()
-                        ->modalHeading('DESCARGAR COTIZACION')
-                        ->modalWidth(Width::ExtraLarge)
                         ->action(function (IndividualQuote $record, array $data) {
 
                             try {

@@ -11,7 +11,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Mail\Mailables\Address;
 
 
-class SendMailCotizacionCorporativa extends Mailable implements ShouldQueue
+class SendMailCotizacionCorporativa extends Mailable
 {
     use Queueable, SerializesModels;
 

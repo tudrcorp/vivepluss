@@ -31,7 +31,7 @@ class TablaBeneficiosPlanInicial extends Component
 
             // 2. Obtener todos los Beneficios (Filas de la tabla)
             $benefits = BenefitPlan::where('plan_id', $planId)->get();
-
+            Log::info($benefits);
             return $benefits;
             
         } catch (\Throwable $th) {

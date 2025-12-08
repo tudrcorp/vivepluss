@@ -386,7 +386,7 @@ class CorporateQuotesTable
                                         ->title('Certificado enviado')
                                         ->body('Certificado enviado a ' . $email)
                                         ->icon('heroicon-o-envelope')
-                                        ->iconColor('danger')
+                                        ->iconColor('succes')
                                         ->success()
                                         ->send();
                                     // Mail::to('destinatario@example.com')->queue(new SendMailCertificado($certificado));
@@ -413,11 +413,7 @@ class CorporateQuotesTable
                         ->label('Descargar Cotización')
                         ->icon('heroicon-s-arrow-down-on-square-stack')
                         ->color('verde')
-                        ->requiresConfirmation()
-                        ->modalHeading('DESCARGAR COTIZACION')
-                        ->modalWidth(Width::ExtraLarge)
-                        ->modalIcon('heroicon-s-arrow-down-on-square-stack')
-                        ->modalDescription('Descargará un archivo PDF al hacer clic en confirmar!.')
+
                         ->action(function (CorporateQuote $record, array $data) {
 
                             try {

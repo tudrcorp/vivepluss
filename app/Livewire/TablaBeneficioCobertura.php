@@ -51,7 +51,7 @@ class TablaBeneficioCobertura extends Component
 
             // 2. Obtener todos los Beneficios (Filas de la tabla)
             $benefits = BenefitPlan::where('plan_id', $planId)->get(['benefit_id', 'description']);
-
+            Log::info($benefits);
             // 3. Obtener los datos del pivot (limite_uso) para las coberturas de este plan
             $pivotData = DB::table('benefit_coverages')
                 ->select('benefit_id', 'coverage_id', 'limit')
