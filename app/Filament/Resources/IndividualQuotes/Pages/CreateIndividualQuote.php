@@ -76,7 +76,7 @@ class CreateIndividualQuote extends CreateRecord
 
             //recupero la varaiable de sesion con los detalles de la cotizacion
             $details_quote = session()->get('details_quote');
-
+            // dd($details_quote);
             if ($details_quote[0]['plan_id'] == null) {
                 return;
             }
@@ -86,6 +86,8 @@ class CreateIndividualQuote extends CreateRecord
             $array_form = $record->toArray();
 
             $array_details = $details_quote;
+
+            // Array que con tiene la seleccion de edades y cantidad de personas para cotizar $array_details
 
             $res = UtilsController::storeDetailsIndividualQuote($record, $array_form, $array_details, $details_quote);
 

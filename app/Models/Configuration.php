@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Configuration extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+    
     protected $table = 'configurations';
     
     protected $fillable = [

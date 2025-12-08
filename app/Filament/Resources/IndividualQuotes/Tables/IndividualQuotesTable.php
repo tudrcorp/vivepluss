@@ -12,13 +12,16 @@ use App\Models\Configuration;
 use App\Models\IndividualQuote;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use App\Mail\SendMailCertificado;
 use Filament\Actions\ActionGroup;
 use Filament\Support\Enums\Width;
 use Filament\Actions\ExportAction;
 use Illuminate\Support\HtmlString;
 use Filament\Tables\Filters\Filter;
+use Illuminate\Support\Facades\Log;
 use Filament\Forms\Components\Radio;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\Select;
 use Filament\Schemas\Components\Grid;
@@ -33,6 +36,7 @@ use Filament\Schemas\Components\Section;
 use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
+use App\Mail\SendMailCotizacionIndividual;
 use App\Jobs\ResendEmailPropuestaEconomica;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -88,13 +92,13 @@ class IndividualQuotesTable
                     ->label('Tipo de Cotizacion')
                     ->default(function ($record) {
                         if ($record->plan == '1') {
-                            return 'Plan Inicial';
+                            return 'Plan Escencial';
                         }
                         if ($record->plan == '2') {
-                            return 'Plan Ideal';
+                            return 'Plan Bienestar';
                         }
                         if ($record->plan == '3') {
-                            return 'Plan Especial';
+                            return 'Plan Premium';
                         }
                         if ($record->plan == 'CM') {
                             return 'MultiPlan';
@@ -106,9 +110,9 @@ class IndividualQuotesTable
                     ->badge()
                     ->color(function (string $state): string {
                         return match ($state) {
-                            'Plan Inicial' => 'azulClaro',
-                            'Plan Ideal' => 'azulOscuro',
-                            'Plan Especial' => 'verde',
+                            'Plan Escencial' => 'primary',
+                            'Plan Bienestar' => 'info',
+                            'Plan Premium' => 'success',
                             'MultiPlan' => 'warning',
                             default => 'info',
                         };
@@ -134,11 +138,11 @@ class IndividualQuotesTable
                     ->badge()
                     ->color(function (string $state): string {
                         return match ($state) {
-                            'PRE-APROBADA'  => 'verdeOpaco',
+                            'PRE-APROBADA'  => 'info',
                             'APROBADA'      => 'success',
                             'ANULADA'       => 'warning',
                             'DECLINADA'     => 'danger',
-                            'EJECUTADA'     => 'azul',
+                            'EJECUTADA'     => 'secundary',
                             default         => 'azulOscuro',
                         };
                     })
@@ -280,7 +284,7 @@ class IndividualQuotesTable
                         ->color('primary')
                         ->requiresConfirmation()
                         ->modalHeading('Reenvío de Cotizacion')
-                        ->modalWidth(Width::FiveExtraLarge)
+                        ->modalWidth(Width::ExtraLarge)
                         ->form([
                             Section::make()
                                 ->heading('Informacion')
@@ -369,7 +373,6 @@ class IndividualQuotesTable
                                             ])
                                             ->searchable()
                                             ->default('+58')
-                                            ->required()
                                             ->live(onBlur: true)
                                             ->validationMessages([
                                                 'required'  => 'Campo Requerido',
@@ -378,7 +381,6 @@ class IndividualQuotesTable
                                             ->prefixIcon('heroicon-s-phone')
                                             ->tel()
                                             ->label('Número de teléfono')
-                                            ->required()
                                             ->validationMessages([
                                                 'required'  => 'Campo Requerido',
                                             ])
@@ -395,42 +397,40 @@ class IndividualQuotesTable
                         ])
                         ->action(function (IndividualQuote $record, array $data) {
 
-                            try {
+                                try {
 
-                                $email = null;
-                                $phone = null;
+                                    $email = null;
+                                    $phone = null;
 
-                                if (isset($data['email'])) {
-                                    $email = $data['email'];
+                                    if (isset($data['email'])) {
+                                        $email = $data['email'];
+                                        $cotizacion = $record->code . '.pdf';
+                                        Mail::to($email)->send(new SendMailCotizacionIndividual($cotizacion));
+
+                                        Notification::make()
+                                            ->title('Certificado enviado')
+                                            ->body('Certificado enviado a ' . $email)
+                                            ->icon('heroicon-o-envelope')
+                                            ->iconColor('danger')
+                                            ->success()
+                                            ->send();
+                                        // Mail::to('destinatario@example.com')->queue(new SendMailCertificado($certificado));
+                                    }
+
+                                    if (isset($data['phone'])) {
+                                        $phone = $data['phone'];
+                                    }
+                                } catch (\Throwable $th) {
+                                    Log::error($th->getMessage());
+                                    Notification::make()
+                                        ->title('ERROR')
+                                        ->body($th->getMessage())
+                                        ->icon('heroicon-s-x-circle')
+                                        ->iconColor('danger')
+                                        ->danger()
+                                        ->send();
                                 }
 
-                                if (isset($data['phone'])) {
-                                    $phone = $data['phone'];
-                                }
-
-                                /**
-                                 * JOB
-                                 */
-                                // $job = ResendEmailPropuestaEconomica::dispatch($record, $email, $phone);
-
-                                Notification::make()
-                                    ->title('RE-ENVIADO EXITOSO')
-                                    ->body('La informacion fue re-enviada exitosamente.')
-                                    ->icon('heroicon-s-check-circle')
-                                    ->iconColor('verde')
-                                    ->success()
-                                    ->send();
-                                    
-                            } catch (\Throwable $th) {
-                                LogController::log(Auth::user()->id, 'EXCEPTION', 'agents.IndividualQuoteResource.action.enit', $th->getMessage());
-                                Notification::make()
-                                    ->title('ERROR')
-                                    ->body($th->getMessage())
-                                    ->icon('heroicon-s-x-circle')
-                                    ->iconColor('danger')
-                                    ->danger()
-                                    ->send();
-                            }
                         }),
 
                     /* DESCARGAR DOCUMENTO */
@@ -440,7 +440,7 @@ class IndividualQuotesTable
                         ->color('info')
                         ->requiresConfirmation()
                         ->modalHeading('DESCARGAR COTIZACION')
-                        ->modalWidth(Width::FiveExtraLarge)
+                        ->modalWidth(Width::ExtraLarge)
                         ->action(function (IndividualQuote $record, array $data) {
 
                             try {
@@ -474,84 +474,12 @@ class IndividualQuotesTable
                                     ->send();
                             }
                         }),
-
-                    Action::make('change_status')
-                        ->label('Actualizar estatus')
-                        ->color('warning')
-                        ->icon('heroicon-s-check-circle')
-                        ->requiresConfirmation()
-                        ->modalWidth(Width::ExtraLarge)
-                        ->modalHeading('ACCIONES')
-                        ->form([
-                            Section::make()
-                                ->schema([
-                                    Grid::make(1)->schema([
-                                        Select::make('status')
-                                            ->label('Estatus')
-                                            ->options([
-                                                'PRE-APROBADA'  => 'PRE-APROBADA',
-                                                'APROBADA'      => 'APROBADA',
-                                                'ANULADA'       => 'ANULADA',
-                                                'DECLINADA'     => 'DECLINADA',
-                                                'EJECUTADA'     => 'EJECUTADA',
-                                            ])
-                                            ->required()
-                                            ->searchable()
-                                            ->preload(),
-                                        Textarea::make('description')
-                                            ->autosize()
-                                            ->label('Observaciones')
-                                            ->placeholder('Describa las razones de la acción')
-                                            ->required()
-                                            ->afterStateUpdated(function (Set $set, $state) {
-                                                $set('description', strtoupper($state));
-                                            })
-                                    ])
-
-                                ])
-                        ])
-                        ->action(function (IndividualQuote $record, array $data): void {
-
-                            try {
-
-                                $record->status = $data['status'];
-                                $record->save();
-
-                                $bitacora = new Bitacora();
-                                $bitacora->individual_quote()->associate($record);
-                                $bitacora->user()->associate(Auth::user());
-                                $bitacora->details = 'Se ha actualizado el estatus de la cotizacion a: ' . $data['status'] . '. Razón del cambio: ' . $data['description'] . '.';
-                                $bitacora->save();
-
-                                /**
-                                 * LOG
-                                 */
-                                LogController::log(Auth::user()->id, 'Actualizacion de estatus', 'Modulo Cotizacion Individual', 'ACTUALIZAR ESTATUS');
-
-                                Notification::make()
-                                    ->title('ESTATUS ACTUALIZADO EXITOSAMENTE')
-                                    ->body('El estatus de la cotizacion ha sido actualizado exitosamente.')
-                                    ->icon('heroicon-s-check-circle')
-                                    ->iconColor('verde')
-                                    ->success()
-                                    ->send();
-                            } catch (\Throwable $th) {
-                                LogController::log(Auth::user()->id, 'EXCEPTION', 'agents.IndividualQuoteResource.action.enit', $th->getMessage());
-                                Notification::make()
-                                    ->title('ERROR')
-                                    ->body($th->getMessage())
-                                    ->icon('heroicon-s-x-circle')
-                                    ->iconColor('danger')
-                                    ->danger()
-                                    ->send();
-                            }
-                        }),
                 ])->icon('heroicon-c-ellipsis-vertical')->color('azulOscuro')
-            ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
             ]);
+            // ->toolbarActions([
+            //     BulkActionGroup::make([
+            //         DeleteBulkAction::make(),
+            //     ]),
+            // ]);
     }
 }

@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class AgeRange extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+    
     protected $table = 'age_ranges';
 
     protected $fillable = [

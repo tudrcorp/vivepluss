@@ -1,7 +1,6 @@
 <div>
     {{-- If your happiness depends on money, you will never be happy with yourself. --}}
     <div style="/* Contenedor general: se reducen los bordes y el padding exterior //* background-color: #ffffff;border: 1px solid #e5e7eb;border-radius: 0.3rem; */padding: 0.3rem;box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);width: 100%;margin: 0;">
-
         @if ($planId && count($coverages) > 0)
 
         {{-- Contenedor de la Tabla --}}
@@ -11,9 +10,9 @@
                     <tr>
                         {{-- Primera Columna Fija: Beneficio (30% del ancho) --}}
                         <th scope="col" style="padding: 0.2rem; font-weight: 700; text-align: left;width: 50%; background-color: {{ $colorPrimary }};">
-                            @if($planId == 1)
+                            {{-- @if($planId == 1)
                                 BENEFICIOS PLAN Esencial
-                            @endif
+                            @endif --}}
                             @if($planId == 2)
                                 BENEFICIOS PLAN Bienestar
                             @endif
@@ -23,9 +22,9 @@
                         </th>
                         {{-- Columnas Dinámicas: Coberturas (70% del ancho restante) --}}
                         @foreach ($coverages as $coverage)
-                        <th scope="col" style="padding: 0.2rem; text-align: center; font-weight: 700; width: {{ $coverageColumnWidth }}%; word-break: break-word; ">
-                            US$ {{ $coverage->price }}
-                        </th>
+                            <th scope="col" style="padding: 0.2rem; text-align: center; font-weight: 700; width: {{ $coverageColumnWidth }}%; word-break: break-word; ">
+                                US$ {{ number_format($coverage->price, 0, '.', '') }}
+                            </th>
                         @endforeach
                     </tr>
                 </thead>
@@ -34,24 +33,12 @@
                     @foreach ($matrix as $benefitId => $data)
                     <tr style="background-color: #ffffff; border-bottom: 1px solid #f3f4f6; ">
                         {{-- Nombre del Beneficio --}}
-                        <th scope="row" style="
-                                padding: 0.2rem; 
-                                font-weight: 500; 
-                                color: #1f2937; 
-                                text-align: left;
-                                word-break: break-word; 
-                            ">
+                        <th scope="row" style="padding: 0.2rem; font-weight: 500; color: #1f2937; text-align: left;word-break: break-word; ">
                             {{ $data['nombre'] }}
                         </th>
                         {{-- Celdas de Límites de Uso --}}
                         @foreach ($coverages as $coverage)
-                        <td style="
-                            padding: 0.2rem; 
-                            text-align: center;
-                            justify-content: center; /* Centrado horizontal */
-                            align-items: center; /* Centrado vertical */
-                            word-break: break-word;
-                        ">
+                        <td style="padding: 0.2rem; text-align: center;justify-content: center; /* Centrado horizontal */align-items: center; /* Centrado vertical */word-break: break-word;">
                             @php
                                 $isNumeric = is_numeric($data['limits'][$coverage->id]);
                                 $color = $isNumeric ? '#2563eb' : '#9ca3af';
@@ -60,7 +47,7 @@
                             @endphp
                             <span style="color: {{ $color }}; font-weight: {{ $fontWeight }};">
                                 @if($data['limits'][$coverage->id] != 'N/A')
-                                    {{ $data['limits'][$coverage->id] }}
+                                    US$ {{ number_format($data['limits'][$coverage->id], 0, '.', '') }}
                                 @else
                                 <div style="justify-content: center; /* Centrado horizontal */
                                             align-items: center; /* Centrado vertical */
@@ -87,9 +74,6 @@
                 Por favor, selecciona un Plan para ver la matriz de límites.
             </div>
         @endif
-
-
     </div>
-
 </div>
 

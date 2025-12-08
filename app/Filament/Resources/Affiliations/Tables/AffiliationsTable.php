@@ -12,6 +12,7 @@ use App\Models\Configuration;
 use Filament\Actions\BulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
+use App\Mail\SendMailCertificado;
 use Filament\Actions\ActionGroup;
 use Filament\Support\Enums\Width;
 use Illuminate\Support\Collection;
@@ -19,6 +20,7 @@ use Filament\Tables\Filters\Filter;
 use Illuminate\Support\Facades\Log;
 use Filament\Forms\Components\Radio;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use App\Models\DetailIndividualQuote;
 use Filament\Actions\BulkActionGroup;
 use Filament\Forms\Components\Select;
@@ -65,7 +67,7 @@ class AffiliationsTable
             ->description(fn(): string  => Configuration::first()->table_af_ind_table_description == NULL ? '.....' : Configuration::first()->table_af_ind_table_description)
             ->columns([
                 TextColumn::make('code')
-                    ->label('Codigo')
+                    ->label('Código')
                     ->icon('heroicon-s-user-group')
                     ->badge()
                     ->color('primary')
@@ -87,7 +89,7 @@ class AffiliationsTable
                         ->color('success')
                         ->searchable(),
                     TextColumn::make('coverage.price')
-                        ->label('Covertura')
+                        ->label('Cobertura')
                         ->alignCenter()
                         ->numeric()
                         ->badge()
@@ -101,7 +103,7 @@ class AffiliationsTable
                         ->color('success')
                         ->searchable(),
                     TextColumn::make('family_members')
-                        ->label('Poblacion')
+                        ->label('Población')
                         ->alignCenter()
                         ->suffix(' persona(s)')
                         ->badge()
@@ -114,19 +116,6 @@ class AffiliationsTable
                         ->searchable(),
                     TextColumn::make('fee_anual')
                         ->label('Tarifa Anual')
-                        ->alignCenter()
-                        ->money()
-                        ->badge()
-                        ->color(function (mixed $state): string {
-                            if ($state > 0) {
-                                return 'warning';
-                            }
-                            return 'danger';
-                        })
-                        ->searchable(),
-                    //total_amount
-                    TextColumn::make('total_amount')
-                        ->label('Total a Pagar')
                         ->alignCenter()
                         ->money()
                         ->badge()
@@ -150,12 +139,6 @@ class AffiliationsTable
                         ->label('CI. titular')
                         ->badge()
                         ->color('azulOscuro')
-                        ->searchable(),
-                    TextColumn::make('sex_ti')
-                        ->label('Sexo')
-                        ->searchable(),
-                    TextColumn::make('birth_date_ti')
-                        ->label('Fecha de nacimiento')
                         ->searchable(),
                     TextColumn::make('phone_ti')
                         ->label('Telefono titular')
@@ -271,79 +254,9 @@ class AffiliationsTable
             ->recordActions([
                 ActionGroup::make([
 
-                    EditAction::make()
-                        ->label('Editar')
-                        ->color('warning')
-                        ->icon('heroicon-o-pencil-square'),
-
-                    Action::make('upload_info_ils')
-                        ->label('Vaucher ILS')
-                        ->color('warning')
-                        ->icon('heroicon-o-paper-clip')
-                        ->requiresConfirmation()
-                        ->modalWidth(Width::ExtraLarge)
-                        ->modalHeading('Activar afiliacion')
-                        ->form([
-                            Section::make('ACTIVAR AFILIACION')
-                                ->description('Foirmulario de activacion de afiliacion. Campo Requerido(*)')
-                                ->icon('heroicon-s-check-circle')
-                                ->schema([
-                                    Grid::make(2)->schema([
-                                        TextInput::make('vaucher_ils')
-                                            ->label('Vaucher ILS')
-                                            ->required(),
-                                    ]),
-                                    Grid::make(2)->schema([
-                                        DatePicker::make('date_payment_initial_ils')
-                                            ->label('Desde')
-                                            ->format('d-m-Y')
-                                            ->required(),
-                                        DatePicker::make('date_payment_final_ils')
-                                            ->label('Hasta')
-                                            ->format('d-m-Y')
-                                            ->required(),
-
-                                    ]),
-                                    Grid::make(1)->schema([
-                                        FileUpload::make('document_ils')
-                                            ->label('Documento/Comprobante ILS')
-                                            ->required(),
-                                    ])
-                                ])
-                        ])
-                        ->action(function (Affiliation $record, array $data): void {
-
-                            $record->update([
-                                'vaucher_ils' => $data['vaucher_ils'],
-                                'date_payment_initial_ils' => $data['date_payment_initial_ils'],
-                                'date_payment_final_ils' => $data['date_payment_final_ils'],
-                                'document_ils' => $data['document_ils'],
-                            ]);
-
-                            $record->status_log_affiliations()->create([
-                                'affiliation_id'  => $record->id,
-                                'action'          => 'ACTIVACIÓN',
-                                'observation'     => 'AFILIACIÓN ACTIVADA. FECHA: ' . now()->format('d-m-Y'),
-                                'updated_by'      => Auth::user()->name
-                            ]);
-
-                            $record->sendTarjetaAfiliacion($record);
-
-                            Notification::make()
-                                ->success()
-                                ->title('Afiliacion activada')
-                                ->send();
-                        })
-                        ->hidden(function (Affiliation $record): bool {
-                            if ($record->vaucher_ils != null) {
-                                return true;
-                            }
-                            return false;
-                        }),
-
                     Action::make('upload')
                         ->label('Comprobante de Pago')
-                        ->color('azul')
+                        ->color('info')
                         ->icon('heroicon-s-cloud-arrow-up')
                         ->modalWidth(Width::FourExtraLarge)
                         ->form([
@@ -836,132 +749,213 @@ class AffiliationsTable
 
                             return false;
                         }),
-
-                    Action::make('change_status')
-                        ->label('Actualizar estatus')
-                        ->color('azulOscuro')
-                        ->icon('heroicon-s-check-circle')
+                        /**DESCARGAR */
+                    Action::make('download')
+                        ->label('Descargar Certificado')
+                        ->icon('heroicon-s-arrow-down-on-square-stack')
+                        ->color('info')
                         ->requiresConfirmation()
+                        ->modalHeading('DESCARGAR CERTIFICADO')
                         ->modalWidth(Width::ExtraLarge)
-                        ->modalHeading('ACCIONES')
+                        ->modalIcon('heroicon-s-arrow-down-on-square-stack')
+                        ->modalDescription('Descargará un archivo PDF al hacer clic en confirmar!.')
+                        ->action(function (Affiliation $record, array $data) {
+
+                            try {
+
+                                /**
+                                 * Descargar el documento asociado a la cotizacion
+                                 * ruta: storage/
+                                 */
+                                $path = public_path('storage/certificados-doc/CER-' . $record->code . '.pdf');
+                                return response()->download($path);
+                                /**
+                                 * LOG
+                                 */
+                            } catch (\Throwable $th) {
+                                Notification::make()
+                                    ->title('ERROR')
+                                    ->body($th->getMessage())
+                                    ->icon('heroicon-s-x-circle')
+                                    ->iconColor('danger')
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->hidden(function (Affiliation $record) {
+                            $path = public_path('storage/certificados-doc/CER-' . $record->code . '.pdf');
+                            if (file_exists($path)) {
+                                return false;
+                            }
+                            return true;
+                        }),
+
+                    /**REENVIAR PROPUESTA */
+                    Action::make('forward')
+                        ->label('Reenviar Certificado')
+                        ->icon('heroicon-m-arrows-right-left')
+                        ->color('primary')
+                        ->requiresConfirmation()
+                        ->modalIcon('heroicon-m-arrows-right-left')
+                        ->modalHeading('Reenvío de Certificado')
+                        ->modalDescription('El certificado será enviado por email y/o teléfono.')
+                        ->modalWidth(Width::ExtraLarge)
                         ->form([
                             Section::make()
-                                ->heading('ACCIONES')
-                                ->description('Seleccione la accion que desea realizar')
-                                ->icon('heroicon-s-check-circle')
                                 ->schema([
+                                    TextInput::make('email')
+                                        ->label('Email')
+                                        ->email(),
                                     Grid::make(2)->schema([
-                                        Radio::make('action')
-                                            ->label('Que accion deseas realizar?')
+                                        Select::make('country_code')
+                                            ->label('Código de país')
                                             ->options([
-                                                'observation' => 'Anadir observaciones',
-                                                'status'      => 'Actualizar estatus',
-                                                'exclude'     => 'Excluir Afiliación',
-                                            ])
-                                            ->live()
-                                            ->required()
-                                        // ->inline()
-                                    ]),
-
-                                    Grid::make(1)->schema([
-                                        Textarea::make('description')
-                                            ->label('Observaciones')
-                                            ->autosize()
-                                            ->afterStateUpdated(function (Set $set, $state) {
-                                                $set('description', strtoupper($state));
-                                            })
-                                    ])->hidden(fn(Get $get) => $get('action') != 'observation'),
-
-                                    Grid::make(1)->schema([
-                                        Select::make('status')
-                                            ->label('Estatus')
-                                            ->options([
-                                                'PENDIENTE' => 'PENDIENTE',
+                                                '+1'   => '🇺🇸 +1 (Estados Unidos)',
+                                                '+44'  => '🇬🇧 +44 (Reino Unido)',
+                                                '+49'  => '🇩🇪 +49 (Alemania)',
+                                                '+33'  => '🇫🇷 +33 (Francia)',
+                                                '+34'  => '🇪🇸 +34 (España)',
+                                                '+39'  => '🇮🇹 +39 (Italia)',
+                                                '+7'   => '🇷🇺 +7 (Rusia)',
+                                                '+55'  => '🇧🇷 +55 (Brasil)',
+                                                '+91'  => '🇮🇳 +91 (India)',
+                                                '+86'  => '🇨🇳 +86 (China)',
+                                                '+81'  => '🇯🇵 +81 (Japón)',
+                                                '+82'  => '🇰🇷 +82 (Corea del Sur)',
+                                                '+52'  => '🇲🇽 +52 (México)',
+                                                '+58'  => '🇻🇪 +58 (Venezuela)',
+                                                '+57'  => '🇨🇴 +57 (Colombia)',
+                                                '+54'  => '🇦🇷 +54 (Argentina)',
+                                                '+56'  => '🇨🇱 +56 (Chile)',
+                                                '+51'  => '🇵🇪 +51 (Perú)',
+                                                '+502' => '🇬🇹 +502 (Guatemala)',
+                                                '+503' => '🇸🇻 +503 (El Salvador)',
+                                                '+504' => '🇭🇳 +504 (Honduras)',
+                                                '+505' => '🇳🇮 +505 (Nicaragua)',
+                                                '+506' => '🇨🇷 +506 (Costa Rica)',
+                                                '+507' => '🇵🇦 +507 (Panamá)',
+                                                '+593' => '🇪🇨 +593 (Ecuador)',
+                                                '+592' => '🇬🇾 +592 (Guyana)',
+                                                '+591' => '🇧🇴 +591 (Bolivia)',
+                                                '+598' => '🇺🇾 +598 (Uruguay)',
+                                                '+20'  => '🇪🇬 +20 (Egipto)',
+                                                '+27'  => '🇿🇦 +27 (Sudáfrica)',
+                                                '+234' => '🇳🇬 +234 (Nigeria)',
+                                                '+212' => '🇲🇦 +212 (Marruecos)',
+                                                '+971' => '🇦🇪 +971 (Emiratos Árabes)',
+                                                '+92'  => '🇵🇰 +92 (Pakistán)',
+                                                '+880' => '🇧🇩 +880 (Bangladesh)',
+                                                '+62'  => '🇮🇩 +62 (Indonesia)',
+                                                '+63'  => '🇵🇭 +63 (Filipinas)',
+                                                '+66'  => '🇹🇭 +66 (Tailandia)',
+                                                '+60'  => '🇲🇾 +60 (Malasia)',
+                                                '+65'  => '🇸🇬 +65 (Singapur)',
+                                                '+61'  => '🇦🇺 +61 (Australia)',
+                                                '+64'  => '🇳🇿 +64 (Nueva Zelanda)',
+                                                '+90'  => '🇹🇷 +90 (Turquía)',
+                                                '+375' => '🇧🇾 +375 (Bielorrusia)',
+                                                '+372' => '🇪🇪 +372 (Estonia)',
+                                                '+371' => '🇱🇻 +371 (Letonia)',
+                                                '+370' => '🇱🇹 +370 (Lituania)',
+                                                '+48'  => '🇵🇱 +48 (Polonia)',
+                                                '+40'  => '🇷🇴 +40 (Rumania)',
+                                                '+46'  => '🇸🇪 +46 (Suecia)',
+                                                '+47'  => '🇳🇴 +47 (Noruega)',
+                                                '+45'  => '🇩🇰 +45 (Dinamarca)',
+                                                '+41'  => '🇨🇭 +41 (Suiza)',
+                                                '+43'  => '🇦🇹 +43 (Austria)',
+                                                '+31'  => '🇳🇱 +31 (Países Bajos)',
+                                                '+32'  => '🇧🇪 +32 (Bélgica)',
+                                                '+353' => '🇮🇪 +353 (Irlanda)',
+                                                '+375' => '🇧🇾 +375 (Bielorrusia)',
+                                                '+380' => '🇺🇦 +380 (Ucrania)',
+                                                '+994' => '🇦🇿 +994 (Azerbaiyán)',
+                                                '+995' => '🇬🇪 +995 (Georgia)',
+                                                '+976' => '🇲🇳 +976 (Mongolia)',
+                                                '+998' => '🇺🇿 +998 (Uzbekistán)',
+                                                '+84'  => '🇻🇳 +84 (Vietnam)',
+                                                '+856' => '🇱🇦 +856 (Laos)',
+                                                '+374' => '🇦🇲 +374 (Armenia)',
+                                                '+965' => '🇰🇼 +965 (Kuwait)',
+                                                '+966' => '🇸🇦 +966 (Arabia Saudita)',
+                                                '+972' => '🇮🇱 +972 (Israel)',
+                                                '+963' => '🇸🇾 +963 (Siria)',
+                                                '+961' => '🇱🇧 +961 (Líbano)',
+                                                '+960' => '🇲🇻 +960 (Maldivas)',
+                                                '+992' => '🇹🇯 +992 (Tayikistán)',
                                             ])
                                             ->searchable()
-                                            ->preload(),
-                                        Textarea::make('description')
-                                            ->autosize()
-                                            ->afterStateUpdated(function (Set $set, $state) {
-                                                $set('description', strtoupper($state));
-                                            })
-                                    ])->hidden(fn(Get $get) => $get('action') != 'status'),
-
-                                    Grid::make(1)->schema([
-                                        DatePicker::make('date_egress')
-                                            ->label('Fecha de egreso')
-                                            ->format('d-m-Y'),
-                                        Textarea::make('description')
-                                            ->label('Observaciones')
-                                            ->autosize()
-                                            ->afterStateUpdated(function (Set $set, $state) {
-                                                $set('description', strtoupper($state));
-                                            })
-                                    ])->hidden(fn(Get $get) => $get('action') != 'exclude'),
+                                            ->default('+58')
+                                            ->live(onBlur: true)
+                                            ->validationMessages([
+                                                'required'  => 'Campo Requerido',
+                                            ]),
+                                        TextInput::make('phone')
+                                            ->prefixIcon('heroicon-s-phone')
+                                            ->tel()
+                                            ->label('Número de teléfono')
+                                            ->validationMessages([
+                                                'required'  => 'Campo Requerido',
+                                            ])
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                                $countryCode = $get('country_code');
+                                                if ($countryCode) {
+                                                    $cleanNumber = ltrim(preg_replace('/[^0-9]/', '', $state), '0');
+                                                    $set('phone', $countryCode . $cleanNumber);
+                                                }
+                                            }),
+                                    ])
                                 ])
                         ])
-                        ->action(function (Affiliation $record, array $data): void {
-                            if ($data['action'] == 'observation') {
-                                $record->status_log_affiliations()->create([
-                                    'affiliation_id'    => $record->id,
-                                    'action'            => 'AGREGO OBSERVACION',
-                                    'observation'       => $data['description'],
-                                    'updated_by'        => Auth::user()->name
-                                ]);
+                        ->action(function (Affiliation $record, array $data) {
+
+                            try {
+                                // dd($record, $data);
+
+                                $email = null;
+                                $phone = null;
+
+                                if (isset($data['email'])) {
+                                    $email = $data['email'];
+                                    $certificado = 'CER-'.$record->code.'.pdf';
+                                    Mail::to($email)->send(new SendMailCertificado($certificado));
+
+                                    Notification::make()
+                                        ->title('Certificado enviado')
+                                        ->body('Certificado enviado a ' . $email)
+                                        ->icon('heroicon-o-envelope')
+                                        ->iconColor('danger')
+                                        ->success()
+                                        ->send();
+                                    // Mail::to('destinatario@example.com')->queue(new SendMailCertificado($certificado));
+                                }
+
+                                if (isset($data['phone'])) {
+                                    $phone = $data['phone'];
+                                }
+
+  
+                            } catch (\Throwable $th) {
+                                Log::error($th->getMessage());
                                 Notification::make()
-                                    ->title('AFILIACION ACTUALIZADA')
-                                    ->success()
+                                    ->title('ERROR')
+                                    ->body($th->getMessage())
+                                    ->icon('heroicon-s-x-circle')
+                                    ->iconColor('danger')
+                                    ->danger()
                                     ->send();
-                                return;
                             }
-
-                            if ($data['action'] == 'status') {
-                                $record->update([
-                                    'status' => $data['status'],
-                                ]);
-                                $record->status_log_affiliations()->create([
-                                    'affiliation_id'    => $record->id,
-                                    'action'            => 'CAMBIO ESTATUS A: ' . $data['status'],
-                                    'observation'       => $data['description'],
-                                    'updated_by'        => Auth::user()->name
-                                ]);
-                                Notification::make()
-                                    ->title('AFILIACION ACTUALIZADA')
-                                    ->success()
-                                    ->send();
-                                return;
+                            
+                        })
+                        ->hidden(function (Affiliation $record) {
+                            $path = public_path('storage/certificados-doc/CER-' . $record->code . '.pdf');
+                            if (file_exists($path)) {
+                                return false;
                             }
-
-                            if ($data['action'] == 'exclude') {
-                                $record->update([
-                                    'status'            => 'EXCLUIDO',
-                                    'fee_anual'         => 0.0,
-                                    'activated_at'      => null,
-                                    'total_amount'      => 0.0,
-                                    'family_members'    => 0
-                                ]);
-                                $record->affiliates()->update([
-                                    'status'  => 'EXCLUIDO',
-                                ]);
-                                $record->status_log_affiliations()->create([
-                                    'affiliation_id'    => $record->id,
-                                    'action'            => 'EXCLUYO AFILIACION, FECHA DE EGRESO: ' . $data['date_egress'],
-                                    'observation'       => $data['description'],
-                                    'updated_by'        => Auth::user()->name
-                                ]);
-                                Notification::make()
-                                    ->title('AFILIACION ACTUALIZADA')
-                                    ->success()
-                                    ->send();
-                                return;
-                            }
-
-
-                            Notification::make()
-                                ->title('AFILIACION ACTUALIZADA')
-                                ->success()
-                                ->send();
+                            return true;
                         }),
+                        
                 ])->hidden(fn($record) => $record->status == 'EXCLUIDO'),
             ])
             ->toolbarActions([

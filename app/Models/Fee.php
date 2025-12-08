@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Fee extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+    
     protected $table = 'fees';
 
     protected $fillable = [

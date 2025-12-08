@@ -15,6 +15,7 @@ use Filament\Actions\ActionGroup;
 use Filament\Support\Enums\Width;
 use Illuminate\Support\HtmlString;
 use Filament\Tables\Filters\Filter;
+use Illuminate\Support\Facades\Log;
 use Filament\Forms\Components\Radio;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
@@ -38,6 +39,7 @@ use Filament\Schemas\Components\Fieldset;
 use Filament\Tables\Filters\SelectFilter;
 use Illuminate\Database\Eloquent\Builder;
 use App\Jobs\ResendEmailPropuestaEconomica;
+use App\Mail\SendMailCotizacionCorporativa;
 use App\Mail\SendMailPropuestaPlanEspecial;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -374,31 +376,27 @@ class CorporateQuotesTable
 
                                 $email = null;
                                 $phone = null;
-                                $name_pdf = public_path('storage/quotes/' . $record->code . '.pdf');
 
                                 if (isset($data['email'])) {
                                     $email = $data['email'];
+                                    $cotizacion = $record->code . '.pdf';
+                                    Mail::to($email)->send(new SendMailCotizacionCorporativa($cotizacion));
+
+                                    Notification::make()
+                                        ->title('Certificado enviado')
+                                        ->body('Certificado enviado a ' . $email)
+                                        ->icon('heroicon-o-envelope')
+                                        ->iconColor('danger')
+                                        ->success()
+                                        ->send();
+                                    // Mail::to('destinatario@example.com')->queue(new SendMailCertificado($certificado));
                                 }
 
                                 if (isset($data['phone'])) {
                                     $phone = $data['phone'];
                                 }
-
-                                /**
-                                 * Email
-                                 */
-                                Mail::to($email)->send(new SendMailPropuestaPlanEspecial($record['full_name'], $name_pdf));
-                                
-                                Notification::make()
-                                    ->title('RE-ENVIADO EXITOSO')
-                                    ->body('La informacion fue re-enviada exitosamente.')
-                                    ->icon('heroicon-s-check-circle')
-                                    ->iconColor('verde')
-                                    ->success()
-                                    ->send();
-                                    
                             } catch (\Throwable $th) {
-                                LogController::log(Auth::user()->id, 'EXCEPTION', 'agents.IndividualQuoteResource.action.enit', $th->getMessage());
+                                Log::error($th->getMessage());
                                 Notification::make()
                                     ->title('ERROR')
                                     ->body($th->getMessage())

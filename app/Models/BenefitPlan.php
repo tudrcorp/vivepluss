@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\Pivot;
 
 class BenefitPlan extends Pivot
 {
+    protected $connection = 'mysql_vivepluss';
+    
     protected $table = 'benefit_plans';
 
     public static function booted(): void

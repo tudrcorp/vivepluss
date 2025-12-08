@@ -195,7 +195,7 @@ class CreateAffiliation extends CreateRecord
                 $data_titular = Affiliate::where('affiliation_id', $record->id)->where('relationship', 'TITULAR')->firstOrFail()->toArray();
 
                 // $this->getRecord()->sendCertificate($record, $affiliates);
-                // AffiliationController::generateCertificateIndividual($record, $affiliates, Auth::id());
+                AffiliationController::generateCertificateIndividual($record, $affiliates, Auth::id());
 
 
                 /** 
@@ -302,7 +302,7 @@ class CreateAffiliation extends CreateRecord
                 // $data_titular = Affiliate::where('affiliation_id', $record->id)->where('relationship', 'TITULAR')->firstOrFail()->toArray();
                 $affiliate = Affiliate::where('affiliation_id', $record->id)->get()->toArray();
 
-                // AffiliationController::generateCertificateIndividual($record, $affiliate, Auth::id());
+                AffiliationController::generateCertificateIndividual($record, $affiliate, Auth::id());
 
                 /**
                  * Actualizo el numero de afiliados (poblacion)

@@ -80,16 +80,16 @@ class ViveadminPanelProvider extends PanelProvider
             ])
             ->userMenuItems([
             // 'profile' => fn(Action $action) => $action->label('Configuración')
-                'profile' => fn(Action $action) => $action->label('Perfil General')
-                    ->icon('heroicon-o-user-circle')
-                    // ->url(AgencyResource::getUrl('edit', ['record' => DB::table('agencies')->select('id')->where('code', Auth::user()->code_agency)->value('id')], panel: 'viveadmin')),
-                    ->url(function (Component $livewire) {
-                        if(Auth::user()->is_agent == 1) {
-                            return AgentResource::getUrl('edit', ['record' => DB::table('agents')->select('id')->where('id', Auth::user()->agent_id)->value('id')], panel: 'viveadmin');
-                        } else {
-                            return AgencyResource::getUrl('edit', ['record' => DB::table('agencies')->select('id')->where('code', Auth::user()->code_agency)->value('id')], panel: 'viveadmin');
-                        }
-                    }),
+                // 'profile' => fn(Action $action) => $action->label('Perfil General')
+                //     ->icon('heroicon-o-user-circle')
+                //     ->url(AgencyResource::getUrl('edit', ['record' => DB::table('agencies')->select('id')->where('code', Auth::user()->code_agency)->value('id')], panel: 'viveadmin')),
+                //     // ->url(function (Component $livewire) {
+                //     //     if(Auth::user()->is_agent == 1) {
+                //     //         return AgentResource::getUrl('edit', ['record' => DB::table('agents')->select('id')->where('id', Auth::user()->agent_id)->value('id')], panel: 'viveadmin');
+                //     //     } else {
+                //     //         return AgencyResource::getUrl('edit', ['record' => DB::table('agencies')->select('id')->where('code', Auth::user()->code_agency)->value('id')], panel: 'viveadmin');
+                //     //     }
+                //     // }),
                 
                 Action::make('edit_configuration')
                     ->label('Configuración')

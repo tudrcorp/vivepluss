@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Plan extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+    
     protected $table = 'plans';
 
     protected $fillable = [

@@ -1,24 +1,24 @@
 @php
-    use App\Models\Configuration;
-    // Configuración defensiva para prevenir fallos si el registro no existe
-    $defaultConfig = [
-        'web_headTitle'             => 'Integracorp | VivePluss',
-        'web_headDescription'       => 'Vivepluss: Soluciones de seguros y asistencia.',
-        'web_headKeywords'          => 'Integracorp, Seguros, Asistencia, Vivepluss',
-        'web_headOpTitle'           => 'VivePluss - Siempre contigo',
-        'web_headOpDescription'     => 'Tu plataforma integral de bienestar.',
-        'web_headXTitle'            => 'VivePluss',
-        'web_headXDescription'      => 'Conoce nuestros planes.',
-        'web_sectionOne_title'      => 'Tu tranquilidad es nuestra prioridad.',
-        'web_sectionOne_title_ln_2' => 'Descubre el plan perfecto para ti.',
-        'web_headerLogo'            => 'images/ViveplussBlanco.png', // Placeholder
-        'web_footerCopy'            => 'Integracorp © 2024. Todos los derechos reservados.',
-    ];
+use App\Models\Configuration;
+// Configuración defensiva para prevenir fallos si el registro no existe
+$defaultConfig = [
+'web_headTitle' => 'Integracorp | VivePluss',
+'web_headDescription' => 'Vivepluss: Soluciones de seguros y asistencia.',
+'web_headKeywords' => 'Integracorp, Seguros, Asistencia, Vivepluss',
+'web_headOpTitle' => 'VivePluss - Siempre contigo',
+'web_headOpDescription' => 'Tu plataforma integral de bienestar.',
+'web_headXTitle' => 'VivePluss',
+'web_headXDescription' => 'Conoce nuestros planes.',
+'web_sectionOne_title' => 'Tu tranquilidad es nuestra prioridad.',
+'web_sectionOne_title_ln_2' => 'Descubre el plan perfecto para ti.',
+'web_headerLogo' => 'images/ViveplussBlanco.png', // Placeholder
+'web_footerCopy' => 'Integracorp © 2024. Todos los derechos reservados.',
+];
 
-    // Obtener el registro, o usar un objeto anónimo basado en $defaultConfig si es null
-    $setting = Configuration::first() ?? (object) $defaultConfig;
+// Obtener el registro, o usar un objeto anónimo basado en $defaultConfig si es null
+$setting = Configuration::first() ?? (object) $defaultConfig;
 
-    // $setting = Configuration::first();
+// $setting = Configuration::first();
 @endphp
 <!DOCTYPE html>
 <html lang="es" class="scroll-smooth">
@@ -96,11 +96,27 @@
         }
 
         /* Estilos personalizados usando las variables CSS */
-        .theme-primary-bg { background-color: var(--primary); }
-        .theme-primary-text { color: var(--primary); }
-        .theme-bg-light { background-color: var(--bg-light); }
-        .theme-text-dark { color: var(--text-dark); }
-        .theme-border-gray { border-color: #e5e7eb; } /* Un gris suave */
+        .theme-primary-bg {
+            background-color: var(--primary);
+        }
+
+        .theme-primary-text {
+            color: var(--primary);
+        }
+
+        .theme-bg-light {
+            background-color: var(--bg-light);
+        }
+
+        .theme-text-dark {
+            color: var(--text-dark);
+        }
+
+        .theme-border-gray {
+            border-color: #e5e7eb;
+        }
+
+        /* Un gris suave */
 
         .slider-container {
             overflow: hidden;
@@ -129,8 +145,10 @@
             transition: all 0.3s ease;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
+
         .theme-btn:hover {
-            background-color: var(--light-blue); /* Cambio de color al azul brillante */
+            background-color: var(--light-blue);
+            /* Cambio de color al azul brillante */
             box-shadow: 0 8px 20px var(--highlight-shadow);
             transform: translateY(-2px);
         }
@@ -154,7 +172,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(161, 61, 219, 0.6); /* --primary con transparencia */
+            background-color: rgba(161, 61, 219, 0.6);
+            /* --primary con transparencia */
             opacity: 0;
             transition: opacity 0.3s ease;
             display: flex;
@@ -184,8 +203,8 @@
             overflow-x: hidden;
         }
 
-         /* ESTILO PARA LA IMAGEN DEL LOGO */
-         .logo {
+        /* ESTILO PARA LA IMAGEN DEL LOGO */
+        .logo {
             position: absolute;
             padding: 1rem;
             top: 0rem;
@@ -196,7 +215,7 @@
             /* Ajusta la altura del logo */
             width: auto;
             /* Mantiene la proporción */
-         }
+        }
 
 
         .logo-placeholder {
@@ -981,8 +1000,10 @@
             /* Altura del 50% del viewport height para que el mapa sea prominente */
             height: 50vh;
             overflow: hidden;
-            border-radius: 0.5rem; /* Bordes redondeados */
+            border-radius: 0.5rem;
+            /* Bordes redondeados */
         }
+
         .map-container iframe {
             position: absolute;
             top: 0;
@@ -991,12 +1012,270 @@
             height: 100%;
         }
 
-        
 
 
 
+
+
+        .testimonial-section {
+            background: linear-gradient(135deg, rgba(5, 47, 96, 0.03) 0%, rgba(232, 235, 234, 0.8) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .testimonial-section::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            /* background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320">
+            <path fill="%23052F60" fill-opacity="0.05" d="M0,128L48,117.3C96,107,192,85,288,106.7C384,128,480,192,576,192C672,192,768,128,864,122.7C960,117,1056,171,1152,197.3C1248,224,1344,224,1392,224L1440,224L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path>
+        </svg>'); */
+            background-size: cover;
+            background-position: bottom;
+            opacity: 0.15;
+            z-index: 1;
+        }
+
+
+        .testimonial-card {
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 10px 30px rgba(5, 47, 96, 0.08);
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
+            background: rgba(255, 255, 255, 0.95);
+            border: 1px solid rgba(232, 235, 234, 0.8);
+        }
+
+        .testimonial-card:hover {
+            transform: translateY(-10px) scale(1.02);
+            box-shadow: 0 15px 40px rgba(5, 47, 96, 0.15);
+        }
+
+        .testimonial-card::before {
+            content: "";
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            font-family: Arial, sans-serif;
+            font-size: 100px;
+            color: #5488AE;
+            opacity: 0.1;
+            line-height: 1;
+        }
+
+        .quote-icon {
+            color: #5488AE;
+            font-size: 2.5rem;
+            opacity: 0.3;
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+        }
+
+        .testimonial-avatar {
+            width: 70px;
+            height: 70px;
+            border: 3px solid #E8EBEA;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .map-pin {
+            width: 24px;
+            height: 24px;
+            background: #4A8982;
+            border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg);
+            position: relative;
+        }
+
+        .map-pin::after {
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 8px;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+        }
+
+        .glide__slide {
+            padding: 20px 10px;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, #57cfff 0%, #305B93 100%);
+            border-radius: 16px;
+            box-shadow: 0 10px 25px rgba(5, 47, 96, 0.15);
+        }
+
+        .world-icon {
+            position: relative;
+            width: 120px;
+            height: 120px;
+            margin: 0 auto;
+        }
+
+        .world-icon svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke: #5488AE;
+            stroke-width: 2;
+            stroke-dasharray: 1000;
+            stroke-dashoffset: 1000;
+            animation: draw 8s linear forwards infinite;
+        }
+
+        @keyframes draw {
+            to {
+                stroke-dashoffset: 0;
+            }
+        }
+
+        .animate-float {
+            animation: float 6s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-15px);
+            }
+
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .animate-float-delay {
+            animation: float 6s ease-in-out infinite 1.5s;
+        }
+
+        .animate-float-delay-2 {
+            animation: float 6s ease-in-out infinite 3s;
+        }
+
+        .parallax {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+
+
+        .e-card {
+            margin: 100px auto;
+            background: transparent;
+            box-shadow: 0px 8px 28px -9px rgba(0, 0, 0, 0.45);
+            position: relative;
+            width: 240px;
+            height: 330px;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .wave {
+            position: absolute;
+            width: 540px;
+            height: 700px;
+            opacity: 0.6;
+            left: 0;
+            top: 0;
+            margin-left: -50%;
+            margin-top: -70%;
+            background: linear-gradient(744deg, #00ff80, #009933 60%, #00cc44);
+        }
+
+        .icon {
+            width: 3em;
+            margin-top: -1em;
+            padding-bottom: 1em;
+        }
+
+        .infotop {
+            text-align: center;
+            font-size: 20px;
+            position: absolute;
+            top: 4em;
+            left: 0;
+            right: 0;
+            color: rgb(255, 255, 255);
+            font-weight: 600;
+        }
+
+        .name {
+            font-size: 14px;
+            font-weight: 100;
+            position: relative;
+            top: 1em;
+            text-transform: lowercase;
+        }
+
+        .wave:nth-child(2),
+        .wave:nth-child(3) {
+            top: 210px;
+        }
+
+        .playing .wave {
+            border-radius: 40%;
+            animation: wave 3000ms infinite linear;
+        }
+
+        .wave {
+            border-radius: 40%;
+            animation: wave 55s infinite linear;
+        }
+
+        .playing .wave:nth-child(2) {
+            animation-duration: 4000ms;
+        }
+
+        .wave:nth-child(2) {
+            animation-duration: 50s;
+        }
+
+        .playing .wave:nth-child(3) {
+            animation-duration: 5000ms;
+        }
+
+        .wave:nth-child(3) {
+            animation-duration: 45s;
+        }
+
+        @keyframes wave {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
 
     </style>
+
+    <!-- font awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+    <!-- Glide.js para el carrusel -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Glide.js/3.2.0/css/glide.core.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Glide.js/3.2.0/css/glide.theme.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Glide.js/3.2.0/glide.min.js"></script>
+
 
     <!-- Configuración personalizada de Tailwind para usar las variables CSS -->
     <script>
@@ -1021,8 +1300,8 @@
 
     </script>
 
-{{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
-@fluxAppearance
+    {{-- @vite(['resources/css/app.css', 'resources/js/app.js']) --}}
+    @fluxAppearance
 
 </head>
 <body>
@@ -1137,9 +1416,9 @@
         <!-- Redes sociales -->
         <div class="social-icons">
             @if($setting->web_icons_redSocial != null)
-                @foreach ($setting->web_icons_redSocial as $red)
-                    <a href="#"><i class="{{ $red }}"></i></a>
-                @endforeach
+            @foreach ($setting->web_icons_redSocial as $red)
+            <a href="#"><i class="{{ $red }}"></i></a>
+            @endforeach
             @endif
         </div>
 
@@ -1167,7 +1446,7 @@
                 {{-- <span class="text-secondary-gold text-lg font-semibold tracking-wider uppercase">Nuestro Propósito</span> --}}
                 <h2 class="text-4xl md:text-5xl font-extrabold text-[#71BAFF] leading-tight">Misión</h2>
                 <p class="text-gray-600 text-lg leading-relaxed card-effect p-6">
-                    {{ $setting->web_mision }}                
+                    {{ $setting->web_mision }}
                 </p>
             </div>
 
@@ -1204,7 +1483,7 @@
         </div>
     </section>
 
-    
+
 
     <!-- 3. Sección Planes de Salud (Mejorada) -->
     <section class="section-planes" id="planes">
@@ -1394,7 +1673,7 @@
                         {{ $setting->web_descriptionBottonPlan_3 }}
                     </button>
                 </div>
-                
+
             </div>
 
             <!-- Pie de página con contacto -->
@@ -1406,7 +1685,7 @@
 
     </section>
 
-    <section id="comments-section" class="w-full theme-bg-light py-16 px-4 md:px-12 lg:px-24">
+    {{-- <section id="comments-section" class="w-full theme-bg-light py-16 px-4 md:px-12 lg:px-24">
 
         <!-- Contenedor central (Slider) con ancho limitado y centrado -->
         <div id="testimonial-slider-wrapper" class="max-w-6xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden relative theme-border-gray border">
@@ -1450,7 +1729,257 @@
 
         </div> <!-- Fin del Contenedor Central -->
 
-    </section> <!-- Fin de la Sección Completa -->
+    </section> <!-- Fin de la Sección Completa --> --}}
+    <!-- Sección Testimonios Mejorada -->
+    <section id="testimonios" class="py-24 testimonial-section parallax" 
+        style="background-image: url('https://blog.auna.pe/hubfs/paquete-salud-preventiva.png')">
+
+
+
+
+        <div class="container mx-auto px-4 sm:px-6 relative z-10">
+            <div class="text-center mb-16">
+                <div class="inline-block p-3 rounded-full bg-tertiary bg-opacity-10 mb-6">
+                    <i class="fas fa-comments text-tertiary text-3xl"></i>
+                </div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Experiencias que inspiran confianza</h2>
+                <p class="text-xl max-w-3xl mx-auto mb-6 text-white">Viajeros como tú comparten sus historias de protección alrededor del mundo</p>
+
+                <div class="w-20 h-1 bg-tertiary mx-auto"></div>
+            </div>
+
+            <!-- Elementos decorativos flotantes -->
+            <div class="hidden md:block">
+                <div class="absolute top-20 left-10 animate-float">
+                    <div class="bg-accent rounded-full w-10 h-10 opacity-20"></div>
+                </div>
+                <div class="absolute top-1/3 right-20 animate-float-delay">
+                    <div class="bg-tertiary rounded-full w-8 h-8 opacity-20"></div>
+                </div>
+                <div class="absolute bottom-40 left-1/4 animate-float-delay-2">
+                    <div class="bg-secondary rounded-full w-6 h-6 opacity-20"></div>
+                </div>
+            </div>
+
+            <!-- Carrusel de testimonios -->
+            <div class="glide max-w-6xl mx-auto">
+                <div class="glide__track" data-glide-el="track">
+                    <ul class="glide__slides">
+                        <!-- Testimonio 1 -->
+                        <li class="glide__slide">
+                            <div class="testimonial-card p-8 h-full">
+                                <div class="flex items-start mb-6">
+                                    {{-- <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="María López" class="testimonial-avatar rounded-full mr-5"> --}}
+                                    <div>
+                                        <h4 class="font-bold text-xl">MATEO JOSE PARADA BERMUDEZ</h4>
+
+                                        <div class="flex items-center mt-1">
+                                            <div class="flex text-yellow-400 mr-4">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                            </div>
+                                            <div class="flex items-center text-sm text-gray-500">
+                                                <div class="map-pin mr-2"></div>
+                                                <span>Barcelona, España</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="mb-8 text-lg italic relative">"Siii a través de ustedes la
+                                    atención excelente, muy rápida, 5 de puntuación!"</p>
+
+                                <div class="flex items-center">
+                                    <div class="bg-light p-3 rounded-lg mr-4">
+                                        <i class="fas fa-suitcase-rolling text-tertiary text-xl"></i>
+                                    </div>
+                                    <div class="text-sm">
+                                        <div class="font-semibold">Problema con equipaje</div>
+                                        <div class="text-gray-500">Resuelto en 24 horas</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-quote-right quote-icon"></i>
+                            </div>
+                        </li>
+
+                        <!-- Testimonio 2 -->
+                        <li class="glide__slide">
+                            <div class="testimonial-card p-8 h-full">
+                                <div class="flex items-start mb-6">
+                                    {{-- <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Carlos Mendoza" class="testimonial-avatar rounded-full mr-5"> --}}
+                                    <div>
+                                        <h4 class="font-bold text-xl">EUKARYS VALERIA
+                                            CALZADILLA MARTINEZ</h4>
+
+                                        <div class="flex items-center mt-1">
+                                            <div class="flex text-yellow-400 mr-4">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                            </div>
+                                            <div class="flex items-center text-sm text-gray-500">
+                                                <div class="map-pin mr-2"></div>
+                                                <span>Samora, España</span>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="mb-8 text-lg italic relative">"Excelente 5!"</p>
+
+                                <div class="flex items-center">
+                                    <div class="bg-light p-3 rounded-lg mr-4">
+                                        <i class="fas fa-stethoscope text-tertiary text-xl"></i>
+                                    </div>
+                                    <div class="text-sm">
+                                        <div class="font-semibold">Emergencia médica</div>
+                                        <div class="text-gray-500">Resuelto en 48 horas</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-quote-right quote-icon"></i>
+                            </div>
+                        </li>
+
+                        <!-- Testimonio 3 -->
+                        <li class="glide__slide">
+                            <div class="testimonial-card p-8 h-full">
+                                <div class="flex items-start mb-6">
+                                    {{-- <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=776&q=80" alt="Ana Rodríguez" class="testimonial-avatar rounded-full mr-5"> --}}
+                                    <div>
+                                        <h4 class="font-bold text-xl">DAMIAN VIVAS BLASI</h4>
+
+                                        <div class="flex items-center mt-1">
+                                            <div class="flex text-yellow-400 mr-4">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star-half-alt"></i>
+                                            </div>
+                                            <div class="flex items-center text-sm text-gray-500">
+                                                <div class="map-pin mr-2"></div>
+                                                <span>Davenport, EEUU</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="mb-8 text-lg italic relative">"Ok, 5 puntos 👍👍👍👍"</p>
+
+                                <div class="flex items-center">
+                                    <div class="bg-light p-3 rounded-lg mr-4">
+                                        <i class="fas fa-plane text-tertiary text-xl"></i>
+                                    </div>
+                                    <div class="text-sm">
+                                        <div class="font-semibold">Vuelo cancelado</div>
+                                        <div class="text-gray-500">Resuelto en 12 horas</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-quote-right quote-icon"></i>
+                            </div>
+                        </li>
+
+                        <!-- Testimonio 4 -->
+                        <li class="glide__slide">
+                            <div class="testimonial-card p-8 h-full">
+                                <div class="flex items-start mb-6">
+                                    {{-- <img src="https://images.unsplash.com/photo-1552058544-f2b08422138a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=798&q=80" alt="Juan Pérez" class="testimonial-avatar rounded-full mr-5"> --}}
+                                    <div>
+                                        <h4 class="font-bold text-xl">BETTY MARGARITA
+                                            HERNANDEZ DE MARTINEZ</h4>
+
+                                        <div class="flex items-center mt-1">
+                                            <div class="flex text-yellow-400 mr-4">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                            </div>
+                                            <div class="flex items-center text-sm text-gray-500">
+                                                <div class="map-pin mr-2"></div>
+                                                <span>Madrid, España</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="mb-8 text-lg italic relative">"La asistencia fue perfecta ,
+                                    yo le diera 10 pero como la puntuación más alta es 5 , tienen 5 🥰"</p>
+
+                                <div class="flex items-center">
+                                    <div class="bg-light p-3 rounded-lg mr-4">
+                                        <i class="fas fa-hotel text-tertiary text-xl"></i>
+                                    </div>
+                                    <div class="text-sm">
+                                        <div class="font-semibold">Alojamiento alternativo</div>
+                                        <div class="text-gray-500">Resuelto en 6 horas</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-quote-right quote-icon"></i>
+                            </div>
+                        </li>
+
+                        <!-- Testimonio 5 -->
+                        <li class="glide__slide">
+                            <div class="testimonial-card p-8 h-full">
+                                <div class="flex items-start mb-6">
+                                    {{-- <img src="https://images.unsplash.com/photo-1552058544-f2b08422138a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=798&q=80" alt="Juan Pérez" class="testimonial-avatar rounded-full mr-5"> --}}
+                                    <div>
+                                        <h4 class="font-bold text-xl">JUAN PENAGOS</h4>
+
+                                        <div class="flex items-center mt-1">
+                                            <div class="flex text-yellow-400 mr-4">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                            </div>
+                                            <div class="flex items-center text-sm text-gray-500">
+                                                <div class="map-pin mr-2"></div>
+                                                <span>Orlando, EEUU</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="mb-8 text-lg italic relative">"Muchas gracias cuenten con mi recomendación a todos los
+                                    viajeros cercanos"</p>
+
+                                <div class="flex items-center">
+                                    <div class="bg-light p-3 rounded-lg mr-4">
+                                        <i class="fas fa-hotel text-tertiary text-xl"></i>
+                                    </div>
+                                    <div class="text-sm">
+                                        <div class="font-semibold">Alojamiento alternativo</div>
+                                        <div class="text-gray-500">Resuelto en 6 horas</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-quote-right quote-icon"></i>
+                            </div>
+                        </li>
+
+
+                    </ul>
+                </div>
+
+                <div class="glide__arrows" data-glide-el="controls">
+                    <button class="glide__arrow glide__arrow--left absolute left-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:bg-light focus:outline-none z-20">
+                        <i class="fas fa-chevron-left text-[#71BAFF]"></i>
+
+                    </button>
+                    <button class="glide__arrow glide__arrow--right absolute right-0 top-1/2 transform -translate-y-1/2 bg-white rounded-full p-3 shadow-lg hover:bg-light focus:outline-none z-20">
+                        <i class="fas fa-chevron-right text-[#71BAFF]"></i>
+
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
 
     <!-- SECCIÓN DEL FEED DE INSTAGRAM - Usa var(--bg-light) como fondo -->
     <section id="instagram-feed-section" class="w-full theme-bg-light py-20 px-4 md:px-12 lg:px-24">
@@ -1559,9 +2088,9 @@
                     <div class="flex space-x-4 pt-2">
                         <!-- Iconos de Redes Sociales: El hover usará el color --light-blue gracias al CSS personalizado -->
                         @if($setting->web_icons_redSocial != null)
-                            @foreach ($setting->web_icons_redSocial as $red)
-                                <a href="#"><i class="{{ $red }}"></i></a>
-                            @endforeach
+                        @foreach ($setting->web_icons_redSocial as $red)
+                        <a href="#"><i class="{{ $red }}"></i></a>
+                        @endforeach
                         @endif
                     </div>
                 </div>
@@ -1647,88 +2176,88 @@
 
     </script>
 
-<script>
-    // Array de 12 comentarios positivos
-    const positiveComments = [{
-            user: "Laura M."
-            , title: "Diseñadora UX"
-            , comment: "¡El servicio es absolutamente fenomenal! La atención fue rápida y la solución perfecta. Un 10/10."
-            , avatarClass: "bg-indigo-500"
-        }
-        , {
-            user: "Javier P."
-            , title: "Desarrollador Senior"
-            , comment: "Increíblemente satisfecho con la calidad que ofrecen. Sigan así, superaron mis expectativas con creces."
-            , avatarClass: "theme-primary-bg"
-        }, // Usando primary
-        {
-            user: "Sofía R."
-            , title: "Gerente de Proyectos"
-            , comment: "No puedo creer lo fácil y rápido que fue todo el proceso. De verdad, fenomenal y muy eficiente."
-            , avatarClass: "bg-pink-500"
-        }
-        , {
-            user: "Andrés B."
-            , title: "Emprendedor"
-            , comment: "Este es el mejor servicio que he usado en años. Totalmente fenomenal y recomendable a cualquier persona."
-            , avatarClass: "bg-sky-500"
-        }
-        , {
-            user: "Carmen D."
-            , title: "Consultora Financiera"
-            , comment: "Mi experiencia fue fantástica de principio a fin. Todo funcionó a la perfección y sin contratiempos, impecable."
-            , avatarClass: "theme-primary-bg"
-        }, // Usando primary
-        {
-            user: "Ricardo G."
-            , title: "Analista de Datos"
-            , comment: "Totalmente recomendado a mis colegas. Súper profesional, rápido y el resultado fue fenomenal."
-            , avatarClass: "bg-red-500"
-        }
-        , {
-            user: "Elena V."
-            , title: "Jefa de Operaciones"
-            , comment: "Una atención al cliente impecable y el servicio que recibí fue absolutamente fenomenal."
-            , avatarClass: "bg-purple-500"
-        }
-        , {
-            user: "Fernando A."
-            , title: "Arquitecto de Software"
-            , comment: "Simplemente excepcional. El equipo detrás de esto hace un trabajo fenomenal, ¡gracias por la dedicación!"
-            , avatarClass: "theme-primary-bg"
-        }, // Usando primary
-        {
-            user: "Marta H."
-            , title: "Coach de Negocios"
-            , comment: "Me quedé sin palabras por la eficiencia. Sinceramente, la plataforma es fenomenal y muy intuitiva."
-            , avatarClass: "bg-teal-500"
-        }
-        , {
-            user: "Daniel Z."
-            , title: "Director de TI"
-            , comment: "La plataforma es intuitiva, el soporte es rápido y el resultado final es fenomenal. Cinco estrellas en todo."
-            , avatarClass: "bg-blue-500"
-        }
-        , {
-            user: "Isabel Q."
-            , title: "Investigadora"
-            , comment: "No tengo ninguna queja, solo elogios. El servicio es de una calidad fenomenal, superando a la competencia."
-            , avatarClass: "bg-gray-500"
-        }
-        , {
-            user: "Héctor N."
-            , title: "CEO"
-            , comment: "Muy contento con la solución. Ha sido la mejor inversión que hemos hecho en la empresa. Fenomenal."
-            , avatarClass: "theme-primary-bg"
-        } // Usando primary
-    ];
+    <script>
+        // Array de 12 comentarios positivos
+        const positiveComments = [{
+                user: "Laura M."
+                , title: "Diseñadora UX"
+                , comment: "¡El servicio es absolutamente fenomenal! La atención fue rápida y la solución perfecta. Un 10/10."
+                , avatarClass: "bg-indigo-500"
+            }
+            , {
+                user: "Javier P."
+                , title: "Desarrollador Senior"
+                , comment: "Increíblemente satisfecho con la calidad que ofrecen. Sigan así, superaron mis expectativas con creces."
+                , avatarClass: "theme-primary-bg"
+            }, // Usando primary
+            {
+                user: "Sofía R."
+                , title: "Gerente de Proyectos"
+                , comment: "No puedo creer lo fácil y rápido que fue todo el proceso. De verdad, fenomenal y muy eficiente."
+                , avatarClass: "bg-pink-500"
+            }
+            , {
+                user: "Andrés B."
+                , title: "Emprendedor"
+                , comment: "Este es el mejor servicio que he usado en años. Totalmente fenomenal y recomendable a cualquier persona."
+                , avatarClass: "bg-sky-500"
+            }
+            , {
+                user: "Carmen D."
+                , title: "Consultora Financiera"
+                , comment: "Mi experiencia fue fantástica de principio a fin. Todo funcionó a la perfección y sin contratiempos, impecable."
+                , avatarClass: "theme-primary-bg"
+            }, // Usando primary
+            {
+                user: "Ricardo G."
+                , title: "Analista de Datos"
+                , comment: "Totalmente recomendado a mis colegas. Súper profesional, rápido y el resultado fue fenomenal."
+                , avatarClass: "bg-red-500"
+            }
+            , {
+                user: "Elena V."
+                , title: "Jefa de Operaciones"
+                , comment: "Una atención al cliente impecable y el servicio que recibí fue absolutamente fenomenal."
+                , avatarClass: "bg-purple-500"
+            }
+            , {
+                user: "Fernando A."
+                , title: "Arquitecto de Software"
+                , comment: "Simplemente excepcional. El equipo detrás de esto hace un trabajo fenomenal, ¡gracias por la dedicación!"
+                , avatarClass: "theme-primary-bg"
+            }, // Usando primary
+            {
+                user: "Marta H."
+                , title: "Coach de Negocios"
+                , comment: "Me quedé sin palabras por la eficiencia. Sinceramente, la plataforma es fenomenal y muy intuitiva."
+                , avatarClass: "bg-teal-500"
+            }
+            , {
+                user: "Daniel Z."
+                , title: "Director de TI"
+                , comment: "La plataforma es intuitiva, el soporte es rápido y el resultado final es fenomenal. Cinco estrellas en todo."
+                , avatarClass: "bg-blue-500"
+            }
+            , {
+                user: "Isabel Q."
+                , title: "Investigadora"
+                , comment: "No tengo ninguna queja, solo elogios. El servicio es de una calidad fenomenal, superando a la competencia."
+                , avatarClass: "bg-gray-500"
+            }
+            , {
+                user: "Héctor N."
+                , title: "CEO"
+                , comment: "Muy contento con la solución. Ha sido la mejor inversión que hemos hecho en la empresa. Fenomenal."
+                , avatarClass: "theme-primary-bg"
+            } // Usando primary
+        ];
 
-    // Función para generar la tarjeta de comentario HTML
-    function generateCommentCard(comment) {
-        const initials = comment.user.split(' ').map(n => n[0]).join('.');
+        // Función para generar la tarjeta de comentario HTML
+        function generateCommentCard(comment) {
+            const initials = comment.user.split(' ').map(n => n[0]).join('.');
 
-        // El icono de quote y el avatar (cuando se usa theme-primary-bg) ahora usan el color principal
-        return `
+            // El icono de quote y el avatar (cuando se usa theme-primary-bg) ahora usan el color principal
+            return `
             <div class="comment-card flex flex-col items-center text-center">
                 <!-- Icono que usa el color primario -->
                 <svg class="w-10 h-10 theme-primary-text mb-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M7.707 3.293a1 1 0 010 1.414L3.414 9H16a1 1 0 110 2H3.414l4.293 4.293a1 1 0 01-1.414 1.414l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 0z" clip-rule="evenodd" fill-rule="evenodd"></path></svg>
@@ -1743,105 +2272,148 @@
                 <p class="text-sm text-gray-500">${comment.title}</p>
             </div>
         `;
-    }
-
-    // Función para inyectar todos los comentarios en el DOM
-    function renderCommentsToSlider() {
-        const list = document.getElementById('comments-list');
-        list.innerHTML = positiveComments.map(generateCommentCard).join('');
-    }
-
-    // --- Lógica del Slider ---
-
-    document.addEventListener('DOMContentLoaded', () => {
-        renderCommentsToSlider(); // Carga los 12 comentarios
-
-        const list = document.getElementById('comments-list');
-        const prevBtn = document.getElementById('prev-btn');
-        const nextBtn = document.getElementById('next-btn');
-        const indicatorDots = document.getElementById('indicator-dots');
-        const totalComments = positiveComments.length;
-        let currentIndex = 0;
-        const slideDuration = 5000;
-        let intervalId;
-
-        function updateSlider() {
-            const offset = -currentIndex * 100;
-            list.style.transform = `translateX(${offset}%)`;
-            updateIndicators();
         }
 
-        function updateIndicators() {
-            indicatorDots.innerHTML = '';
-            // Color primario del tema para los indicadores activos
-            const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+        // Función para inyectar todos los comentarios en el DOM
+        function renderCommentsToSlider() {
+            const list = document.getElementById('comments-list');
+            list.innerHTML = positiveComments.map(generateCommentCard).join('');
+        }
 
-            for (let i = 0; i < totalComments; i++) {
-                const dot = document.createElement('button');
-                dot.classList.add('w-3', 'h-3', 'rounded-full', 'transition-colors', 'duration-300', 'focus:outline-none');
-                dot.setAttribute('aria-label', `Comentario ${i + 1}`);
+        // --- Lógica del Slider ---
 
-                if (i === currentIndex) {
-                    dot.style.backgroundColor = primaryColor; // Indicador activo usa --primary
-                } else {
-                    dot.classList.add('bg-gray-300', 'hover:bg-gray-400');
+        document.addEventListener('DOMContentLoaded', () => {
+            renderCommentsToSlider(); // Carga los 12 comentarios
+
+            const list = document.getElementById('comments-list');
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const indicatorDots = document.getElementById('indicator-dots');
+            const totalComments = positiveComments.length;
+            let currentIndex = 0;
+            const slideDuration = 5000;
+            let intervalId;
+
+            function updateSlider() {
+                const offset = -currentIndex * 100;
+                list.style.transform = `translateX(${offset}%)`;
+                updateIndicators();
+            }
+
+            function updateIndicators() {
+                indicatorDots.innerHTML = '';
+                // Color primario del tema para los indicadores activos
+                const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--primary').trim();
+
+                for (let i = 0; i < totalComments; i++) {
+                    const dot = document.createElement('button');
+                    dot.classList.add('w-3', 'h-3', 'rounded-full', 'transition-colors', 'duration-300', 'focus:outline-none');
+                    dot.setAttribute('aria-label', `Comentario ${i + 1}`);
+
+                    if (i === currentIndex) {
+                        dot.style.backgroundColor = primaryColor; // Indicador activo usa --primary
+                    } else {
+                        dot.classList.add('bg-gray-300', 'hover:bg-gray-400');
+                    }
+
+                    dot.addEventListener('click', () => {
+                        pauseAutoSlide();
+                        currentIndex = i;
+                        updateSlider();
+                        startAutoSlide();
+                    });
+                    indicatorDots.appendChild(dot);
                 }
+            }
 
-                dot.addEventListener('click', () => {
-                    pauseAutoSlide();
-                    currentIndex = i;
-                    updateSlider();
-                    startAutoSlide();
+            function showPrev() {
+                pauseAutoSlide();
+                currentIndex = (currentIndex - 1 + totalComments) % totalComments;
+                updateSlider();
+                startAutoSlide();
+            }
+
+            function showNext() {
+                pauseAutoSlide();
+                currentIndex = (currentIndex + 1) % totalComments;
+                updateSlider();
+                startAutoSlide();
+            }
+
+            function startAutoSlide() {
+                if (!intervalId) {
+                    intervalId = setInterval(showNext, slideDuration);
+                }
+            }
+
+            function pauseAutoSlide() {
+                if (intervalId) {
+                    clearInterval(intervalId);
+                    intervalId = null;
+                }
+            }
+
+            // Asigna los eventos a los botones
+            prevBtn.addEventListener('click', showPrev);
+            nextBtn.addEventListener('click', showNext);
+
+            // Pausa/Reanuda al pasar el ratón para una lectura interactiva
+            const sliderWrapper = document.getElementById('testimonial-slider-wrapper');
+            sliderWrapper.addEventListener('mouseenter', pauseAutoSlide);
+            sliderWrapper.addEventListener('mouseleave', startAutoSlide);
+
+            // Inicializa y comienza el carrusel
+            updateSlider();
+            startAutoSlide();
+
+            // Animación para los testimonios al aparecer en pantalla
+            const testimonialCards = document.querySelectorAll('.testimonial-card');
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        entry.target.style.opacity = 1;
+                        entry.target.style.transform = 'translateY(0)';
+                    }
                 });
-                indicatorDots.appendChild(dot);
+            }, {
+                threshold: 0.1
+            });
+
+            testimonialCards.forEach(card => {
+                card.style.opacity = 0;
+                card.style.transform = 'translateY(20px)';
+                card.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+                observer.observe(card);
+            });
+
+        });
+
+    </script>
+
+    <script>
+        // Inicialización del carrusel
+        new Glide('.glide', {
+            type: 'carousel'
+            , perView: 1
+            , gap: 30
+            , autoplay: 4000
+            , breakpoints: {
+                768: {
+                    perView: 1
+                }
+                , 1024: {
+                    perView: 2
+                }
             }
-        }
+        }).mount();
 
-        function showPrev() {
-            pauseAutoSlide();
-            currentIndex = (currentIndex - 1 + totalComments) % totalComments;
-            updateSlider();
-            startAutoSlide();
-        }
-
-        function showNext() {
-            pauseAutoSlide();
-            currentIndex = (currentIndex + 1) % totalComments;
-            updateSlider();
-            startAutoSlide();
-        }
-
-        function startAutoSlide() {
-            if (!intervalId) {
-                intervalId = setInterval(showNext, slideDuration);
-            }
-        }
-
-        function pauseAutoSlide() {
-            if (intervalId) {
-                clearInterval(intervalId);
-                intervalId = null;
-            }
-        }
-
-        // Asigna los eventos a los botones
-        prevBtn.addEventListener('click', showPrev);
-        nextBtn.addEventListener('click', showNext);
-
-        // Pausa/Reanuda al pasar el ratón para una lectura interactiva
-        const sliderWrapper = document.getElementById('testimonial-slider-wrapper');
-        sliderWrapper.addEventListener('mouseenter', pauseAutoSlide);
-        sliderWrapper.addEventListener('mouseleave', startAutoSlide);
-
-        // Inicializa y comienza el carrusel
-        updateSlider();
-        startAutoSlide();
-    });
-
-</script>
+    </script>
 
 
-@fluxScripts
+
+    @fluxScripts
 
 </body>
 </html>
+

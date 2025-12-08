@@ -11,6 +11,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class Benefit extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+    
     protected $table = 'benefits';
 
     protected $fillable = [

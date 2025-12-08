@@ -3,10 +3,11 @@
 namespace App\Filament\Resources\Affiliations\Schemas;
 
 use App\Models\City;
+use App\Models\Plan;
 use App\Models\Agent;
 use App\Models\State;
-use App\Models\Agency;
 
+use App\Models\Agency;
 use App\Models\Region;
 use App\Models\Country;
 use App\Models\Coverage;
@@ -129,14 +130,7 @@ class AffiliationForm
                                     ->preload()
                                     ->prefixIcon('heroicon-m-clipboard-document-check')
                                     ->options(function (Get $get) {
-                                        $plans = DetailIndividualQuote::join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
-                                            ->join('individual_quotes', 'detail_individual_quotes.individual_quote_id', '=', 'individual_quotes.id')
-                                            ->where('individual_quotes.id', $get('individual_quote_id'))
-                                            ->select('plans.id as plan_id', 'plans.description as description')
-                                            ->distinct() // Asegurarse de que no haya duplicados
-                                            ->get()
-                                            ->pluck('description', 'plan_id');
-
+                                        $plans = Plan::all()->pluck('description', 'id');
                                         return $plans;
                                     })
                                     ->required()
@@ -181,15 +175,15 @@ class AffiliationForm
                                             'SEMESTRAL'  => 'SEMESTRAL',
                                             'TRIMESTRAL' => 'TRIMESTRAL',
                                         ];
-                                        $simpleArrayMonth = [
-                                            'ANUAL'      => 'ANUAL',
-                                            'SEMESTRAL'  => 'SEMESTRAL',
-                                            'TRIMESTRAL' => 'TRIMESTRAL',
-                                            'MENSUAL'    => 'MENSUAL',
-                                        ];
-                                        if (Agency::where('code', Auth::user()->code_agency)->first()->activate_monthly_frequency == 1) {
-                                            return $simpleArrayMonth;
-                                        }
+                                        // $simpleArrayMonth = [
+                                        //     'ANUAL'      => 'ANUAL',
+                                        //     'SEMESTRAL'  => 'SEMESTRAL',
+                                        //     'TRIMESTRAL' => 'TRIMESTRAL',
+                                        //     'MENSUAL'    => 'MENSUAL',
+                                        // ];
+                                        // if (Agency::where('code', Auth::user()->code_agency)->first()->activate_monthly_frequency == 1) {
+                                        //     return $simpleArrayMonth;
+                                        // }
                                         return $simpleArray;
                                     })
                                     ->searchable()
@@ -679,7 +673,7 @@ class AffiliationForm
                             Grid::make(1)
                                 ->schema([
                                     Radio::make('feedback_dos')
-                                        ->label('¿El titular de la póliza es el responsable de pago?')
+                                        ->label('¿El titular del plan es el responsable de pago?')
                                         ->default(true)
                                         ->live()
                                         ->boolean()
@@ -867,16 +861,28 @@ class AffiliationForm
                                 ->hiddenOn('edit')
                         ]),
                 ])
-                    ->submitAction(new HtmlString(Blade::render(<<<BLADE
-                    <x-filament::button
-                        type="submit"
-                        size="sm"
-                    >
-                        Crear Pre-Afiliación
-                    </x-filament::button>
-                BLADE)))
-                    ->columnSpanFull(),
+                ->submitAction(new HtmlString(Blade::render(<<<BLADE
+                <x-filament::button
+                    type="submit"
+                    size="sm"
+                    wire:target="create" 
+                    wire:loading.attr="disabled"
+                    wire:loading.class="opacity-70 pointer-events-none"
+                    class="min-w-28 justify-center bg-indigo-600 hover:bg-indigo-700 text-white" 
+                >
+                    {{-- Contenido NORMAL: Visible solo cuando NO está cargando --}}
+                    <span wire:loading.remove wire:target="create">
+                        Guardar y Finalizar
+                    </span>
 
-            ]);
+                    {{-- Contenido CARGANDO: Visible solo mientras está cargando --}}
+                    <span wire:loading wire:target="create"class="flex items-center space-x-2">
+                        <span>Preafiliando y Generando Certificado PDF...</span>
+                    </span>
+                </x-filament::button>
+            BLADE)))
+                ->columnSpanFull(),
+
+        ]);
     }
 }

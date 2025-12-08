@@ -1314,30 +1314,51 @@ class UtilsController extends Controller
             for ($i = 0; $i < count($array_details); $i++) {
                 //Guardamos el detalle de la cotizacion en la tabla de detalle de cotizacion como segundo paso
                 if ($array_details[$i]['age_range_id'] != null && $array_details[$i]['total_persons'] != null) {
-                    $plan_ageRange = AgeRange::where('plan_id', $array_details[$i]['plan_id'])
-                        ->where('id', $array_details[$i]['age_range_id'])
-                        ->with('fees')
-                        ->get()
-                        ->toArray();
+                    // dd($array_details[$i]['age_range_id'], $array_details[$i]['total_persons']);
+                    $calculo = Fee::where('plan_id', $array_details[$i]['plan_id'])->where('age_range_id', $array_details[$i]['age_range_id'])->get()->toArray();
+                    
+                    for ($j = 0; $j < count($calculo); $j++) {
 
-                    for ($j = 0; $j < count($plan_ageRange[0]['fees']); $j++) {
-
-                        $fee = Fee::where('id', $plan_ageRange[0]['fees'][$j]['id'])->first();
                         $detail_individual_quote = new DetailIndividualQuote();
                         $detail_individual_quote->individual_quote_id   = $array_form['id'];
                         $detail_individual_quote->plan_id               = $array_details[$i]['plan_id'];
                         $detail_individual_quote->age_range_id          = $array_details[$i]['age_range_id'];
-                        $detail_individual_quote->coverage_id           = $fee->coverage_id;
-                        $detail_individual_quote->fee                   = $fee->price;
+                        $detail_individual_quote->coverage_id           = $calculo[$j]['coverage_id'];
+                        $detail_individual_quote->fee                   = $calculo[$j]['price'];
                         $detail_individual_quote->total_persons         = $array_details[$i]['total_persons'];
-                        $detail_individual_quote->subtotal_anual        = $array_details[$i]['total_persons'] * $fee->price;
-                        $detail_individual_quote->subtotal_quarterly    = ($array_details[$i]['total_persons'] * $fee->price) / 4;
-                        $detail_individual_quote->subtotal_biannual     = ($array_details[$i]['total_persons'] * $fee->price) / 2;
-                        $detail_individual_quote->subtotal_monthly      = ($array_details[$i]['total_persons'] * $fee->price) / 12;
+                        $detail_individual_quote->subtotal_anual        = $array_details[$i]['total_persons'] * $calculo[$j]['price'];
+                        $detail_individual_quote->subtotal_quarterly    = ($array_details[$i]['total_persons'] * $calculo[$j]['price']) / 4;
+                        $detail_individual_quote->subtotal_biannual     = ($array_details[$i]['total_persons'] * $calculo[$j]['price']) / 2;
+                        $detail_individual_quote->subtotal_monthly      = ($array_details[$i]['total_persons'] * $calculo[$j]['price']) / 12;
                         $detail_individual_quote->status                = 'PRE-APROBADA';
                         $detail_individual_quote->created_by            = Auth::user()->name;
                         $detail_individual_quote->save();
                     }
+                    
+                    // $plan_ageRange = AgeRange::where('plan_id', $array_details[$i]['plan_id'])
+                    //     ->where('id', $array_details[$i]['age_range_id'])
+                    //     ->with('fees')
+                    //     ->get()
+                    //     ->toArray();
+
+                    // for ($j = 0; $j < count($plan_ageRange[0]['fees']); $j++) {
+
+                    //     $fee = Fee::where('id', $plan_ageRange[0]['fees'][$j]['id'])->first();
+                    //     $detail_individual_quote = new DetailIndividualQuote();
+                    //     $detail_individual_quote->individual_quote_id   = $array_form['id'];
+                    //     $detail_individual_quote->plan_id               = $array_details[$i]['plan_id'];
+                    //     $detail_individual_quote->age_range_id          = $array_details[$i]['age_range_id'];
+                    //     $detail_individual_quote->coverage_id           = $fee->coverage_id;
+                    //     $detail_individual_quote->fee                   = $fee->price;
+                    //     $detail_individual_quote->total_persons         = $array_details[$i]['total_persons'];
+                    //     $detail_individual_quote->subtotal_anual        = $array_details[$i]['total_persons'] * $fee->price;
+                    //     $detail_individual_quote->subtotal_quarterly    = ($array_details[$i]['total_persons'] * $fee->price) / 4;
+                    //     $detail_individual_quote->subtotal_biannual     = ($array_details[$i]['total_persons'] * $fee->price) / 2;
+                    //     $detail_individual_quote->subtotal_monthly      = ($array_details[$i]['total_persons'] * $fee->price) / 12;
+                    //     $detail_individual_quote->status                = 'PRE-APROBADA';
+                    //     $detail_individual_quote->created_by            = Auth::user()->name;
+                    //     $detail_individual_quote->save();
+                    // }
                 }
             }
 

@@ -67,31 +67,24 @@ class AgenciesTable
                     ->label('Tipo agencia')
                     ->searchable()
                     ->badge()
-                    ->color('azulOscuro')
+                    ->color('info')
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('name_corporative')
                     ->label('Razon social')
                     ->searchable()
-                    ->badge()
-                    ->color('verde')
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('rif')
                     ->label('RIF:')
                     ->searchable()
-                    ->badge()
-                    ->color('verde')
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('ci_responsable')
                     ->label('Cedula del responsable:')
                     ->searchable()
-                    ->badge()
-                    ->color('verde')
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('address')
                     ->label('Direccion')
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
-
                 TextColumn::make('email')
                     ->label('Correo electrónico')
                     ->searchable()
@@ -99,15 +92,6 @@ class AgenciesTable
                 TextColumn::make('phone')
                     ->label('Número de Teléfono')
                     ->searchable()
-                    ->toggleable(isToggledHiddenByDefault: false),
-
-                IconColumn::make('tdec')
-                    ->label('TDEC')
-                    ->boolean()
-                    ->toggleable(isToggledHiddenByDefault: false),
-                IconColumn::make('tdev')
-                    ->label('TDEV')
-                    ->boolean()
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('commission_tdec')
                     ->label('(%) TDEC')
@@ -120,6 +104,7 @@ class AgenciesTable
                         }
                         return 'warning';
                     })
+                    ->default(fn($record): string => $record->commission_tdec ?? '0')
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
@@ -135,6 +120,7 @@ class AgenciesTable
                         return 'warning';
                     })
                     ->numeric()
+                    ->default(fn($record): string => $record->commission_tdec ?? '0')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('commission_tdev')
@@ -149,6 +135,7 @@ class AgenciesTable
                         return 'warning';
                     })
                     ->numeric()
+                    ->default(fn($record): string => $record->commission_tdec ?? '0')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('commission_tdev_renewal')
@@ -163,6 +150,7 @@ class AgenciesTable
                         return 'warning';
                     })
                     ->numeric()
+                    ->default(fn($record): string => $record->commission_tdec ?? '0')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
 
@@ -284,7 +272,7 @@ class AgenciesTable
                         ->hidden(fn() => Auth::user()->is_business_admin != 1),
                 ])
                     ->icon('heroicon-c-ellipsis-vertical')
-                    ->color('azulOscuro')
+                    ->color('info')
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

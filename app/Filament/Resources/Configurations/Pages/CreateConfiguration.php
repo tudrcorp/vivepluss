@@ -8,4 +8,6 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateConfiguration extends CreateRecord
 {
     protected static string $resource = ConfigurationResource::class;
+
+    protected static ?string $title = 'Configuraciones del Sistema';
 }

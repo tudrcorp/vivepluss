@@ -159,10 +159,9 @@
             </p>
         </div>
 
-        <div style="position: absolute; top: 200px; left: 40px; width: 700px; max-width: 700px; font-family: 'quicksand', sans-serif;">
-            @livewire('tabla-beneficio-cobertura', ['id' => 3])
+        <div style="position: absolute; top: 240px; left: 40px; width: 700px; max-width: 700px; font-family: 'quicksand', sans-serif;">
+            @livewire('tabla-beneficios-plan-inicial')
         </div>
-
 
 
         <div style="position: absolute; top: 475px; right: 10px; margin-top: 30px; padding: 20px; margin-right: 20px; width: 700px;">
@@ -203,7 +202,6 @@
         <div style="position: absolute; top: 0px; right: 0px; margin-top: 20px; padding: 20px; margin-right: 20px">
             <div>
                 <img class="logo-bottom-left" src="{{ public_path('storage/'.$setting->brandLogo) }}" style="width: 100px; height: auto;" alt="">
-
             </div>
         </div>
         <!-- Primera página: Imagen de fondo -->
