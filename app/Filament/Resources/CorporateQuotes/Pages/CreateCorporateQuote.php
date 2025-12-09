@@ -2,21 +2,23 @@
 
 namespace App\Filament\Resources\CorporateQuotes\Pages;
 
-use App\Filament\Resources\CorporateQuotes\CorporateQuoteResource;
-use Filament\Resources\Pages\CreateRecord;
-
 use App\Models\Fee;
 use App\Models\User;
+
 use App\Models\AgeRange;
 use Filament\Actions\Action;
 use App\Models\CorporateQuote;
 use Illuminate\Support\Facades\DB;
 use App\Models\DetailCorporateQuote;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Crypt;
 use Filament\Notifications\Notification;
 use App\Http\Controllers\UtilsController;
+use Filament\Resources\Pages\CreateRecord;
+use App\Mail\SendMailCotizacionCorporativa;
 use App\Http\Controllers\NotificationController;
+use App\Filament\Resources\CorporateQuotes\CorporateQuoteResource;
 
 class CreateCorporateQuote extends CreateRecord
 {
@@ -132,6 +134,21 @@ class CreateCorporateQuote extends CreateRecord
 
             //Notificacion por whatsapp al telefono de cotizaciones
             $sendNotificationWp = NotificationController::createdCorporateQuote($record->code, Auth::user()->name);
+
+            $email = null;
+            if (isset($record->email)) {
+                $email = $record->email;
+                $cotizacion = $record->code . '.pdf';
+                Mail::to($email)->send(new SendMailCotizacionCorporativa($cotizacion));
+                Notification::make()
+                    ->title('NOTIFICACIÓN')
+                    ->body('La cotización ha sido enviada a su correo electrónico indicado!')
+                    ->icon('heroicon-o-envelope')
+                    ->iconColor('info')
+                    ->success()
+                    ->send();
+            }
+            
         } catch (\Throwable $th) {
             Notification::make()
                 ->title('ERROR')
@@ -148,9 +165,9 @@ class CreateCorporateQuote extends CreateRecord
     {
         return Notification::make()
             ->title('NOTIFICACIÓN')
-            ->body('Cotización Corporativa exitosa.!')
+            ->body('Cotización Corporativa creada de forma exitosa.!')
             ->icon('heroicon-s-hand-thumb-up')
-            ->iconColor('danger')
+            ->iconColor('success')
             ->success()
             ->persistent()
             ->send();

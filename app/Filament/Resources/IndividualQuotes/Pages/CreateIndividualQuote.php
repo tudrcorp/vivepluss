@@ -2,21 +2,23 @@
 
 namespace App\Filament\Resources\IndividualQuotes\Pages;
 
-use App\Filament\Resources\IndividualQuotes\IndividualQuoteResource;
-use Filament\Resources\Pages\CreateRecord;
-
 use App\Models\Fee;
 use App\Models\User;
+
 use App\Models\AgeRange;
 use Filament\Actions\Action;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 use App\Models\DetailIndividualQuote;
 use Illuminate\Support\Facades\Crypt;
 use Filament\Notifications\Notification;
 use App\Http\Controllers\UtilsController;
+use App\Mail\SendMailCotizacionIndividual;
+use Filament\Resources\Pages\CreateRecord;
 use App\Http\Controllers\NotificationController;
+use App\Filament\Resources\IndividualQuotes\IndividualQuoteResource;
 
 class CreateIndividualQuote extends CreateRecord
 {
@@ -96,6 +98,21 @@ class CreateIndividualQuote extends CreateRecord
             }
 
             NotificationController::createdIndividualQuote($record->code, Auth::user()->name);
+
+            $email = null;
+            if(isset($record->email)){
+                $email = $record->email;
+                $cotizacion = $record->code . '.pdf';
+                Mail::to($email)->send(new SendMailCotizacionIndividual($cotizacion));
+                Notification::make()
+                    ->title('NOTIFICACIÓN')
+                    ->body('La cotización ha sido enviada a su correo electrónico indicado!')
+                    ->icon('heroicon-o-envelope')
+                    ->iconColor('success')
+                    ->success()
+                    ->send();
+            }
+            
             
         } catch (\Throwable $th) {
             Notification::make()
@@ -117,7 +134,6 @@ class CreateIndividualQuote extends CreateRecord
             ->icon('heroicon-s-hand-thumb-up')
             ->iconColor('danger')
             ->success()
-            ->persistent()
             ->send();
     }
 }
