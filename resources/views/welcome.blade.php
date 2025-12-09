@@ -153,40 +153,6 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
             transform: translateY(-2px);
         }
 
-        /* Estilo para el efecto hover de las imágenes */
-        .instagram-post-card {
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .instagram-post-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
-        }
-
-        /* Capa de superposición de Instagram al pasar el ratón */
-        .instagram-post-overlay {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(161, 61, 219, 0.6);
-            /* --primary con transparencia */
-            opacity: 0;
-            transition: opacity 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-weight: 600;
-        }
-
-        .instagram-post-card:hover .instagram-post-overlay {
-            opacity: 1;
-        }
-
 
 
         * {
@@ -1265,6 +1231,74 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
             }
         }
 
+        /* -------------------------------------- */
+        /* ESTILOS ESPECÍFICOS DEL FEED DE INSTAGRAM */
+        /* -------------------------------------- */
+
+        .instagram-post-card {
+            position: relative;
+            overflow: hidden;
+            display: block; /* Asegura que el enlace ocupe el espacio */
+            transition: transform 0.3s ease-in-out, box-shadow 0.3s ease;
+            cursor: pointer;
+        }
+
+        /* Asegura que la imagen sea un cuadrado perfecto */
+        .aspect-square-custom {
+            aspect-ratio: 1 / 1;
+        }
+
+        .instagram-post-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Transición suave para el zoom al hacer hover */
+            transition: transform 0.4s ease;
+        }
+
+        /* Overlay - Simula la interacción de Instagram */
+        .instagram-post-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4); /* Fondo semi-transparente */
+            opacity: 0; /* Inicialmente invisible */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #ffffff;
+            font-size: 1.125rem; /* text-lg */
+            font-weight: 600; /* semibold */
+            transition: opacity 0.3s ease;
+            backdrop-filter: blur(2px); /* Efecto moderno y vanguardista */
+            -webkit-backdrop-filter: blur(2px); /* Compatibilidad con Safari */
+        }
+
+        /* Estado Hover/Focus: Aparece el Overlay y hace zoom a la imagen */
+        .instagram-post-card:hover .instagram-post-overlay,
+        .instagram-post-card:focus .instagram-post-overlay {
+            opacity: 1;
+        }
+
+        .instagram-post-card:hover img,
+        .instagram-post-card:focus img {
+            transform: scale(1.05); /* Zoom ligero de la imagen */
+        }
+
+        /* Estilo para el ícono 'Ver Post' (simulación de Likes/Comments) */
+        .instagram-post-overlay svg {
+        /* Usaremos un ícono de flecha simple por defecto, pero se puede simular Likes/Comments */
+            transform: rotate(90deg);
+        }
+
+        /* Estilo para el botón CTA con sombra suave */
+        .theme-btn {
+            box-shadow: 0 10px 15px -3px rgba(29, 78, 216, 0.3), 0 4px 6px -4px rgba(29, 78, 216, 0.3);
+        }
+
+
     </style>
 
     <!-- font awesome -->
@@ -1685,51 +1719,6 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
 
     </section>
 
-    {{-- <section id="comments-section" class="w-full theme-bg-light py-16 px-4 md:px-12 lg:px-24">
-
-        <!-- Contenedor central (Slider) con ancho limitado y centrado -->
-        <div id="testimonial-slider-wrapper" class="max-w-6xl mx-auto bg-white shadow-2xl rounded-xl overflow-hidden relative theme-border-gray border">
-
-            <!-- Título de la Sección -->
-            <div class="p-6 text-center theme-border-gray border-b">
-                <h2 class="text-3xl font-bold theme-text-dark">La Voz de Nuestros Clientes</h2>
-                <p class="text-gray-500 mt-1">Más de una docena de usuarios confirman la calidad fenomenal de nuestro servicio.</p>
-            </div>
-
-            <!-- Contenedor del Slider con los Comentarios -->
-            <div class="slider-container" id="slider-viewport">
-                <div class="comments-list" id="comments-list">
-                    <!-- Los comentarios serán inyectados aquí por JavaScript -->
-                </div>
-            </div>
-
-            <!-- Controles de Navegación (Flechas) -->
-            <div class="absolute inset-y-0 left-0 flex items-center p-4">
-                <button id="prev-btn" class="nav-btn p-3 bg-white/80 hover:bg-white rounded-full shadow-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-primarytailwind focus:ring-opacity-50 theme-text-dark">
-                    <!-- Ícono de flecha izquierda -->
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <div class="absolute inset-y-0 right-0 flex items-center p-4">
-                <button id="next-btn" class="nav-btn p-3 bg-white/80 hover:bg-white rounded-full shadow-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-primarytailwind focus:ring-opacity-50 theme-text-dark">
-                    <!-- Ícono de flecha derecha -->
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                    </svg>
-                </button>
-            </div>
-
-            <!-- Indicadores (Dots) -->
-            <div id="indicator-dots" class="flex justify-center space-x-2 p-4 theme-border-gray border-t">
-                <!-- Los dots se inyectarán aquí con JavaScript -->
-            </div>
-
-        </div> <!-- Fin del Contenedor Central -->
-
-    </section> <!-- Fin de la Sección Completa --> --}}
     <!-- Sección Testimonios Mejorada -->
     <section id="testimonios" class="py-24 testimonial-section parallax" 
         style="background-image: url('https://blog.auna.pe/hubfs/paquete-salud-preventiva.png')">
@@ -1982,7 +1971,8 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
 
 
     <!-- SECCIÓN DEL FEED DE INSTAGRAM - Usa var(--bg-light) como fondo -->
-    <section id="instagram-feed-section" class="w-full theme-bg-light py-20 px-4 md:px-12 lg:px-24">
+    <!-- SECCIÓN DEL FEED DE INSTAGRAM - Usa var(--bg-light) como fondo -->
+    <section id="instagram-feed-section" class="w-full theme-bg-light py-16 md:py-20 px-4 md:px-12 lg:px-24">
 
         <!-- Contenedor central con ancho limitado y centrado -->
         <div class="max-w-7xl mx-auto text-center">
@@ -2003,58 +1993,88 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
             <!-- CUERPO DEL FEED: GRID DE PUBLICACIONES -->
             <div id="instagram-posts-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
 
-                <!-- PUBLICACIÓN 1 (Placeholder) -->
-                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-md hover:scale-105">
-                    <img src="https://placehold.co/600x600/A13DDB/ffffff?text=Post+1" alt="Publicación de Instagram 1" class="w-full h-full object-cover rounded-lg aspect-square">
-                    <div class="instagram-post-overlay rounded-lg">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M10 3a1 1 0 00-1 1v5.586L6.707 7.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 9.586V4a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                <!-- PUBLICACIÓN 1: Viaje a la Playa -->
+                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden transition-shadow duration-300 hover:shadow-2xl">
+                    <img src="https://picsum.photos/600/600?random=101" onerror="this.src='https://placehold.co/600x600/40B7FF/ffffff?text=Playa'" alt="Publicación de Instagram: Playa y Sol" class="aspect-square-custom object-cover">
+                    <div class="instagram-post-overlay">
+                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
-                        Ver Post
+                        <span class="ml-2 mr-4 text-xl">1.2K</span>
+
+                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                        </svg>
+                        <span class="ml-2 text-xl">120</span>
                     </div>
                 </a>
 
-                <!-- PUBLICACIÓN 2 (Placeholder) -->
-                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-md hover:scale-105">
-                    <img src="https://placehold.co/600x600/71BAFF/ffffff?text=Post+2" alt="Publicación de Instagram 2" class="w-full h-full object-cover rounded-lg aspect-square">
-                    <div class="instagram-post-overlay rounded-lg">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M10 3a1 1 0 00-1 1v5.586L6.707 7.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 9.586V4a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                <!-- PUBLICACIÓN 2: Café y Trabajo -->
+                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden transition-shadow duration-300 hover:shadow-2xl">
+                    <img src="https://picsum.photos/600/600?random=102" onerror="this.src='https://placehold.co/600x600/D0834B/ffffff?text=Café'" alt="Publicación de Instagram: Café y Laptop" class="aspect-square-custom object-cover">
+                    <div class="instagram-post-overlay">
+                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
-                        Ver Post
+                        <span class="ml-2 mr-4 text-xl">890</span>
+                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                        </svg>
+                        <span class="ml-2 text-xl">55</span>
                     </div>
                 </a>
 
-                <!-- PUBLICACIÓN 3 (Placeholder) -->
-                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-md hover:scale-105 hidden sm:block">
-                    <img src="https://placehold.co/600x600/096FFF/ffffff?text=Post+3" alt="Publicación de Instagram 3" class="w-full h-full object-cover rounded-lg aspect-square">
-                    <div class="instagram-post-overlay rounded-lg">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M10 3a1 1 0 00-1 1v5.586L6.707 7.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 9.586V4a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                <!-- PUBLICACIÓN 3: Arte Callejero (Solo visible en md y más) -->
+                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden hidden md:block transition-shadow duration-300 hover:shadow-2xl">
+                    <img src="https://picsum.photos/600/600?random=103" onerror="this.src='https://placehold.co/600x600/3E993E/ffffff?text=Arte'" alt="Publicación de Instagram: Mural" class="aspect-square-custom object-cover">
+                    <div class="instagram-post-overlay">
+                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
-                        Ver Post
+                        <span class="ml-2 mr-4 text-xl">2.5K</span>
+                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                        </svg>
+                        <span class="ml-2 text-xl">412</span>
                     </div>
                 </a>
 
-                <!-- PUBLICACIÓN 4 (Placeholder) -->
-                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-md hover:scale-105 hidden lg:block">
-                    <img src="https://placehold.co/600x600/A13DDB/ffffff?text=Post+4" alt="Publicación de Instagram 4" class="w-full h-full object-cover rounded-lg aspect-square">
-                    <div class="instagram-post-overlay rounded-lg">
-                        <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                            <path fill-rule="evenodd" d="M10 3a1 1 0 00-1 1v5.586L6.707 7.293a1 1 0 00-1.414 1.414l4 4a1 1 0 001.414 0l4-4a1 1 0 00-1.414-1.414L11 9.586V4a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                <!-- PUBLICACIÓN 4: Tecnología y Código (Solo visible en lg y más) -->
+                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden hidden lg:block transition-shadow duration-300 hover:shadow-2xl">
+                    <img src="https://picsum.photos/600/600?random=104" onerror="this.src='https://placehold.co/600x600/000000/ffffff?text=Code'" alt="Publicación de Instagram: Código en Pantalla" class="aspect-square-custom object-cover">
+                    <div class="instagram-post-overlay">
+                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
-                        Ver Post
+                        <span class="ml-2 mr-4 text-xl">987</span>
+                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                        </svg>
+                        <span class="ml-2 text-xl">23</span>
                     </div>
                 </a>
 
-                <!-- Puedes añadir más publicaciones si lo deseas. -->
+                {{-- <!-- PUBLICACIÓN 5: Comida y Receta -->
+                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden hidden xl:block transition-shadow duration-300 hover:shadow-2xl">
+                    <img src="https://picsum.photos/600/600?random=105" onerror="this.src='https://placehold.co/600x600/C51C30/ffffff?text=Comida'" alt="Publicación de Instagram: Plato Gourmet" class="aspect-square-custom object-cover">
+                    <div class="instagram-post-overlay">
+                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                        <span class="ml-2 mr-4 text-xl">4.1K</span>
+                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
+                        </svg>
+                        <span class="ml-2 text-xl">88</span>
+                    </div>
+                </a> --}}
 
             </div>
             <!-- FIN DEL CUERPO DEL FEED -->
 
             <!-- Botón de CTA (Call to Action) -->
             <div class="mt-12">
-                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="inline-flex items-center px-8 py-3 text-lg font-bold text-white rounded-full theme-btn">
+                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="theme-btn inline-flex items-center px-8 py-3 text-lg font-bold text-white rounded-full transition duration-300 ease-in-out transform hover:scale-105">
                     <!-- Icono de Instagram (SVG simple) -->
                     <svg class="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
@@ -2068,6 +2088,8 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
         </div> <!-- Fin del Contenedor Central -->
 
     </section> <!-- Fin de la Sección Completa -->
+
+
 
 
 
