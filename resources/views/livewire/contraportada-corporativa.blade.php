@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -63,7 +64,7 @@
             padding: 15px;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
             font-family: Arial, sans-serif;
-            color: #000000;
+            color: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -76,55 +77,13 @@
             margin-bottom: 10px;
             color: white;
         }
-
     </style>
 </head>
+
 <body>
-    @livewire('portada-cotizacion-individual', ['name' => $details['name']])
-
-    {{-- @livewire('propuesta-economica.propuesta-economica-page-2') --}}
-
-    @if($details['plan'] == 1)
-    @livewire(
-        'planes-cotizacion-corporativa-inicial',
-        [
-            'data' => $collect,
-            'name' => $details['name'],
-            'name_user' => $name_user
-        ]
-    )
-
-
-    @endif
-
-    @if($details['plan'] == 2)
-    @livewire(
-        'planes-cotizacion-corporativa-ideal',
-
-        [
-            'data' => $group_collect,
-            'name' => $details['name'],
-            'name_user' => $name_user
-
-        ]
-    )
-    @endif
-
-    @if($details['plan'] == 3)
-    @livewire(
-        'planes-cotizacion-corporativa-especial',
-
-        [
-            'data' => $group_collect,
-            'name' => $details['name'],
-            'name_user' => $name_user
-
-        ]
-    )
-    @endif
-
-    @livewire('contraportada-corporativa')
-
+    <!-- Primera página: Imagen de fondo -->
+    <div class="cover"
+        style="background-image: url('{{ public_path('storage/images-cotizacion/contraportada.png') }}');"></div>
 </body>
-</html>
 
+</html>

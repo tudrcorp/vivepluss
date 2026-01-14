@@ -81,8 +81,8 @@
 </head>
 <body>
     <!-- Primera página: Imagen de fondo -->
-    <div class="cover" style="background-image: url('{{ public_path('storage/images-cotizacion/cotizacion_pag_1.jpg') }}');">
-        <p style="position: absolute; top: 383; left: 180; font-size: 16px; font-weight: bold; color: #ffffff; margin-top: 7px;">Sr(a): {{ $name }}</p>
+    <div class="cover" style="background-image: url('{{ public_path('storage/images-cotizacion/portada.png') }}');">
+        <p style="position: absolute; top: 390; left: 180; font-size: 16px; font-weight: bold; color: #ffffff; margin-top: 7px;">Sr(a): {{ $name }}</p>
     </div>
 
 </body>

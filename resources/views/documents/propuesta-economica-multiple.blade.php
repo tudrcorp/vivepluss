@@ -122,6 +122,8 @@
 
     @endif
 
+    @livewire('contraportada-individual')
+
 
 
     {{-- @livewire('propuesta-economica.propuesta-economica-page-4') --}}

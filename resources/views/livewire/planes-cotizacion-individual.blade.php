@@ -160,6 +160,27 @@
             }
 
 
+            /* Configuración del Footer para ancho completo */
+            footer {
+                position: fixed;
+                bottom: 0px;
+                left: -100px;
+                right: 0px;
+                width: 100%;
+                height: auto;
+                margin: 0;
+                padding: 0;
+                line-height: 0; /* Elimina espacio extra debajo de la imagen */
+            }
+
+            footer img {
+                width: 100%;
+                display: block; /* Evita espacios en blanco residuales */
+                margin: 0;
+                padding: 0;
+            }
+
+
 
         </style>
 
@@ -169,6 +190,7 @@
             use App\Models\Configuration;
             $setting = Configuration::first() ?? (object) $defaultConfig;
         @endphp
+        
         <!-- Primera página: Imagen de fondo -->
         <div class="cover" style="background-color: white;">
 
@@ -248,10 +270,14 @@
 
             <div style="position: absolute; top: 0px; right: 0px; margin-top: 20px; padding: 20px; margin-right: 20px">
                 <div>
-                    <img class="logo-bottom-left" src="{{ public_path('storage/'.$setting->brandLogo) }}" style="width: 100px; height: auto;" alt="">
+                    <img class="logo-bottom-left" src="{{ public_path('storage/' . $setting->brandLogo) }}" style="width: 100px; height: auto;" alt="">
                 </div>
             </div>
             <!-- Primera página: Imagen de fondo -->
+            <!-- El footer debe declararse idealmente al inicio para que DomPDF lo repita en cada página -->
+            <footer>
+                <img src="{{ public_path('storage/images-cotizacion/footer.png') }}" alt="Footer">
+            </footer>
         </div>
 
     </body>

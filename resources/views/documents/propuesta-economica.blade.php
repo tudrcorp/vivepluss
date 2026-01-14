@@ -112,7 +112,7 @@
     @endif
 
 
-    {{-- @livewire('propuesta-economica.propuesta-economica-page-4') --}}
+    @livewire('contraportada-individual')
 </body>
 </html>
 

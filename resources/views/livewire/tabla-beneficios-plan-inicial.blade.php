@@ -7,7 +7,7 @@
                 <thead style="background-color: {{ $colorPrimary }}; color: #ffffff; text-transform: uppercase; font-size: 0.5rem;">
                     <tr>
                         {{-- Primera Columna Fija: Beneficio (50% del ancho) --}}
-                        <th scope="col" style="padding: 0.2rem; font-weight: 700; text-align: left; width: 85%; background-color: {{ $colorPrimary }};">
+                        <th scope="col" style="padding: 0.5rem 0.2rem; font-weight: 700; text-align: left; width: 85%; background-color: {{ $colorPrimary }};">
                             BENEFICIOS PLAN Esencial
                         </th>
                         {{-- Columnas Basia:  --}}

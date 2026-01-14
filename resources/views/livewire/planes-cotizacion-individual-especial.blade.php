@@ -110,6 +110,26 @@
             border: 1px solid #ddd;
         }
 
+         /* Configuración del Footer para ancho completo */
+            footer {
+                position: fixed;
+                bottom: 0px;
+                left: -100px;
+                right: 0px;
+                width: 100%;
+                height: auto;
+                margin: 0;
+                padding: 0;
+                line-height: 0; /* Elimina espacio extra debajo de la imagen */
+            }
+
+            footer img {
+                width: 100%;
+                display: block; /* Evita espacios en blanco residuales */
+                margin: 0;
+                padding: 0;
+            }
+
     </style>
 </head>
 <body>
@@ -190,18 +210,18 @@
                 @endforeach
             </table>
             @php
-            use Illuminate\Support\Facades\Log;
-            // Inicializar array para almacenar los totales por columna
-            $totalColumns = [0, 0, 0, 0, 0, 0]; // Para US$5K a US$40K (6 columnas)
+                use Illuminate\Support\Facades\Log;
+                // Inicializar array para almacenar los totales por columna
+                $totalColumns = [0, 0, 0, 0, 0, 0]; // Para US$5K a US$40K (6 columnas)
 
-            // Recorrer los datos para sumar por columna
-            foreach ($data as $key => $value) {
-                foreach ($value as $index => $item) {
-                    if (isset($totalColumns[$index])) {
-                        $totalColumns[$index] += round($item->subtotal_anual);
+                // Recorrer los datos para sumar por columna
+                foreach ($data as $key => $value) {
+                    foreach ($value as $index => $item) {
+                        if (isset($totalColumns[$index])) {
+                            $totalColumns[$index] += round($item->subtotal_anual);
+                        }
                     }
                 }
-            }
 
             @endphp
             <table style="width: 100%; border-collapse: collapse; font-type: Helvetica, sans-serif;">
@@ -238,10 +258,13 @@
 
         <div style="position: absolute; top: 0px; right: 0px; margin-top: 20px; padding: 20px; margin-right: 20px">
             <div>
-                <img class="logo-bottom-left" src="{{ public_path('storage/'.$setting->brandLogo) }}" style="width: 100px; height: auto;" alt="">
+                <img class="logo-bottom-left" src="{{ public_path('storage/' . $setting->brandLogo) }}" style="width: 100px; height: auto;" alt="">
             </div>
         </div>
-
+        <!-- El footer debe declararse idealmente al inicio para que DomPDF lo repita en cada página -->
+        <footer>
+            <img src="{{ public_path('storage/images-cotizacion/footer.png') }}" alt="Footer">
+        </footer>
     </div>
 
 </body>
