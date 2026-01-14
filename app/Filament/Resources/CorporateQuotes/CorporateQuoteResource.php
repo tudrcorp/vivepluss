@@ -26,6 +26,8 @@ class CorporateQuoteResource extends Resource
 
     protected static ?string $navigationLabel = 'Cotizar';
 
+    protected static ?int $navigationSort = 3;
+
     public static function form(Schema $schema): Schema
     {
         return CorporateQuoteForm::configure($schema);

@@ -2,35 +2,36 @@
 
 namespace App\Providers\Filament;
 
-use Filament\Panel;
-use App\Models\User;
-use Livewire\Component;
-use App\Services\GetColor;
-use Filament\PanelProvider;
-use Filament\Actions\Action;
-use App\Models\Configuration;
-use Filament\Pages\Dashboard;
-use Filament\Support\Enums\Width;
-use Filament\Support\Colors\Color;
-use Illuminate\Support\Facades\DB;
-use Filament\View\PanelsRenderHook;
-use Filament\Widgets\AccountWidget;
-use Illuminate\Support\Facades\Auth;
-use Filament\Widgets\FilamentInfoWidget;
-use App\Http\Middleware\DuplicatedSession;
-use Filament\Http\Middleware\Authenticate;
-use Illuminate\Session\Middleware\StartSession;
-use App\Filament\Resources\Agents\AgentResource;
-use Illuminate\Cookie\Middleware\EncryptCookies;
-use Filament\Http\Middleware\AuthenticateSession;
 use App\Filament\Resources\Agencies\AgencyResource;
-use Illuminate\Routing\Middleware\SubstituteBindings;
-use Illuminate\View\Middleware\ShareErrorsFromSession;
+use App\Filament\Resources\Agents\AgentResource;
+use App\Filament\Resources\Configurations\ConfigurationResource;
+use App\Http\Middleware\DuplicatedSession;
+use App\Models\Configuration;
+use App\Models\User;
+use App\Services\GetColor;
+use Filament\Actions\Action;
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Filament\Navigation\NavigationGroup;
+use Filament\Pages\Dashboard;
+use Filament\Panel;
+use Filament\PanelProvider;
+use Filament\Support\Colors\Color;
+use Filament\Support\Enums\Width;
+use Filament\View\PanelsRenderHook;
+use Filament\Widgets\AccountWidget;
+use Filament\Widgets\FilamentInfoWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
-use App\Filament\Resources\Configurations\ConfigurationResource;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Livewire\Component;
 
 class ViveadminPanelProvider extends PanelProvider
 {
@@ -120,6 +121,11 @@ class ViveadminPanelProvider extends PanelProvider
             ->resourceEditPageRedirect('index')
             ->authMiddleware([
                 DuplicatedSession::class,
+            ])
+            ->navigationGroups([
+                'INDIVIDUALES',
+                'CORPORATIVAS',
+                'ORGANIZACION',
             ]);
     }
 }

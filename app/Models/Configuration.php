@@ -106,6 +106,26 @@ class Configuration extends Model
         'duplicatedSession',
         'agents_module_enabled',
 
+        //agregados
+        'web_imagePlan_1',
+        'web_imagePlan_2',
+        'web_imagePlan_3',
+
+        'web_Plan_1_items_1',
+        'web_Plan_1_items_2',
+        'web_Plan_1_items_3',
+        'web_Plan_1_items_4',
+
+        'web_Plan_2_items_1',
+        'web_Plan_2_items_2',
+        'web_Plan_2_items_3',
+        'web_Plan_2_items_4',
+
+        'web_Plan_3_items_1',
+        'web_Plan_3_items_2',
+        'web_Plan_3_items_3',
+        'web_Plan_3_items_4',
+
         
         
           

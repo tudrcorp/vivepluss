@@ -83,50 +83,50 @@ class AffiliationCorporatesTable
                 //     ->searchable(),
 
                 //...  
-                ColumnGroup::make('Plan Afiliado', [
-                    TextColumn::make('payment_frequency')
-                        ->label('Frecuencia de pago')
-                        ->alignCenter()
-                        ->badge()
-                        ->color('success')
-                        ->searchable(),
-                    TextColumn::make('poblation')
-                        ->label('Población')
-                        ->alignCenter()
-                        ->suffix(' persona(s)')
-                        ->badge()
-                        ->color(function (mixed $state): string {
-                            if ($state > 0) {
-                                return 'warning';
-                            }
-                            return 'danger';
-                        })
-                        ->searchable(),
-                    TextColumn::make('fee_anual')
-                        ->label('Tarifa Anual')
-                        ->alignCenter()
-                        ->money()
-                        ->badge()
-                        ->color(function (mixed $state): string {
-                            if ($state > 0) {
-                                return 'warning';
-                            }
-                            return 'danger';
-                        })
-                        ->searchable(),
-                    TextColumn::make('total_amount')
-                        ->label('Total a Pagar')
-                        ->alignCenter()
-                        ->money()
-                        ->badge()
-                        ->color(function (mixed $state): string {
-                            if ($state > 0) {
-                                return 'warning';
-                            }
-                            return 'danger';
-                        })
-                        ->searchable(),
-                ]),
+                // ColumnGroup::make('Plan Afiliado', [
+                //     TextColumn::make('payment_frequency')
+                //         ->label('Frecuencia de pago')
+                //         ->alignCenter()
+                //         ->badge()
+                //         ->color('success')
+                //         ->searchable(),
+                //     TextColumn::make('poblation')
+                //         ->label('Población')
+                //         ->alignCenter()
+                //         ->suffix(' persona(s)')
+                //         ->badge()
+                //         ->color(function (mixed $state): string {
+                //             if ($state > 0) {
+                //                 return 'warning';
+                //             }
+                //             return 'danger';
+                //         })
+                //         ->searchable(),
+                //     TextColumn::make('fee_anual')
+                //         ->label('Tarifa Anual')
+                //         ->alignCenter()
+                //         ->money()
+                //         ->badge()
+                //         ->color(function (mixed $state): string {
+                //             if ($state > 0) {
+                //                 return 'warning';
+                //             }
+                //             return 'danger';
+                //         })
+                //         ->searchable(),
+                //     TextColumn::make('total_amount')
+                //         ->label('Total a Pagar')
+                //         ->alignCenter()
+                //         ->money()
+                //         ->badge()
+                //         ->color(function (mixed $state): string {
+                //             if ($state > 0) {
+                //                 return 'warning';
+                //             }
+                //             return 'danger';
+                //         })
+                //         ->searchable(),
+                // ]),
 
                 TextColumn::make('rif')
                     ->label('Rif')
@@ -149,26 +149,26 @@ class AffiliationCorporatesTable
                 TextColumn::make('country.name')
                     ->searchable(),
                 //...
-                ColumnGroup::make('Información ILS', [
-                    TextColumn::make('vaucher_ils')
-                        ->label('Voucher ILS')
-                        ->badge()
-                        ->alignCenter()
-                        ->color('success')
-                        ->searchable(),
-                    TextColumn::make('date_payment_initial_ils')
-                        ->label('ago ILS Desde')
-                        ->badge()
-                        ->alignCenter()
-                        ->color('success')
-                        ->searchable(),
-                    TextColumn::make('date_payment_final_ils')
-                        ->label('Pago ILS Hasta')
-                        ->badge()
-                        ->alignCenter()
-                        ->color('success')
-                        ->searchable(),
-                ]),
+                // ColumnGroup::make('Información ILS', [
+                //     TextColumn::make('vaucher_ils')
+                //         ->label('Voucher ILS')
+                //         ->badge()
+                //         ->alignCenter()
+                //         ->color('success')
+                //         ->searchable(),
+                //     TextColumn::make('date_payment_initial_ils')
+                //         ->label('ago ILS Desde')
+                //         ->badge()
+                //         ->alignCenter()
+                //         ->color('success')
+                //         ->searchable(),
+                //     TextColumn::make('date_payment_final_ils')
+                //         ->label('Pago ILS Hasta')
+                //         ->badge()
+                //         ->alignCenter()
+                //         ->color('success')
+                //         ->searchable(),
+                // ]),
                 TextColumn::make('created_by')
                     ->label('Creado por')
                     ->searchable(),

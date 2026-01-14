@@ -1517,11 +1517,9 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
         </div>
     </section>
 
-
-
-    <!-- 3. Sección Planes de Salud (Mejorada) -->
-    <section class="section-planes" id="planes">
-        <div class="w-full max-w-6xl mx-auto">
+    <!-- Sección PLanes -->
+    <section id="planes" class="py-20 bg-light">
+        <div class="container mx-auto px-6">
             <!-- Encabezado -->
             <header class="text-center mb-12">
                 <h1 class="text-4xl sm:text-5xl font-extrabold mb-3" style="color: var(--text-dark);">
@@ -1532,199 +1530,54 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
                 </p>
             </header>
 
-            <!-- Contenedor de las Tarjetas de Precios (Responsive Grid) -->
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
 
-                <!-- Plan 1: Básico -->
-                <div class="card p-6 rounded-2xl shadow-lg flex flex-col">
-                    <h2 class="text-2xl font-bold mb-2" style="color: var(--text-dark);">{{ $setting->web_namePlan_1 }}</h2>
-                    <p class="text-sm mb-4" style="color: var(--text-light);">
-                        {{ $setting->web_descriptionPlan_1 }}
-                    </p>
-                    <div class="text-5xl font-extrabold mb-2" style="color: var(--light-blue);">
-                        {{ $setting->web_pricePlan_1 }}
-                        <span class="text-xl font-medium" style="color: var(--text-light);">/{{ $setting->web_formaPagoPlan_1 }}</span>
-                    </div>
-                    <p class="text-xs mb-6" style="color: var(--text-light);">{{ $setting->web_descriptionPricePlan_1 }}</p>
-                    <ul class="space-y-3 mb-8 flex-grow">
-                        <li class="flex items-start">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-dark); font-size: 13px;">Atención Médica Telefónica</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-dark); font-size: 13px;">Entrega de Tratamiento Médico a Domicilio</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-dark); font-size: 13px;">Monitoreo Telefónico Evolutivo</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Atención Médica Domiciliaria con Tratamiento de Unidosis Incluida</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Laboratorios a Domicilio con fines Diagnósticos</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Imagenología a Domicilio con fines Diagnósticos</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Seguimiento e Interpretación de Resultados</span>
-                        </li>
+                <div class="service-card bg-white p-8 rounded-xl shadow-[0px_0px_0px_1px_rgba(0,0,0,0.06),0px_1px_1px_-0.5px_rgba(0,0,0,0.06),0px_3px_3px_-1.5px_rgba(0,0,0,0.06),_0px_6px_6px_-3px_rgba(0,0,0,0.06),0px_12px_12px_-6px_rgba(0,0,0,0.06),0px_24px_24px_-12px_rgba(0,0,0,0.06)]">
+                    <img src="{{ asset('storage/'. $setting->web_imagePlan_1) }}" alt="Planes con cobertura Mundial" class="rounded-xl mb-5 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)]">
+                    <h3 class="text-xl font-bold mb-4 text-center">{{ $setting->web_namePlan_1 }}</h3>
+                    <p class="mb-6 text-justify">{{ $setting->web_descriptionPlan_1 }}</p>
+                    <ul class="mb-6 space-y-2">
+                        <li class="flex items-center"><i class="fas fa-check-circle text-success mr-2"></i> {{ $setting->web_Plan_1_items_1 }}</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-success mr-2"></i> {{ $setting->web_Plan_1_items_2 }}</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-success mr-2"></i> {{ $setting->web_Plan_1_items_3 }}</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-success mr-2"></i> {{ $setting->web_Plan_1_items_4 }}</li>
                     </ul>
-                    <button class="btn-primary py-3 rounded-xl font-semibold mt-auto">
-                        {{ $setting->web_descriptionBottonPlan_1 }}
-                    </button>
+                    {{-- <div class="text-2xl font-bold text-secondary">Desde $40/día</div> --}}
                 </div>
 
-                <!-- Plan 2: Profesional (Destacado) -->
-                <div class="card highlight-card p-8 rounded-3xl flex flex-col shadow-2xl z-10">
-                    <div class="text-xs font-bold uppercase tracking-widest px-3 py-1 rounded-full w-fit mb-4" style="background-color: var(--primary); color: white;">
-                        Más Popular
-                    </div>
-                    <h2 class="text-3xl font-bold mb-2" style="color: var(--text-dark);">{{ $setting->web_namePlan_2 }}</h2>
-                    <p class="text-sm mb-4" style="color: var(--text-light);">
-                        {{ $setting->web_descriptionPlan_2 }}
-                    </p>
-                    <div class="text-6xl font-extrabold mb-2" style="color: var(--primary);">
-                        {{ $setting->web_pricePlan_2 }}
-                        <span class="text-xl font-medium" style="color: var(--text-light);">/{{ $setting->web_formaPagoPlan_2 }}</span>
-                    </div>
-                    <p class="text-xs mb-6" style="color: var(--text-light);">{{ $setting->web_descriptionPricePlan_2 }}</p>
-                    <ul class="space-y-3 mb-8 flex-grow">
-                        <li class="flex items-start">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-dark); font-size: 13px;">Atención Médica Telefónica</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-dark); font-size: 13px;">Entrega de Tratamiento Médico a Domicilio</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-dark); font-size: 13px;">Monitoreo Telefónico Evolutivo</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Atención Médica Domiciliaria con Tratamiento de Unidosis Incluida</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Laboratorios a Domicilio con fines Diagnósticos</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Imagenología a Domicilio con fines Diagnósticos</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Seguimiento e Interpretación de Resultados</span>
-                        </li>
-
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Traslado en Ambulancia urbano en caso de Emergencia</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Consulta ONLINE o Presencial con Médicos Especialistas</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Urgencias Menores en Domicilio o en sitio</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Asistencia Médica por emergencia. (Patologías Listadas)</span>
-                        </li>
+                <div class="service-card bg-white p-8 rounded-xl shadow-[0px_0px_0px_1px_rgba(0,0,0,0.06),0px_1px_1px_-0.5px_rgba(0,0,0,0.06),0px_3px_3px_-1.5px_rgba(0,0,0,0.06),_0px_6px_6px_-3px_rgba(0,0,0,0.06),0px_12px_12px_-6px_rgba(0,0,0,0.06),0px_24px_24px_-12px_rgba(0,0,0,0.06)]">
+                    <img src="{{ asset('storage/'.$setting->web_imagePlan_2) }}" alt="Europa Low Cost" class="rounded-xl mb-5 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)]">
+                    <h3 class="text-2xl font-bold mb-4 text-center">{{ $setting->web_namePlan_2 }}</h3>
+                    <p class="mb-6 text-justify">{{ $setting->web_descriptionPlan_2 }}</p>
+                    <ul class="mb-6 space-y-2">
+                        <li class="flex items-center"><i class="fas fa-check-circle text-success mr-2"></i> {{ $setting->web_Plan_2_items_1 }}</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-success mr-2"></i> {{ $setting->web_Plan_2_items_2 }}</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-success mr-2"></i> {{ $setting->web_Plan_2_items_3 }}</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-success mr-2"></i> {{ $setting->web_Plan_2_items_4 }}</li>
                     </ul>
-                    <button class="btn-primary py-3 rounded-xl font-semibold mt-auto">
-                        {{ $setting->web_descriptionBottonPlan_2 }}
-                    </button>
+                    {{-- <div class="text-2xl font-bold text-secondary">Desde $55/día</div> --}}
                 </div>
 
-                <!-- Plan 3: Empresarial -->
-                <div class="card p-6 rounded-2xl shadow-lg flex flex-col">
-                    <h2 class="text-2xl font-bold mb-2" style="color: var(--text-dark);">
-                        {{ $setting->web_namePlan_3 }}
-                    </h2>
-                    <p class="text-sm mb-4" style="color: var(--text-light);">
-                        {{ $setting->web_descriptionPlan_3 }}
-                    </p>
-                    <div class="text-5xl font-extrabold mb-2" style="color: var(--secondary);">
-                        {{ $setting->web_pricePlan_3 }}
-                        <span class="text-xl font-medium" style="color: var(--text-light);">/{{ $setting->web_formaPagoPlan_3 }}</span>
-                    </div>
-                    <p class="text-xs mb-6" style="color: var(--text-light);">{{ $setting->web_descriptionPricePlan_3 }}</p>
-                    <ul class="space-y-3 mb-8 flex-grow">
-                        <li class="flex items-start">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-dark); font-size: 13px;">Atención Médica Telefónica</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-dark); font-size: 13px;">Entrega de Tratamiento Médico a Domicilio</span>
-                        </li>
-                        <li class="flex items-start">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-dark); font-size: 13px;">Monitoreo Telefónico Evolutivo</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Atención Médica Domiciliaria con Tratamiento de Unidosis Incluida</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Laboratorios a Domicilio con fines Diagnósticos</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Imagenología a Domicilio con fines Diagnósticos</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Seguimiento e Interpretación de Resultados</span>
-                        </li>
-
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Traslado en Ambulancia urbano en caso de Emergencia</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Consulta ONLINE o Presencial con Médicos Especialistas</span>
-                        </li>
-                        <li class="flex items-start" style="color: var(--text-light);">
-                            <span class="feature-icon mr-2 text-sm">&#10003;</span>
-                            <span style="color: var(--text-light); font-size: 13px;">Asistencia Médica por Accidente</span>
-                        </li>
+                <div class="service-card bg-white p-8 rounded-xl shadow-[0px_0px_0px_1px_rgba(0,0,0,0.06),0px_1px_1px_-0.5px_rgba(0,0,0,0.06),0px_3px_3px_-1.5px_rgba(0,0,0,0.06),_0px_6px_6px_-3px_rgba(0,0,0,0.06),0px_12px_12px_-6px_rgba(0,0,0,0.06),0px_24px_24px_-12px_rgba(0,0,0,0.06)]">
+                    <img src="{{ asset('storage/'.$setting->web_imagePlan_3) }}" alt="Plan Local (Venezuela)" class="rounded-xl mb-5 shadow-[0_2.8px_2.2px_rgba(0,_0,_0,_0.034),_0_6.7px_5.3px_rgba(0,_0,_0,_0.048),_0_12.5px_10px_rgba(0,_0,_0,_0.06),_0_22.3px_17.9px_rgba(0,_0,_0,_0.072),_0_41.8px_33.4px_rgba(0,_0,_0,_0.086),_0_100px_80px_rgba(0,_0,_0,_0.12)]">
+                    <h3 class="text-xl font-bold mb-4 text-center">{{ $setting->web_namePlan_3 }}</h3>
+                    <p class="mb-6 text-justify">{{ $setting->web_descriptionPlan_3 }}</p>
+                    <ul class="mb-6 space-y-2">
+                        <li class="flex items-center"><i class="fas fa-check-circle text-success mr-2"></i> {{ $setting->web_Plan_3_items_1 }}</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-success mr-2"></i> {{ $setting->web_Plan_3_items_2 }}</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-success mr-2"></i> {{ $setting->web_Plan_3_items_3 }}</li>
+                        <li class="flex items-center"><i class="fas fa-check-circle text-success mr-2"></i> {{ $setting->web_Plan_3_items_4 }}</li>
                     </ul>
-                    <button class="btn-primary py-3 rounded-xl font-semibold mt-auto">
-                        {{ $setting->web_descriptionBottonPlan_3 }}
-                    </button>
+                    {{-- <div class="text-2xl font-bold text-secondary">Desde $25/día</div> --}}
                 </div>
 
             </div>
-
-            <!-- Pie de página con contacto -->
-            <footer class="text-center mt-12 pt-6 border-t" style="border-color: var(--text-light);">
-                <p class="text-sm" style="color: var(--text-light);">{{ $setting->web_footerPlans }} <a href="#" class="font-semibold underline" style="color: var(--primary);">{{ $setting->web_footerBottonPlans }}</a>.</p>
-            </footer>
         </div>
-
-
     </section>
 
     <!-- Sección Testimonios Mejorada -->
     <section id="testimonios" class="py-24 testimonial-section parallax" 
         style="background-image: url('https://blog.auna.pe/hubfs/paquete-salud-preventiva.png')">
-
-
-
 
         <div class="container mx-auto px-4 sm:px-6 relative z-10">
             <div class="text-center mb-16">

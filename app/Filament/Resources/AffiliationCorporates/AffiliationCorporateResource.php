@@ -24,9 +24,11 @@ class AffiliationCorporateResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-group';
 
-    protected static ?string $navigationLabel = 'Consultar Afiliación';
+    protected static ?string $navigationLabel = 'Consultar Afiliaciones';
 
     protected static string | UnitEnum | null $navigationGroup = 'CORPORATIVAS';
+
+    protected static ?int $navigationSort = 4;
     
     public static function form(Schema $schema): Schema
     {

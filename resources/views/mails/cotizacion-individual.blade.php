@@ -30,11 +30,16 @@
                                 <span style="font-weight: bold; font-size: 18px;">¡Cotizacion Individual!,<br><br></span>
                             </p>
                             <p style="margin: 0; color: #555555;">
-                                Hemos adjuntado la cotización individual que solicitaste a nuestro equipo de ventas. <br>
-                                En él encontrarás toda la información referente a el/los plan(es) solicitados con VivePlus.<br><br>
+                                Sabemos que tu tranquilidad y la de los tuyos es lo más importante. Por eso, hemos preparado la cotización individual
+                                que nos solicitaste con especial detalle... <br>
+                                ¿Qué sigue ahora?<br>
+                                1.- Revisa el archivo adjunto.<br>
+                                2.- Elige la opción que mejor se adapte a tu estilo de vida.<br>
+                                3.- ¡Comienza a disfrutar de todos nuestros beneficios!<br><br>
                             </p>
                             <p style="margin: 0; color: #555555;">
-                                ¡Bienvenido/a a la comunidad! Si tienes alguna pregunta, no dudes en contactarnos.
+                                ¡¿Tienes dudas? No te preocupes, puedes contactarnos directamente a través de nuestras líneas de atención.
+                                ¡Bienvenido/a a la familia! VivePlus
                             </p>
                         </td>
                     </tr>

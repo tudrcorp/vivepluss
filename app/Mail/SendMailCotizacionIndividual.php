@@ -32,7 +32,7 @@ class SendMailCotizacionIndividual extends Mailable
     {
         return new Envelope(
             from: new Address('vivepluss@vivepluss.com', 'VIVE PLUS'),
-            subject: 'Cotización Individual',
+            subject: 'Todo listo para tu protección individual con VivePlus 🛡️',
         );
     }
 

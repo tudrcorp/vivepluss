@@ -25,6 +25,8 @@ class IndividualQuoteResource extends Resource
     protected static string | UnitEnum | null $navigationGroup = 'INDIVIDUALES';
 
     protected static ?string $navigationLabel = 'Cotizar';
+
+    protected static ?int $navigationSort = 1;
     
     public static function form(Schema $schema): Schema
     {

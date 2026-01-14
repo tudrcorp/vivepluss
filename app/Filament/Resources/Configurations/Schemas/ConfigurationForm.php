@@ -169,65 +169,116 @@ class ConfigurationForm
                                 Grid::make(3)->schema([
                                     Fieldset::make('Plan Uno')
                                         ->schema([
+                                            FileUpload::make('web_imagePlan_1')
+                                                ->label('Imagen Plan')
+                                                ->directory('web-images')
+                                                ->visibility('public')
+                                                ->required(),
                                             TextInput::make('web_namePlan_1')
                                                 ->label('Nombre del Plan')
                                                 ->required(),
-                                            TextInput::make('web_pricePlan_1')
-                                                ->label('Precio del Plan')
-                                                ->required(),
+                                            // TextInput::make('web_pricePlan_1')
+                                            //     ->label('Precio del Plan')
+                                            //     ->required(),
                                             TextInput::make('web_descriptionPlan_1')
                                                 ->label('Descripción corta')
                                                 ->required(),
-                                            TextInput::make('web_formaPagoPlan_1')
-                                                ->label('Forma de Pago (Frecuencia, año, mes, trimestre, semana, etc.)')
+                                            // TextInput::make('web_formaPagoPlan_1')
+                                            //     ->label('Forma de Pago (Frecuencia, año, mes, trimestre, semana, etc.)')
+                                            //     ->required(),
+                                            // TextInput::make('web_descriptionPricePlan_1')
+                                            //     ->label('Descripción corta para la forma de pago')
+                                            //     ->required(),
+                                            // TextInput::make('web_descriptionBottonPlan_1')
+                                            //     ->label('Boton de compra')
+                                            //     ->required(),
+                                            TextInput::make('web_Plan_1_items_1')
+                                                ->label('Item 1')
                                                 ->required(),
-                                            TextInput::make('web_descriptionPricePlan_1')
-                                                ->label('Descripción corta para la forma de pago')
+                                            TextInput::make('web_Plan_1_items_2')
+                                                ->label('Item 2')
                                                 ->required(),
-                                            TextInput::make('web_descriptionBottonPlan_1')
-                                                ->label('Boton de compra')
+                                            TextInput::make('web_Plan_1_items_3')
+                                                ->label('Item 3')
+                                                ->required(),
+                                            TextInput::make('web_Plan_1_items_4')
+                                                ->label('Item 4')
                                                 ->required(),
                                         ])->columns(1),
                                     Fieldset::make('Plan Dos')
                                         ->schema([
+                                            FileUpload::make('web_imagePlan_2')
+                                                ->label('Imagen Plan')
+                                                ->directory('web-images')
+                                                ->visibility('public')
+                                                ->required(),
                                             TextInput::make('web_namePlan_2')
                                                 ->label('Nombre del Plan')
                                                 ->required(),
-                                            TextInput::make('web_pricePlan_2')
-                                                ->label('Precio del Plan')
-                                                ->required(),
+                                            // TextInput::make('web_pricePlan_1')
+                                            //     ->label('Precio del Plan')
+                                            //     ->required(),
                                             TextInput::make('web_descriptionPlan_2')
                                                 ->label('Descripción corta')
                                                 ->required(),
-                                            TextInput::make('web_formaPagoPlan_2')
-                                                ->label('Forma de Pago (Frecuencia, año, mes, trimestre, semana, etc.)')
+                                            // TextInput::make('web_formaPagoPlan_1')
+                                            //     ->label('Forma de Pago (Frecuencia, año, mes, trimestre, semana, etc.)')
+                                            //     ->required(),
+                                            // TextInput::make('web_descriptionPricePlan_1')
+                                            //     ->label('Descripción corta para la forma de pago')
+                                            //     ->required(),
+                                            // TextInput::make('web_descriptionBottonPlan_1')
+                                            //     ->label('Boton de compra')
+                                            //     ->required(),
+                                            TextInput::make('web_Plan_2_items_1')
+                                                ->label('Item 1')
                                                 ->required(),
-                                            TextInput::make('web_descriptionPricePlan_2')
-                                                ->label('Descripción corta para la forma de pago')
+                                            TextInput::make('web_Plan_2_items_2')
+                                                ->label('Item 2')
                                                 ->required(),
-                                            TextInput::make('web_descriptionBottonPlan_2')
-                                                ->label('Boton de compra')
+                                            TextInput::make('web_Plan_2_items_3')
+                                                ->label('Item 3')
+                                                ->required(),
+                                            TextInput::make('web_Plan_2_items_4')
+                                                ->label('Item 4')
                                                 ->required(),
                                         ])->columns(1),
                                     Fieldset::make('Plan Tres')
                                         ->schema([
+                                            FileUpload::make('web_imagePlan_3')
+                                                ->label('Imagen Plan')
+                                                ->directory('web-images')
+                                                ->visibility('public')
+                                                ->required(),
                                             TextInput::make('web_namePlan_3')
                                                 ->label('Nombre del Plan')
                                                 ->required(),
-                                            TextInput::make('web_pricePlan_3')
-                                                ->label('Precio del Plan')
-                                                ->required(),
+                                            // TextInput::make('web_pricePlan_1')
+                                            //     ->label('Precio del Plan')
+                                            //     ->required(),
                                             TextInput::make('web_descriptionPlan_3')
                                                 ->label('Descripción corta')
                                                 ->required(),
-                                            TextInput::make('web_formaPagoPlan_3')
-                                                ->label('Forma de Pago (Frecuencia, año, mes, trimestre, semana, etc.)')
+                                            // TextInput::make('web_formaPagoPlan_1')
+                                            //     ->label('Forma de Pago (Frecuencia, año, mes, trimestre, semana, etc.)')
+                                            //     ->required(),
+                                            // TextInput::make('web_descriptionPricePlan_1')
+                                            //     ->label('Descripción corta para la forma de pago')
+                                            //     ->required(),
+                                            // TextInput::make('web_descriptionBottonPlan_1')
+                                            //     ->label('Boton de compra')
+                                            //     ->required(),
+                                            TextInput::make('web_Plan_3_items_1')
+                                                ->label('Item 1')
                                                 ->required(),
-                                            TextInput::make('web_descriptionPricePlan_3')
-                                                ->label('Descripción corta para la forma de pago')
+                                            TextInput::make('web_Plan_3_items_2')
+                                                ->label('Item 2')
                                                 ->required(),
-                                            TextInput::make('web_descriptionBottonPlan_3')
-                                                ->label('Boton de compra')
+                                            TextInput::make('web_Plan_3_items_3')
+                                                ->label('Item 3')
+                                                ->required(),
+                                            TextInput::make('web_Plan_3_items_4')
+                                                ->label('Item 4')
                                                 ->required(),
                                         ])->columns(1),
                                     TextInput::make('web_footerPlans')

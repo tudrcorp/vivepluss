@@ -27,14 +27,22 @@
                     <tr>
                         <td align="center" style="padding: 15px 10px; color: #333333; font-size: 14px; line-height: 1.6;">
                             <p style="margin-bottom: 5px; color: #555555;">
-                                <span style="font-weight: bold; font-size: 18px;">¡Cotizacion Corporativa!,<br><br></span>
+                                <span style="font-weight: bold; font-size: 18px;">Estimados,<br><br></span>
                             </p>
                             <p style="margin: 0; color: #555555;">
-                                Hemos adjuntado la cotización corporativa que solicitaste a nuestro equipo de ventas. <br>
-                                En él encontrarás toda la información referente a el/los plan(es) solicitados de acuerdo al número de personas que seleccionaste.<br><br>
+                                Es un gusto saludarles. En VivePlus entendemos que el capital humano es el activo más valioso de cualquier empresa. Por
+                                ello, hemos preparado la cotización corporativa solicitada, diseñada para brindar el respaldo y la protección que su
+                                equipo de trabajo merece.
                             </p>
                             <p style="margin: 0; color: #555555;">
-                                ¡Bienvenido/a a la comunidad! Si tienes alguna pregunta, no dudes en contactarnos.
+                                Pasos para el éxito:<br>
+                                1.- Analice la propuesta adjunta y sus beneficios exclusivos.<br>
+                                2.- Seleccione el plan que impulsará el bienestar de su organización.<br>
+                                3.- Contáctenos para activar la cobertura de inmediato.<br><br>
+                            </p>
+                            <p style="margin: 0; color: #555555;">
+                                Estamos listos para ser sus aliados estratégicos. ¿Agendamos una breve llamada para concretar detalles?
+                                ¡Bienvenido/a a la familia! VivePlus
                             </p>
                         </td>
                     </tr>

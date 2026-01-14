@@ -33,7 +33,7 @@ class SendMailCotizacionCorporativa extends Mailable
     {
         return new Envelope(
             from: new Address('vivepluss@vivepluss.com', 'VIVE PLUS'),
-            subject: 'Cotización Corporativa',
+            subject: 'Propuesta Corporativa VivePlus: Soluciones de salud para su organización 🏢',
         );
     }
 

@@ -348,26 +348,26 @@ class CorporateQuotesTable
                                     TextInput::make('email')
                                         ->label('Correo electrónico')
                                         ->email(),
-                                    Grid::make(2)->schema([
-                                        Select::make('country_code')
-                                            ->label('Código de país')
-                                            ->options(fn() => UtilsController::getCountries())
-                                            ->searchable()
-                                            ->default('+58')
-                                            ->live(onBlur: true),
-                                        TextInput::make('phone')
-                                            ->prefixIcon('heroicon-s-phone')
-                                            ->tel()
-                                            ->label('Número de teléfono')
-                                            ->live(onBlur: true)
-                                            ->afterStateUpdated(function ($state, callable $set, Get $get) {
-                                                $countryCode = $get('country_code');
-                                                if ($countryCode) {
-                                                    $cleanNumber = ltrim(preg_replace('/[^0-9]/', '', $state), '0');
-                                                    $set('phone', $countryCode . $cleanNumber);
-                                                }
-                                            }),
-                                    ])
+                                    // Grid::make(2)->schema([
+                                    //     Select::make('country_code')
+                                    //         ->label('Código de país')
+                                    //         ->options(fn() => UtilsController::getCountries())
+                                    //         ->searchable()
+                                    //         ->default('+58')
+                                    //         ->live(onBlur: true),
+                                    //     TextInput::make('phone')
+                                    //         ->prefixIcon('heroicon-s-phone')
+                                    //         ->tel()
+                                    //         ->label('Número de teléfono')
+                                    //         ->live(onBlur: true)
+                                    //         ->afterStateUpdated(function ($state, callable $set, Get $get) {
+                                    //             $countryCode = $get('country_code');
+                                    //             if ($countryCode) {
+                                    //                 $cleanNumber = ltrim(preg_replace('/[^0-9]/', '', $state), '0');
+                                    //                 $set('phone', $countryCode . $cleanNumber);
+                                    //             }
+                                    //         }),
+                                    // ])
                                 ])
                         ])
                         ->action(function (CorporateQuote $record, array $data) {

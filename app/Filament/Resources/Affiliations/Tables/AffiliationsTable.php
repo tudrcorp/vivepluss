@@ -81,52 +81,52 @@ class AffiliationsTable
                     ->searchable(),
 
                 //...  
-                ColumnGroup::make('Plan Afiliado', [
-                    TextColumn::make('plan.description')
-                        ->label('Plan')
-                        ->alignCenter()
-                        ->badge()
-                        ->color('success')
-                        ->searchable(),
-                    TextColumn::make('coverage.price')
-                        ->label('Cobertura')
-                        ->alignCenter()
-                        ->numeric()
-                        ->badge()
-                        ->color('success')
-                        ->suffix(' US$')
-                        ->searchable(),
-                    TextColumn::make('payment_frequency')
-                        ->label('Frecuencia de pago')
-                        ->alignCenter()
-                        ->badge()
-                        ->color('success')
-                        ->searchable(),
-                    TextColumn::make('family_members')
-                        ->label('Población')
-                        ->alignCenter()
-                        ->suffix(' persona(s)')
-                        ->badge()
-                        ->color(function (mixed $state): string {
-                            if ($state > 0) {
-                                return 'warning';
-                            }
-                            return 'danger';
-                        })
-                        ->searchable(),
-                    TextColumn::make('fee_anual')
-                        ->label('Tarifa Anual')
-                        ->alignCenter()
-                        ->money()
-                        ->badge()
-                        ->color(function (mixed $state): string {
-                            if ($state > 0) {
-                                return 'warning';
-                            }
-                            return 'danger';
-                        })
-                        ->searchable(),
-                ]),
+                // ColumnGroup::make('Plan Afiliado', [
+                //     TextColumn::make('plan.description')
+                //         ->label('Plan')
+                //         ->alignCenter()
+                //         ->badge()
+                //         ->color('success')
+                //         ->searchable(),
+                //     TextColumn::make('coverage.price')
+                //         ->label('Cobertura')
+                //         ->alignCenter()
+                //         ->numeric()
+                //         ->badge()
+                //         ->color('success')
+                //         ->suffix(' US$')
+                //         ->searchable(),
+                //     TextColumn::make('payment_frequency')
+                //         ->label('Frecuencia de pago')
+                //         ->alignCenter()
+                //         ->badge()
+                //         ->color('success')
+                //         ->searchable(),
+                //     TextColumn::make('family_members')
+                //         ->label('Población')
+                //         ->alignCenter()
+                //         ->suffix(' persona(s)')
+                //         ->badge()
+                //         ->color(function (mixed $state): string {
+                //             if ($state > 0) {
+                //                 return 'warning';
+                //             }
+                //             return 'danger';
+                //         })
+                //         ->searchable(),
+                //     TextColumn::make('fee_anual')
+                //         ->label('Tarifa Anual')
+                //         ->alignCenter()
+                //         ->money()
+                //         ->badge()
+                //         ->color(function (mixed $state): string {
+                //             if ($state > 0) {
+                //                 return 'warning';
+                //             }
+                //             return 'danger';
+                //         })
+                //         ->searchable(),
+                // ]),
 
                 //...
                 ColumnGroup::make('Información del Titular', [

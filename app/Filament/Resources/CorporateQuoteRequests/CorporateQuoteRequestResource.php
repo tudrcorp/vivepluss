@@ -21,9 +21,11 @@ class CorporateQuoteRequestResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-ticket';
 
-    protected static ?string $navigationLabel = 'Dress-Taylor';
+    protected static ?string $navigationLabel = 'Solicitud a la Medida';
 
-    protected static string | UnitEnum | null $navigationGroup = 'SOLICITUDES';
+    protected static string | UnitEnum | null $navigationGroup = 'CORPORATIVAS';
+
+    protected static ?int $navigationSort = 3;
 
     public static function form(Schema $schema): Schema
     {
