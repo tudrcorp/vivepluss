@@ -4,6 +4,7 @@ namespace App\Filament\Resources\IndividualQuotes\RelationManagers;
 
 use App\Filament\Resources\IndividualQuotes\IndividualQuoteResource;
 use App\Models\Agency;
+use App\Models\Configuration;
 use Filament\Actions\CreateAction;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Table;
@@ -43,36 +44,36 @@ class DetailsQuoteRelationManager extends RelationManager
                     ->label('Cobertura')
                     ->searchable()
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(' UD$'),
+                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
                 TextColumn::make('fee')
                     ->label('Tarifa individual')
                     ->alignCenter()
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(' UD$'),
+                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
                 TextColumn::make('subtotal_anual')
                     ->label('Total anual')
                     ->alignCenter()
                     ->description(fn($record): string => $record->total_persons . ' personas')
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(' UD$'),
+                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
                 TextColumn::make('subtotal_biannual')
                     ->label('Total semestral')
                     ->alignCenter()
                     ->description(fn($record): string => $record->total_persons . ' personas')
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(' UD$'),
+                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
                 TextColumn::make('subtotal_quarterly')
                     ->label('Total trimestral')
                     ->alignCenter()
                     ->description(fn($record): string => $record->total_persons . ' personas')
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(' UD$'),
+                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
                 TextColumn::make('subtotal_monthly')
                     ->label('Total Mensual')
                     ->alignCenter()
                     ->description(fn($record): string => $record->total_persons . ' personas')
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(' UD$')
+                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol())
                     ->hidden(fn(): bool => Agency::where('code', Auth::user()->code_agency)->first()->activate_monthly_frequency == 0),
                 TextColumn::make('status')
                     ->label('Estatus')

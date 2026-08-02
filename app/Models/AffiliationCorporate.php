@@ -105,6 +105,11 @@ class AffiliationCorporate extends Model
         return $this->hasMany(StatusLogAffiliationCorporate::class);
     }
 
+    public function affiliationCorporateObservations(): HasMany
+    {
+        return $this->hasMany(AffiliationCorporateObservation::class)->orderByDesc('created_at');
+    }
+
     public function affiliationCorporatePlans(): HasMany
     {
         return $this->hasMany(AfilliationCorporatePlan::class);

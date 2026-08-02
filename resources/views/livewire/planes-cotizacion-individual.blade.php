@@ -188,7 +188,8 @@
     <body style="font-family: 'quicksand', sans-serif;">
         @php
             use App\Models\Configuration;
-            $setting = Configuration::first() ?? (object) $defaultConfig;
+            $setting = Configuration::first();
+            $currency = $setting?->currency_symbol ?? 'EUR€';
         @endphp
         
         <!-- Primera página: Imagen de fondo -->
@@ -246,22 +247,22 @@
                     </tr>
                     <tr>
                         <td style="font-weight: bold; color: white; background-color: {{ $setting->infoColor }}; font-size: 10px;">TARIFA INDIVIDUAL</td>
-                        <td style="font-weight: bold; font-size: 10px;">{{ round($data['fee']) }} US$</td>
+                        <td style="font-weight: bold; font-size: 10px;">{{ round($data['fee']) }} {{ $currency }}</td>
                     </tr>
                 </table>
 
                 <table style="width: 100%; font-family: 'quicksand', sans-serif; margin-top: 15px">
                     <tr>
                         <td style="font-weight: bold; color: white; background-color: {{ $setting->infoColor }}; font-size: 10px; width: 411px">TOTAL ANUAL</td>
-                        <td style="font-weight: bold; font-size: 10px;">{{ round($data['subtotal_anual']) }} US$</td>
+                        <td style="font-weight: bold; font-size: 10px;">{{ round($data['subtotal_anual']) }} {{ $currency }}</td>
                     </tr>
                     <tr>
                         <td style="font-weight: bold; color: white; background-color: {{ $setting->infoColor }}; font-size: 10px; width: 411px">TOTAL SEMESTRAL</td>
-                        <td style="font-weight: bold; font-size: 10px;">{{ round($data['subtotal_biannual']) }} US$</td>
+                        <td style="font-weight: bold; font-size: 10px;">{{ round($data['subtotal_biannual']) }} {{ $currency }}</td>
                     </tr>
                     <tr>
                         <td style="font-weight: bold; color: white; background-color: {{ $setting->infoColor }}; font-size: 10px; width: 411px">TOTAL TRIMESTRAL</td>
-                        <td style="font-weight: bold; font-size: 10px;">{{ round($data['subtotal_quarterly']) }} US$</td>
+                        <td style="font-weight: bold; font-size: 10px;">{{ round($data['subtotal_quarterly']) }} {{ $currency }}</td>
                     </tr>
                 </table>
 

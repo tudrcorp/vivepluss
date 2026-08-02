@@ -24,6 +24,7 @@ use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
 use App\Http\Controllers\UtilsController;
 use App\Jobs\ResendEmailPropuestaEconomica;
+use App\Support\Filament\InternalObservations;
 use Filament\Schemas\Components\Utilities\Get;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -112,7 +113,6 @@ class CorporateQuoteRequestsTable
                         ->icon('heroicon-s-hand-raised')
                         ->color('warning')
                         ->requiresConfirmation()
-                        ->requiresConfirmation()
                         ->modalHeading('OBSERVACIONES DEL AGENTE')
                         ->modalIcon('heroicon-s-hand-raised')
                         ->modalWidth(Width::ExtraLarge)
@@ -126,31 +126,37 @@ class CorporateQuoteRequestsTable
                                 ])
                         ])
                         ->action(function (CorporateQuoteRequest $record, array $data) {
+                            try {
+                                $record->observations = $data['description'];
+                                $record->save();
 
-                            // try {
+                                Notification::make()
+                                    ->body('Las observaciones fueron registradas exitosamente.')
+                                    ->success()
+                                    ->send();
+                            } catch (\Throwable $th) {
+                                LogController::log(Auth::user()->id, 'EXCEPTION', 'CorporateQuoteRequestsTable.action.add_observations', $th->getMessage());
+                                Notification::make()
+                                    ->title('ERROR')
+                                    ->body($th->getMessage())
+                                    ->icon('heroicon-s-x-circle')
+                                    ->iconColor('danger')
+                                    ->danger()
+                                    ->send();
+                            }
+                        }),
 
-                            //     $bitacora = new Bitacora();
-                            //     $bitacora->individual_quote()->associate($record);
-                            //     $bitacora->user()->associate(Auth::user());
-                            //     $bitacora->details = $data['description'];
-                            //     $bitacora->save();
-
-                            //     Notification::make()
-                            //         ->body('Las observaciones fueron registradas exitosamente.')
-                            //         ->success()
-                            //         ->send();
-
-                            //     $notoficationWp = NotificationController::saddObervationToIndividualQuote($record->code, Auth::user()->name, $data['description']);
-                            // } catch (\Throwable $th) {
-                            //     LogController::log(Auth::user()->id, 'EXCEPTION', 'agents.IndividualQuoteResource.action.enit', $th->getMessage());
-                            //     Notification::make()
-                            //         ->title('ERROR')
-                            //         ->body($th->getMessage())
-                            //         ->icon('heroicon-s-x-circle')
-                            //         ->iconColor('danger')
-                            //         ->danger()
-                            //         ->send();
-                            // }
+                    Action::make('add_internal_observation')
+                        ->label('Observaciones internas')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->color('info')
+                        ->modalHeading('Registrar observación')
+                        ->modalDescription('La observación quedará asociada a esta solicitud y al usuario que la registra.')
+                        ->modalSubmitActionLabel('Guardar')
+                        ->modalWidth(Width::Large)
+                        ->form(InternalObservations::formSchema())
+                        ->action(function (CorporateQuoteRequest $record, array $data): void {
+                            InternalObservations::store($record, 'corporateQuoteRequestObservations', $data);
                         }),
                 ])
                     ->icon('heroicon-c-ellipsis-vertical')

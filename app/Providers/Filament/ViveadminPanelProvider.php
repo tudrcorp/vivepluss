@@ -31,7 +31,6 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
-use Livewire\Component;
 
 class ViveadminPanelProvider extends PanelProvider
 {
@@ -97,8 +96,15 @@ class ViveadminPanelProvider extends PanelProvider
                     ->icon('heroicon-s-cog')
                     ->color('primary')
                     ->hidden(fn () => Auth::user()->is_whiteCompanyAdmin != 1 && Auth::user()->agency_type != 'MASTER')
-                    ->url(function (Component $livewire) {
-                        return ConfigurationResource::getUrl('edit', ['record' => Configuration::where('white_company_id', Auth::user()->white_company_id)->value('id')], panel: 'viveadmin');
+                    ->url(function () {
+                        $configurationId = Configuration::where('white_company_id', Auth::user()->white_company_id)->value('id')
+                            ?? Configuration::query()->value('id');
+
+                        if (! $configurationId) {
+                            return null;
+                        }
+
+                        return ConfigurationResource::getUrl('edit', ['record' => $configurationId], panel: 'viveadmin');
                     }),
                 // ...
                 'logout' => fn(Action $action) => $action
@@ -126,6 +132,7 @@ class ViveadminPanelProvider extends PanelProvider
                 'INDIVIDUALES',
                 'CORPORATIVAS',
                 'ORGANIZACION',
+                'ZONA DE DESCARGA',
             ]);
     }
 }

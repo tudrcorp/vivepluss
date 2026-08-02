@@ -187,7 +187,8 @@
 
     @php
         use App\Models\Configuration;
-        $setting = Configuration::first() ?? (object) $defaultConfig;
+        $setting = Configuration::first();
+            $currency = $setting?->currency_symbol ?? 'EUR€';
     @endphp
 
 
@@ -234,7 +235,7 @@
                             <td class="titulos_table_uno" style="font-weight: bold">Código de Afiliación:</td>
                             <td class="contenido_table_uno">{{ $pagador['code'] }}</td>
                             <td class="titulos_table_uno" style="font-weight: bold">Tarifa Anual:</td>
-                            <td class="contenido_table_uno">US$ {{ number_format($pagador['tarifa_anual'], 2, ',', '.') }}</td>
+                            <td class="contenido_table_uno">{{ $currency }} {{ number_format($pagador['tarifa_anual'], 2, ',', '.') }}</td>
                         </tr>
                         <tr class="tr_table_info_ti">
                             <td class="titulos_table_uno" style="font-weight: bold">Plan:</td>
@@ -246,7 +247,7 @@
                             <td class="titulos_table_uno" style="font-weight: bold">Fecha de Afiliación:</td>
                             <td class="contenido_table_uno">{{ $pagador['fecha_afiliacion'] }}</td>
                             <td class="titulos_table_uno" style="font-weight: bold">Tarifa Periodo:</td>
-                            <td class="contenido_table_uno">US$ {{ number_format($pagador['tarifa_periodo'], 2, ',', '.') }}</td>
+                            <td class="contenido_table_uno">{{ $currency }} {{ number_format($pagador['tarifa_periodo'], 2, ',', '.') }}</td>
                         </tr>
                         <tr class="tr_table_info_ti">
                             <td class="titulos_table_uno" style="font-weight: bold">Vigencia:</td>
@@ -442,9 +443,9 @@
                                     font-weight: bold;
                                 ">
                                 @if($fila == "EMERGENCIAS MÉDICAS POR PATOLOGIAS LISTADAS")
-                                    <span style="font-size: 14px; font-weight: bold; color: {{ $setting->primaryColor }};">US$ {{ number_format($pagador['cobertura'], 2, ',', '.') }}</span>
+                                    <span style="font-size: 14px; font-weight: bold; color: {{ $setting->primaryColor }};">{{ $currency }} {{ number_format($pagador['cobertura'], 2, ',', '.') }}</span>
                                 @elseif($fila == "ASISTENCIA MÉDICA POR ACCIDENTES")
-                                    <span style="font-size: 14px; font-weight: bold; color: {{ $setting->primaryColor }};">US$ {{ number_format($pagador['cobertura'], 2, ',', '.') }}</span>
+                                    <span style="font-size: 14px; font-weight: bold; color: {{ $setting->primaryColor }};">{{ $currency }} {{ number_format($pagador['cobertura'], 2, ',', '.') }}</span>
                                 @else
                                     <img src="{{ public_path('storage/certificados/check-beneficios.png') }}" style="width: 12px; height: 12px;" alt="">
                                 @endif

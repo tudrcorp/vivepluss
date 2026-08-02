@@ -1,0 +1,24 @@
+<?php
+
+namespace App\Filament\Resources\DownloadZones\Pages;
+
+use App\Filament\Resources\DownloadZones\DownloadZoneResource;
+use Filament\Actions\DeleteAction;
+use Filament\Resources\Pages\EditRecord;
+
+class EditDownloadZone extends EditRecord
+{
+    protected static string $resource = DownloadZoneResource::class;
+
+    protected function getRedirectUrl(): string
+    {
+        return DownloadZoneResource::getUrl('index');
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            DeleteAction::make(),
+        ];
+    }
+}

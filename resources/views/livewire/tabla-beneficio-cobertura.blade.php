@@ -23,7 +23,7 @@
                             {{-- Columnas Dinámicas: Coberturas (70% del ancho restante) --}}
                             @foreach ($coverages as $coverage)
                                 <th scope="col" style="padding: 0.2rem; text-align: center; font-weight: 700; width: {{ $coverageColumnWidth }}%; word-break: break-word; ">
-                                    US$ {{ number_format($coverage->price, 0, '.', '') }}
+                                    {{ $currency }} {{ number_format($coverage->price, 0, '.', '') }}
                                 </th>
                             @endforeach
                         </tr>
@@ -47,7 +47,7 @@
                                 @endphp
                                 <span style="color: {{ $color }}; font-weight: {{ $fontWeight }};">
                                     @if($data['limits'][$coverage->id] != 'N/A')
-                                        US$ {{ number_format($data['limits'][$coverage->id], 0, '.', '') }}
+                                        {{ $currency }} {{ number_format($data['limits'][$coverage->id], 0, '.', '') }}
                                     @else
                                     <div style="justify-content: center; /* Centrado horizontal */
                                                 align-items: center; /* Centrado vertical */

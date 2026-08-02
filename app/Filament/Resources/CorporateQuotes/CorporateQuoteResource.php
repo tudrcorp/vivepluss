@@ -15,6 +15,7 @@ use App\Filament\Resources\CorporateQuotes\Pages\CreateCorporateQuote;
 use App\Filament\Resources\CorporateQuotes\Schemas\CorporateQuoteForm;
 use App\Filament\Resources\CorporateQuotes\Tables\CorporateQuotesTable;
 use App\Filament\Resources\CorporateQuotes\RelationManagers\DetailCoporateQuotesRelationManager;
+use App\Filament\Resources\CorporateQuotes\RelationManagers\ObservationsRelationManager;
 
 class CorporateQuoteResource extends Resource
 {
@@ -41,7 +42,8 @@ class CorporateQuoteResource extends Resource
     public static function getRelations(): array
     {
         return [
-            DetailCoporateQuotesRelationManager::class
+            DetailCoporateQuotesRelationManager::class,
+            ObservationsRelationManager::class,
         ];
     }
 

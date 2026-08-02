@@ -14,6 +14,7 @@ use App\Models\Coverage;
 use App\Models\Affiliation;
 use App\Models\BusinessLine;
 use App\Models\BusinessUnit;
+use App\Models\Configuration;
 use Filament\Schemas\Schema;
 use App\Models\IndividualQuote;
 use App\Models\ServiceProvider;
@@ -256,7 +257,7 @@ class AffiliationForm
                                     }),
                                 TextInput::make('fee_anual')
                                     ->label('Tarifa anual')
-                                    ->prefix('US$')
+                                    ->prefix(fn (): string => Configuration::currencySymbol())
                                     ->numeric()
                                     ->disabled()
                                     ->dehydrated()
@@ -264,7 +265,7 @@ class AffiliationForm
                                 TextInput::make('total_amount')
                                     ->label('Total a pagar')
                                     ->helperText('Punto(.) para separar decimales')
-                                    ->prefix('US$')
+                                    ->prefix(fn (): string => Configuration::currencySymbol())
                                     ->numeric()
                                     ->disabled()
                                     ->dehydrated()

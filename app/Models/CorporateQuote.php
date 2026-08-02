@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\File;
 use Illuminate\Database\Eloquent\Model;
 use Filament\Notifications\Notification;
 use App\Jobs\SendEmailPropuestaEconomicaIdealCor;
@@ -84,6 +85,11 @@ class CorporateQuote extends Model
         return $this->hasMany(StatusLogCorpQuote::class, 'corporate_quote_id', 'id');
     }
 
+    public function corporateQuoteObservations(): HasMany
+    {
+        return $this->hasMany(CorporateQuoteObservation::class)->orderByDesc('created_at');
+    }
+
     public function corporateQuoteRequest()
     {
         return $this->belongsTo(CorporateQuoteRequest::class);
@@ -126,7 +132,9 @@ class CorporateQuote extends Model
             $name_user = Auth::user()->name;
             $pdf = Pdf::loadView('documents.propuesta-economica-cor', compact('details', 'collect', 'name_user'));
             $name_pdf = $details['code'] . '.pdf';
-            $pdf->save(public_path('storage/quotes/' . $name_pdf));
+            $quotesDirectory = public_path('storage/quotes');
+            File::ensureDirectoryExists($quotesDirectory);
+            $pdf->save($quotesDirectory . DIRECTORY_SEPARATOR . $name_pdf);
             
         } catch (\Throwable $th) {
             //throw $th;

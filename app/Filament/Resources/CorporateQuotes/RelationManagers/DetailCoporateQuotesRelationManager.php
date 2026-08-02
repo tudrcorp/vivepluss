@@ -9,6 +9,7 @@ use Filament\Tables\Table;
 
 use App\Models\Agent;
 use App\Models\Agency;
+use App\Models\Configuration;
 use Filament\Actions\BulkAction;
 use App\Models\AffiliationCorporate;
 use Illuminate\Support\Facades\Auth;
@@ -47,30 +48,30 @@ class DetailCoporateQuotesRelationManager extends RelationManager
                     ->label('Cobertura')
                     ->searchable()
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(' UD$'),
+                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
                 TextColumn::make('fee')
                     ->label('Tarifa individual')
                     ->alignCenter()
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(' UD$'),
+                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
                 TextColumn::make('subtotal_anual')
                     ->label('Total anual')
                     ->alignCenter()
                     ->description(fn($record): string => $record->total_persons . ' personas')
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(' UD$'),
+                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
                 TextColumn::make('subtotal_biannual')
                     ->label('Total semestral')
                     ->alignCenter()
                     ->description(fn($record): string => $record->total_persons . ' personas')
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(' UD$'),
+                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
                 TextColumn::make('subtotal_quarterly')
                     ->label('Total trimestral')
                     ->alignCenter()
                     ->description(fn($record): string => $record->total_persons . ' personas')
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(' UD$'),
+                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
                 TextColumn::make('status')
                     ->label('Estatus')
                     ->badge()

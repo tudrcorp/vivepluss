@@ -58,6 +58,19 @@ class ConfigurationForm
                             ->regex('/^#([a-fA-F0-9]{6}|[a-fA-F0-9]{3})\b$/'),
                         
                     ])->columnSpanFull(),
+                Fieldset::make('Moneda del sistema')
+                    ->schema([
+                        Select::make('currency_symbol')
+                            ->label('Moneda')
+                            ->options([
+                                'EUR€' => 'Euro (EUR€)',
+                                'US$' => 'Dólar (US$)',
+                            ])
+                            ->default('EUR€')
+                            ->required()
+                            ->native(false)
+                            ->helperText('Se usa en cotizaciones, afiliaciones y documentos (tarifas, totales y coberturas).'),
+                    ])->columnSpanFull(),
                 Fieldset::make('Pagina Web')
                     ->schema([
                         Fieldset::make('Información SEO')    
@@ -116,9 +129,45 @@ class ConfigurationForm
                                         'fab fa-facebook-f'     => 'Facebook',
                                         'fab fa-instagram'      => 'Instagram',
                                         'fab fa-twitter'        => 'Twitter',
-                                        'fab fa-whatsapp'       => 'Linkedin',
+                                        'fab fa-whatsapp'       => 'WhatsApp',
                                     ])
                                     ->multiple(),
+                                Fieldset::make('Enlaces de Redes Sociales')
+                                    ->schema([
+                                        TextInput::make('web_url_facebook')
+                                            ->label('URL Facebook')
+                                            ->url()
+                                            ->placeholder('https://www.facebook.com/tu-pagina')
+                                            ->maxLength(255),
+                                        TextInput::make('web_url_instagram')
+                                            ->label('URL Instagram')
+                                            ->url()
+                                            ->placeholder('https://www.instagram.com/tu-usuario/')
+                                            ->maxLength(255),
+                                        TextInput::make('web_url_twitter')
+                                            ->label('URL X (Twitter)')
+                                            ->url()
+                                            ->placeholder('https://x.com/tu-usuario')
+                                            ->maxLength(255),
+                                        TextInput::make('web_url_whatsapp')
+                                            ->label('URL WhatsApp')
+                                            ->url()
+                                            ->placeholder('https://wa.me/584225577557')
+                                            ->helperText('Si se deja vacío, se genera automáticamente con el teléfono de contacto del footer.')
+                                            ->maxLength(255),
+                                    ])
+                                    ->columns(2)
+                                    ->columnSpanFull(),
+                                TextInput::make('web_footerContactEmail')
+                                    ->label('Correo de contacto (Footer)')
+                                    ->email()
+                                    ->required()
+                                    ->maxLength(255),
+                                TextInput::make('web_footerContactPhone')
+                                    ->label('WhatsApp / Teléfono de contacto (Footer)')
+                                    ->helperText('Incluye el código de país. Ejemplo: +58 422-5577557')
+                                    ->required()
+                                    ->maxLength(255),
                             ])->columnSpanFull(),
                             
                         Fieldset::make('Seccion Nosotros!')

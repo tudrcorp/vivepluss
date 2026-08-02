@@ -15,6 +15,7 @@ use App\Filament\Resources\IndividualQuotes\Pages\CreateIndividualQuote;
 use App\Filament\Resources\IndividualQuotes\Schemas\IndividualQuoteForm;
 use App\Filament\Resources\IndividualQuotes\Tables\IndividualQuotesTable;
 use App\Filament\Resources\IndividualQuotes\RelationManagers\DetailsQuoteRelationManager;
+use App\Filament\Resources\IndividualQuotes\RelationManagers\ObservationsRelationManager;
 
 class IndividualQuoteResource extends Resource
 {
@@ -41,7 +42,8 @@ class IndividualQuoteResource extends Resource
     public static function getRelations(): array
     {
         return [
-            DetailsQuoteRelationManager::class
+            DetailsQuoteRelationManager::class,
+            ObservationsRelationManager::class,
         ];
     }
 

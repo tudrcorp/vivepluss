@@ -20,6 +20,7 @@ class Configuration extends Model
         'brandLogoHeight',
         'primaryColor',
         'infoColor',
+        'currency_symbol',
 
         'web_headTitle',
         'web_headDescription',
@@ -32,6 +33,10 @@ class Configuration extends Model
         'web_sectionOne_title',
         'web_sectionOne_title_ln_2',
         'web_icons_redSocial',
+        'web_url_facebook',
+        'web_url_instagram',
+        'web_url_twitter',
+        'web_url_whatsapp',
         'web_headerLogo',
         'web_nosotros',
         
@@ -140,5 +145,18 @@ class Configuration extends Model
         return $this->belongsTo(Agency::class);
     }
 
-    
+    public static function currencySymbol(): string
+    {
+        return once(function (): string {
+            return static::query()->value('currency_symbol') ?: 'EUR€';
+        });
+    }
+
+    public static function currencyName(): string
+    {
+        return match (static::currencySymbol()) {
+            'US$' => 'dólares',
+            default => 'euros',
+        };
+    }
 }

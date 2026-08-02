@@ -58,7 +58,10 @@ class AgentResource extends Resource
     {
         //SI ES UNA AGENCIA MASTER O ES ADMINISTRADOR DE WHITE COMPANY MOSTRAR EL RECURSO EN EL MENÚ
         if (Auth::user()->is_whiteCompanyAdmin == 1 || Auth::user()->agency_type == 'MASTER') {
-            if(Configuration::where('white_company_id', Auth::user()->white_company_id)->first()->agents_module_enabled == 1) {
+            $configuration = Configuration::where('white_company_id', Auth::user()->white_company_id)->first()
+                ?? Configuration::query()->first();
+
+            if ($configuration?->agents_module_enabled == 1) {
                 return true; // ← Muestra el recurso del menú
             }
         }

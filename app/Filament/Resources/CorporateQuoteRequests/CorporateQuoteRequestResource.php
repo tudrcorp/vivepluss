@@ -5,6 +5,7 @@ namespace App\Filament\Resources\CorporateQuoteRequests;
 use App\Filament\Resources\CorporateQuoteRequests\Pages\CreateCorporateQuoteRequest;
 use App\Filament\Resources\CorporateQuoteRequests\Pages\EditCorporateQuoteRequest;
 use App\Filament\Resources\CorporateQuoteRequests\Pages\ListCorporateQuoteRequests;
+use App\Filament\Resources\CorporateQuoteRequests\RelationManagers\ObservationsRelationManager;
 use App\Filament\Resources\CorporateQuoteRequests\Schemas\CorporateQuoteRequestForm;
 use App\Filament\Resources\CorporateQuoteRequests\Tables\CorporateQuoteRequestsTable;
 use App\Models\CorporateQuoteRequest;
@@ -40,7 +41,7 @@ class CorporateQuoteRequestResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            ObservationsRelationManager::class,
         ];
     }
 

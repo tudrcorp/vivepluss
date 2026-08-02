@@ -172,4 +172,9 @@ class IndividualQuote extends Model
     {
         return $this->hasMany(Bitacora::class);
     }
+
+    public function individualQuoteObservations(): HasMany
+    {
+        return $this->hasMany(IndividualQuoteObservation::class)->orderByDesc('created_at');
+    }
 }

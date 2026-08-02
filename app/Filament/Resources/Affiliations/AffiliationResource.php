@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Affiliations;
 use App\Filament\Resources\Affiliations\Pages\CreateAffiliation;
 use App\Filament\Resources\Affiliations\Pages\EditAffiliation;
 use App\Filament\Resources\Affiliations\Pages\ListAffiliations;
+use App\Filament\Resources\Affiliations\RelationManagers\ObservationsRelationManager;
 use App\Filament\Resources\Affiliations\Schemas\AffiliationForm;
 use App\Filament\Resources\Affiliations\Tables\AffiliationsTable;
 use App\Models\Affiliation;
@@ -41,6 +42,7 @@ class AffiliationResource extends Resource
     public static function getRelations(): array
     {
         return [
+            ObservationsRelationManager::class,
             // AffiliatesRelationManager::class,
             // PaidMembershipsRelationManager::class
         ];

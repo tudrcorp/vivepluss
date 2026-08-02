@@ -37,11 +37,16 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use App\Http\Controllers\AffiliationCorporateController;
 use App\Filament\Resources\AffiliationCorporates\AffiliationCorporateResource;
+use App\Support\Filament\InternalObservations;
 
 class AffiliationCorporatesTable
 {
     public static function configure(Table $table): Table
     {
+        $currency = Configuration::currencySymbol();
+        $currencyName = Configuration::currencyName();
+        $currencyNameUpper = mb_strtoupper($currencyName, 'UTF-8');
+
         return $table
             ->query(function (Builder $query) {
                 if(Auth::user()->agency_type == 'GENERAL') {
@@ -289,7 +294,7 @@ class AffiliationCorporatesTable
                                     Grid::make(2)->schema([
                                         TextInput::make('total_amount')
                                             ->label('Total a pagar')
-                                            ->prefix('US$')
+                                            ->prefix($currency)
                                             ->default(function ($state, $set, Get $get, AffiliationCorporate $record) {
 
                                                 $amount = $record->total_amount;
@@ -318,8 +323,8 @@ class AffiliationCorporatesTable
                                                 ->label('Método de pago')
                                                 ->options([
                                                     'ZELLE'             => 'ZELLE',
-                                                    'TRANSFERENCIA US$' => 'TRANSFERENCIA(US$)',
-                                                    'EFECTIVO US$'      => 'EFECTIVO US$',
+                                                    'TRANSFERENCIA US$' => "TRANSFERENCIA({$currency})",
+                                                    'EFECTIVO US$'      => "EFECTIVO {$currency}",
                                                     'MULTIPLE'          => 'MULTIPLE',
                                                     'PAGO MOVIL VES'    => 'PAGO MOVIL(VES)',
                                                     'TRANSFERENCIA VES' => 'TRANSFERENCIA(VES)',
@@ -357,7 +362,7 @@ class AffiliationCorporatesTable
 
 
                                     /* PAGO EN DOLARES ZELLE */
-                                    Fieldset::make('INFORMACION DE PAGO EN ZELLE (US$)')
+                                    Fieldset::make("INFORMACION DE PAGO EN ZELLE ({$currency})")
                                         ->schema([
                                             TextInput::make('name_ti_usd')
                                                 ->label('Nombre del Titular')
@@ -381,7 +386,7 @@ class AffiliationCorporatesTable
 
                                             Grid::make(1)->schema([
                                                 FileUpload::make('document_usd')
-                                                    ->label('Comprobante(US$)')
+                                                    ->label("Comprobante({$currency})")
                                                     ->uploadingMessage('Cargando...')
                                                     ->required(),
                                             ])
@@ -394,7 +399,7 @@ class AffiliationCorporatesTable
 
 
                                     /** PAGO EN TRANSFERENCIA US$ */
-                                    Fieldset::make('INFORMACIÓN DE PAGO EN TRANSFERENCIA (US$)')
+                                    Fieldset::make("INFORMACIÓN DE PAGO EN TRANSFERENCIA ({$currency})")
                                         ->schema([
                                             Grid::make()->schema([
                                                 TextInput::make('name_ti_usd')
@@ -417,9 +422,9 @@ class AffiliationCorporatesTable
                                                     ->options([
                                                         'CHASE BANK'                => 'CHASE BANK',
                                                         'BANK OF AMERICA'           => 'BANK OF AMERICA',
-                                                        'BANESCO, S.A-US$'          => 'BANESCO, S.A - US$',
-                                                        'BANCAMIGA - US$'           => 'BANCAMIGA - US$',
-                                                        'BANCO DE VENEZUELA - US$'  => 'BANCO DE VENEZUELA - US$',
+                                                        'BANESCO, S.A-US$'          => "BANESCO, S.A - {$currency}",
+                                                        'BANCAMIGA - US$'           => "BANCAMIGA - {$currency}",
+                                                        'BANCO DE VENEZUELA - US$'  => "BANCO DE VENEZUELA - {$currency}",
                                                     ])
                                                     ->searchable()
                                                     ->live()
@@ -428,7 +433,7 @@ class AffiliationCorporatesTable
 
                                                 Grid::make(1)->schema([
                                                     FileUpload::make('document_usd')
-                                                        ->label('Comprobante(US$)')
+                                                        ->label("Comprobante({$currency})")
                                                         ->uploadingMessage('Cargando...')
                                                         ->required(),
                                                 ])
@@ -442,7 +447,7 @@ class AffiliationCorporatesTable
 
 
                                     /** PAGO EN EFECTIVO US$ */
-                                    Fieldset::make('INFORMACIÓN DE PAGO EN EFECTIVO (US$)')
+                                    Fieldset::make("INFORMACIÓN DE PAGO EN EFECTIVO ({$currency})")
                                         ->schema([
                                             Grid::make(2)->schema([
                                                 Select::make('bank_usd')
@@ -454,8 +459,8 @@ class AffiliationCorporatesTable
                                                         'required'  => 'Seleccione un banco',
                                                     ])
                                                     ->options([
-                                                        'BANCAMIGA - US$'           => 'BANCAMIGA - US$',
-                                                        'BANCO DE VENEZUELA - US$'  => 'BANCO DE VENEZUELA - US$',
+                                                        'BANCAMIGA - US$'           => "BANCAMIGA - {$currency}",
+                                                        'BANCO DE VENEZUELA - US$'  => "BANCO DE VENEZUELA - {$currency}",
                                                     ])
                                                     ->searchable()
                                                     ->live()
@@ -464,7 +469,7 @@ class AffiliationCorporatesTable
 
                                                 Grid::make()->schema([
                                                     FileUpload::make('document_usd')
-                                                        ->label('Comprobante(US$)')
+                                                        ->label("Comprobante({$currency})")
                                                         ->uploadingMessage('Cargando...')
                                                         ->required(),
                                                 ])->columnSpanFull(),
@@ -538,22 +543,22 @@ class AffiliationCorporatesTable
 
 
                                     /** PAGO MULTIPLE */
-                                    Fieldset::make('INFORMACIÓN DE PAGO MULTIPLE EN BOLIVARES (VES) Y DOLARES (US$)')
+                                    Fieldset::make("INFORMACIÓN DE PAGO MULTIPLE EN BOLIVARES (VES) Y {$currencyNameUpper} ({$currency})")
                                         ->schema([
                                             Grid::make(2)->schema([
 
                                                 /* PAGO EN DOLARES(USD)) */
-                                                Fieldset::make('PAGO EN DOLARES (US$)')
+                                                Fieldset::make("PAGO EN {$currencyNameUpper} ({$currency})")
                                                     ->schema([
                                                         /**Metodo de pago en US$ */
                                                         Select::make('payment_method_usd')
                                                             ->live()
                                                             ->native(false)
-                                                            ->label('Método de pago en dólares(US$)')
+                                                            ->label("Método de pago en {$currencyName}({$currency})")
                                                             ->options([
                                                                 'ZELLE'             => 'ZELLE',
-                                                                'TRANSFERENCIA US$' => 'TRANSFERENCIA(US$)',
-                                                                'EFECTIVO US$'      => 'EFECTIVO US$',
+                                                                'TRANSFERENCIA US$' => "TRANSFERENCIA({$currency})",
+                                                                'EFECTIVO US$'      => "EFECTIVO {$currency}",
                                                             ])
                                                             ->required()
                                                             ->validationMessages([
@@ -563,9 +568,9 @@ class AffiliationCorporatesTable
                                                         TextInput::make('pay_amount_usd')
                                                             ->inputMode('numeric') // activa teclado numérico en móvil
                                                             ->live(onBlur: true)
-                                                            ->label('Monto US$:')
-                                                            ->helperText('Punto(.) para separar decimales. Ingresa el monto en dólares(US$).')
-                                                            ->prefix('US$')
+                                                            ->label("Monto {$currency}:")
+                                                            ->helperText("Punto(.) para separar decimales. Ingresa el monto en {$currencyName}({$currency}).")
+                                                            ->prefix($currency)
                                                             ->numeric()
                                                             ->afterStateUpdated(function (Set $set, Get $get, $state) {
                                                                 $res = $get('total_amount') - $state;
@@ -590,14 +595,14 @@ class AffiliationCorporatesTable
                                                         /**Banco US$ */
                                                         Select::make('bank_usd')
                                                             ->native(false)
-                                                            ->label('Banco Moneda Extranjera(US$)')
+                                                            ->label("Banco Moneda Extranjera({$currency})")
                                                             ->live()
                                                             ->options([
                                                                 'CHASE BANK'                => 'CHASE BANK',
                                                                 'BANK OF AMERICA'           => 'BANK OF AMERICA',
-                                                                'BANESCO, S.A-US$'          => 'BANESCO, S.A - US$',
-                                                                'BANCAMIGA - US$'           => 'BANCAMIGA - US$',
-                                                                'BANCO DE VENEZUELA - US$'  => 'BANCO DE VENEZUELA - US$',
+                                                                'BANESCO, S.A-US$'          => "BANESCO, S.A - {$currency}",
+                                                                'BANCAMIGA - US$'           => "BANCAMIGA - {$currency}",
+                                                                'BANCO DE VENEZUELA - US$'  => "BANCO DE VENEZUELA - {$currency}",
                                                             ])
                                                             ->searchable()
                                                             ->prefixIcon('heroicon-s-globe-europe-africa'),
@@ -622,7 +627,7 @@ class AffiliationCorporatesTable
                                                             }),
 
                                                         FileUpload::make('document_usd')
-                                                            ->label('Comprobante de pago(US$)')
+                                                            ->label("Comprobante de pago({$currency})")
                                                             ->disk('public')
                                                             ->uploadingMessage('Cargando...'),
 
@@ -891,6 +896,19 @@ class AffiliationCorporatesTable
                                 ->title('AFILIACION ACTUALIZADA')
                                 ->success()
                                 ->send();
+                        }),
+
+                    Action::make('add_internal_observation')
+                        ->label('Observaciones internas')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->color('info')
+                        ->modalHeading('Registrar observación')
+                        ->modalDescription('La observación quedará asociada a esta afiliación y al usuario que la registra.')
+                        ->modalSubmitActionLabel('Guardar')
+                        ->modalWidth(Width::Large)
+                        ->form(InternalObservations::formSchema())
+                        ->action(function (AffiliationCorporate $record, array $data): void {
+                            InternalObservations::store($record, 'affiliationCorporateObservations', $data);
                         }),
                 ])->hidden(fn($record) => $record->status == 'EXCLUIDO'),
             ])

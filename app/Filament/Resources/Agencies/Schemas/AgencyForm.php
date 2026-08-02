@@ -9,6 +9,7 @@ use App\Models\Agency;
 use App\Models\Region;
 use App\Models\Country;
 use App\Models\AgencyType;
+use App\Models\Configuration;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Hidden;
@@ -512,7 +513,7 @@ class AgencyForm
                             ->label('TDEV'),
                         TextInput::make('commission_tdec')
                             ->disabled(fn () => Auth::user()->agency_type == 'GENERAL')
-                            ->label('Comisión TDEC US$')
+                            ->label(fn (): string => 'Comisión TDEC ' . Configuration::currencySymbol())
                             ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
                             ->prefix('%')
                             ->numeric()
@@ -521,7 +522,7 @@ class AgencyForm
                             ]),
                         TextInput::make('commission_tdec_renewal')
                             ->disabled(fn () => Auth::user()->agency_type == 'GENERAL')
-                            ->label('Comisión Renovacion TDEC US$')
+                            ->label(fn (): string => 'Comisión Renovacion TDEC ' . Configuration::currencySymbol())
                             ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
                             ->prefix('%')
                             ->numeric()
@@ -530,7 +531,7 @@ class AgencyForm
                             ]),
                         TextInput::make('commission_tdev')
                             ->disabled(fn () => Auth::user()->agency_type == 'GENERAL')
-                            ->label('Comisión TDEV US$')
+                            ->label(fn (): string => 'Comisión TDEV ' . Configuration::currencySymbol())
                             ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
                             ->prefix('%')
                             ->numeric()
@@ -539,7 +540,7 @@ class AgencyForm
                             ]),
                         TextInput::make('commission_tdev_renewal')
                             ->disabled(fn () => Auth::user()->agency_type == 'GENERAL')
-                            ->label('Comisión Renovacion TDEV US$')
+                            ->label(fn (): string => 'Comisión Renovacion TDEV ' . Configuration::currencySymbol())
                             ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
                             ->prefix('%')
                             ->numeric()

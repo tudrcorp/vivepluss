@@ -42,6 +42,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
 use Filament\Actions\Exports\Enums\ExportFormat;
 use App\Filament\Exports\IndividualQuoteExporter;
+use App\Support\Filament\InternalObservations;
 
 class IndividualQuotesTable
 {
@@ -470,6 +471,19 @@ class IndividualQuotesTable
                                     ->danger()
                                     ->send();
                             }
+                        }),
+
+                    Action::make('add_internal_observation')
+                        ->label('Observaciones internas')
+                        ->icon('heroicon-o-chat-bubble-left-right')
+                        ->color('info')
+                        ->modalHeading('Registrar observación')
+                        ->modalDescription('La observación quedará asociada a esta cotización y al usuario que la registra.')
+                        ->modalSubmitActionLabel('Guardar')
+                        ->modalWidth(Width::Large)
+                        ->form(InternalObservations::formSchema())
+                        ->action(function (IndividualQuote $record, array $data): void {
+                            InternalObservations::store($record, 'individualQuoteObservations', $data);
                         }),
                 ])->icon('heroicon-c-ellipsis-vertical')->color('azulOscuro')
             ]);

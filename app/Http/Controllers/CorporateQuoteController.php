@@ -6,12 +6,21 @@ use App\Models\User;
 use Filament\Actions\Action;
 use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Filament\Notifications\Notification;
 
 class CorporateQuoteController extends Controller
 {
+    protected static function quotePdfPath(string $namePdf): string
+    {
+        $directory = public_path('storage/quotes');
+        File::ensureDirectoryExists($directory);
+
+        return $directory . DIRECTORY_SEPARATOR . $namePdf;
+    }
+
     public static function generatePdfPlanIncial($details, $user)
     {
         try {
@@ -28,7 +37,7 @@ class CorporateQuoteController extends Controller
             $name_user = $user->name;
             $pdf = Pdf::loadView('documents.propuesta-economica', compact('details', 'collect', 'name_user'));
             $name_pdf = $details['code'] . '.pdf';
-            $pdf->save(public_path('storage/quotes/' . $name_pdf));
+            $pdf->save(static::quotePdfPath($name_pdf));
 
             Notification::make()
                 ->title('¡TAREA COMPLETADA!')
@@ -69,7 +78,7 @@ class CorporateQuoteController extends Controller
             $name_user = $user->name;
             $pdf = Pdf::loadView('documents.propuesta-economica', compact('details', 'group_collect', 'name_user'));
             $name_pdf = $details['code'] . '.pdf';
-            $pdf->save(public_path('storage/quotes/' . $name_pdf));
+            $pdf->save(static::quotePdfPath($name_pdf));
 
             Notification::make()
                 ->title('¡TAREA COMPLETADA!')
@@ -114,7 +123,7 @@ class CorporateQuoteController extends Controller
             $name_user = $user->name;
             $pdf = Pdf::loadView('documents.propuesta-economica', compact('details', 'group_collect', 'name_user'));
             $name_pdf = $details['code'] . '.pdf';
-            $pdf->save(public_path('storage/quotes/' . $name_pdf));
+            $pdf->save(static::quotePdfPath($name_pdf));
 
             Notification::make()
                 ->title('¡TAREA COMPLETADA!')
@@ -197,7 +206,7 @@ class CorporateQuoteController extends Controller
             $name_user = $user->name;
             $pdf = Pdf::loadView('documents.propuesta-economica-multiple', compact('data_inicial', 'data_ideal', 'data_especial', 'details_generals', 'name_user'));
             $name_pdf = $details_generals['code'] . '.pdf';
-            $pdf->save(public_path('storage/quotes/' . $name_pdf));
+            $pdf->save(static::quotePdfPath($name_pdf));
 
             Notification::make()
                 ->title('¡TAREA COMPLETADA!')

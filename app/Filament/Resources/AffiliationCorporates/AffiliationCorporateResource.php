@@ -11,6 +11,7 @@ use Filament\Support\Icons\Heroicon;
 use App\Filament\Resources\AffiliationCorporates\Pages\EditAffiliationCorporate;
 use App\Filament\Resources\AffiliationCorporates\Pages\ListAffiliationCorporates;
 use App\Filament\Resources\AffiliationCorporates\Pages\CreateAffiliationCorporate;
+use App\Filament\Resources\AffiliationCorporates\RelationManagers\ObservationsRelationManager;
 use App\Filament\Resources\AffiliationCorporates\Schemas\AffiliationCorporateForm;
 use App\Filament\Resources\AffiliationCorporates\Tables\AffiliationCorporatesTable;
 use App\Filament\Resources\AffiliationCorporates\RelationManagers\CorporateAffiliatesRelationManager;
@@ -43,6 +44,7 @@ class AffiliationCorporateResource extends Resource
     public static function getRelations(): array
     {
         return [
+            ObservationsRelationManager::class,
             // AffiliationCorporatePlansRelationManager::class,
             // CorporateAffiliatesRelationManager::class,
             // PaidMembershipCorporatesRelationManager::class,

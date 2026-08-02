@@ -20,6 +20,7 @@ use App\Models\ServiceProvider;
 use App\Models\CorporateQuoteData;
 use Illuminate\Support\HtmlString;
 use App\Models\AffiliationCorporate;
+use App\Models\Configuration;
 use App\Models\DetailCorporateQuote;
 use Filament\Forms\Components\Radio;
 use Illuminate\Support\Facades\Auth;
@@ -222,7 +223,7 @@ class AffiliationCorporateForm
                                 TextInput::make('fee_anual')
                                     ->label('Tarifa anual')
                                     ->helperText('Punto(,) para separar decimales')
-                                    ->prefix('US$')
+                                    ->prefix(fn (): string => Configuration::currencySymbol())
                                     ->numeric()
                                     ->disabled()
                                     ->dehydrated()
@@ -230,7 +231,7 @@ class AffiliationCorporateForm
                                 TextInput::make('total_amount')
                                     ->label('Total a pagar')
                                     ->helperText('Punto(,) para separar decimales')
-                                    ->prefix('US$')
+                                    ->prefix(fn (): string => Configuration::currencySymbol())
                                     ->numeric()
                                     ->disabled()
                                     ->dehydrated()

@@ -185,6 +185,11 @@ class Affiliation extends Model
         return $this->hasMany(StatusLogAffiliation::class);
     }
 
+    public function affiliationObservations(): HasMany
+    {
+        return $this->hasMany(AffiliationObservation::class)->orderByDesc('created_at');
+    }
+
     public function sendCertificate($record, $titular, $afiliates)
     {
         // dd($record, $titular, $afiliates);

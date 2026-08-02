@@ -135,7 +135,8 @@
 <body>
     @php
         use App\Models\Configuration;
-        $setting = Configuration::first() ?? (object) $defaultConfig;
+        $setting = Configuration::first();
+            $currency = $setting?->currency_symbol ?? 'EUR€';
     @endphp
 
     <!-- Primera página: Imagen de fondo -->
@@ -189,12 +190,12 @@
 
                     <th style="font-weight: bold; color: white;">RANGO DE EDAD</th>
                     <th style="font-weight: bold; color: white;">POBLACIÓN</th>
-                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>US$ 5K</th>
-                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>US$ 10K</th>
-                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>US$ 20K</th>
-                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>US$ 30K</th>
-                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>US$ 40K</th>
-                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>US$ 50K</th>
+                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $currency }} 5K</th>
+                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $currency }} 10K</th>
+                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $currency }} 20K</th>
+                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $currency }} 30K</th>
+                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $currency }} 40K</th>
+                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $currency }} 50K</th>
 
                 </tr>
                 @foreach ($data as $key => $value)
@@ -203,7 +204,7 @@
                         <td style="font-weight: bold; font-size: 10px;">{{ $value[0]->total_persons . ' Persona(s)' }}</td>
 
                         @foreach ($value as $value2)
-                            <td style="font-weight: bold; font-size: 10px;">{{ round($value2->subtotal_anual) }} US$
+                            <td style="font-weight: bold; font-size: 10px;">{{ round($value2->subtotal_anual) }} {{ $currency }}
                             </td>
                         @endforeach
                     </tr>
@@ -212,7 +213,7 @@
             @php
                 use Illuminate\Support\Facades\Log;
                 // Inicializar array para almacenar los totales por columna
-                $totalColumns = [0, 0, 0, 0, 0, 0]; // Para US$5K a US$40K (6 columnas)
+                $totalColumns = [0, 0, 0, 0, 0, 0]; // Totales por cobertura
 
                 // Recorrer los datos para sumar por columna
                 foreach ($data as $key => $value) {
@@ -231,7 +232,7 @@
                         <td colspan="2" style="font-weight: bold; color: white; font-size: 10px; width: 96px; background-color: {{ $setting->infoColor }}">TARIFA GRUPAL ANUAL</td>
                         @foreach ($totalColumns as $total)
                         <td style="text-align: center; font-weight: bold; font-size: 10px;">
-                            {{ round($total, 2) }} US$
+                            {{ round($total, 2) }} {{ $currency }}
                         </td>
                         @endforeach
                     </tr>
@@ -239,7 +240,7 @@
                         <td colspan="2" style="font-weight: bold; color: white; font-size: 10px; width: 96px; background-color: {{ $setting->infoColor }}">TARIFA GRUPAL SEMESTRAL</td>
                         @foreach ($totalColumns as $total)
                         <td style="text-align: center; font-weight: bold; font-size: 10px;">
-                            {{ round($total / 2) }} US$
+                            {{ round($total / 2) }} {{ $currency }}
                         </td>
                         @endforeach
                     </tr>
@@ -247,7 +248,7 @@
                         <td colspan="2" style="font-weight: bold; color: white; font-size: 10px; width: 96px; background-color: {{ $setting->infoColor }}">TARIFA GRUPAL TRIMESTRAL</td>
                         @foreach ($totalColumns as $total)
                         <td style="text-align: center; font-weight: bold; font-size: 10px;">
-                            {{ round($total / 4) }} US$
+                            {{ round($total / 4) }} {{ $currency }}
                         </td>
                         @endforeach
                     </tr>

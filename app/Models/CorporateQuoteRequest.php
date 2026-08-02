@@ -6,6 +6,7 @@ use App\Models\Agent;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\LogController;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use App\Models\DetailsCorporateQuoteRequest;
 use App\Jobs\SendNotificacionSolicitudCotizacion;
 
@@ -79,6 +80,11 @@ class CorporateQuoteRequest extends Model
     public function state()
     {
         return $this->belongsTo(State::class);
+    }
+
+    public function corporateQuoteRequestObservations(): HasMany
+    {
+        return $this->hasMany(CorporateQuoteRequestObservation::class)->orderByDesc('created_at');
     }
 
     /**

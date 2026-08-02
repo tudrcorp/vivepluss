@@ -13,10 +13,51 @@ $defaultConfig = [
 'web_sectionOne_title_ln_2' => 'Descubre el plan perfecto para ti.',
 'web_headerLogo' => 'images/ViveplussBlanco.png', // Placeholder
 'web_footerCopy' => 'Integracorp © 2024. Todos los derechos reservados.',
+'web_footerContactEmail' => 'info@vivepluss.com',
+'web_footerContactPhone' => '+58 422-5577557',
+'web_icons_redSocial' => null,
+'web_url_facebook' => null,
+'web_url_instagram' => null,
+'web_url_twitter' => null,
+'web_url_whatsapp' => null,
 ];
 
 // Obtener el registro, o usar un objeto anónimo basado en $defaultConfig si es null
 $setting = Configuration::first() ?? (object) $defaultConfig;
+
+$contactEmail = $setting->web_footerContactEmail ?: 'info@vivepluss.com';
+$contactPhone = $setting->web_footerContactPhone ?: '+58 422-5577557';
+$whatsappNumber = preg_replace('/\D+/', '', $contactPhone);
+$whatsappUrl = filled($setting->web_url_whatsapp ?? null)
+    ? $setting->web_url_whatsapp
+    : ('https://wa.me/' . $whatsappNumber);
+
+$socialLinks = [
+    'fab fa-facebook-f' => filled($setting->web_url_facebook ?? null) ? $setting->web_url_facebook : '#',
+    'fab fa-instagram' => filled($setting->web_url_instagram ?? null) ? $setting->web_url_instagram : '#',
+    'fab fa-twitter' => filled($setting->web_url_twitter ?? null) ? $setting->web_url_twitter : '#',
+    'fab fa-whatsapp' => $whatsappUrl,
+];
+
+$socialLabels = [
+    'fab fa-facebook-f' => 'Facebook',
+    'fab fa-instagram' => 'Instagram',
+    'fab fa-twitter' => 'X (Twitter)',
+    'fab fa-whatsapp' => 'WhatsApp',
+];
+
+$instagramUrl = filled($setting->web_url_instagram ?? null)
+    ? $setting->web_url_instagram
+    : 'https://www.instagram.com/';
+
+$plansTitleRaw = (string) ($setting->web_plansTitle ?? 'Elige el plan perfecto para ti');
+$plansTitleLower = mb_strtolower($plansTitleRaw);
+$plansTitleCased = mb_strtoupper(mb_substr($plansTitleLower, 0, 1)) . mb_substr($plansTitleLower, 1);
+$plansTitleFormatted = preg_replace(
+    '/perfecto/iu',
+    '<span class="planes-keyword">PERFECTO</span>',
+    e($plansTitleCased)
+);
 
 // $setting = Configuration::first();
 @endphp
@@ -432,8 +473,12 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
         .overlay {
             position: absolute;
             inset: 0;
-            background: rgba(0, 0, 0, 0.4);
             z-index: 1;
+            pointer-events: none;
+            background:
+                radial-gradient(ellipse 70% 55% at 50% 45%, rgba(0, 0, 0, 0.28) 0%, rgba(0, 0, 0, 0.55) 55%, rgba(0, 0, 0, 0.72) 100%),
+                linear-gradient(180deg, rgba(5, 47, 96, 0.45) 0%, rgba(0, 0, 0, 0.35) 40%, rgba(0, 0, 0, 0.65) 100%);
+            box-shadow: inset 0 0 120px rgba(0, 0, 0, 0.45);
         }
 
         /* .logo {
@@ -584,26 +629,599 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
             transform: scale(1.2) translateY(-3px);
         }
 
+        /* === NAVBAR HERO (mismo blanco / azul que redes) === */
+        .hero-nav-links [data-flux-navbar-items] {
+            color: white !important;
+            transition: var(--transition);
+        }
+
+        .hero-nav-links [data-flux-navbar-items]:hover {
+            color: var(--light-blue) !important;
+            background-color: transparent !important;
+        }
+
         /* === SECCIONES === */
         .section-nosotros {
-            padding: 4rem 1.5rem;
-            background-color: var(--bg-lighter);
+            position: relative;
+            padding: 6.5rem 1.5rem 5.5rem;
+            background:
+                radial-gradient(ellipse 80% 60% at 50% 0%, rgba(161, 61, 219, 0.07), transparent 55%),
+                radial-gradient(ellipse 50% 40% at 80% 80%, rgba(113, 186, 255, 0.08), transparent 50%),
+                var(--bg-lighter);
             text-align: center;
+            overflow: hidden;
+        }
+
+        /* Puente visual hero → nosotros / Instagram → footer (ola animada sin corte) */
+        .nosotros-bridge,
+        .footer-bridge {
+            position: absolute;
+            top: -1px;
+            left: 0;
+            width: 100%;
+            height: clamp(64px, 11vw, 110px);
+            line-height: 0;
+            pointer-events: none;
+            z-index: 2;
+            overflow: hidden;
+        }
+
+        .nosotros-bridge .wave-layer,
+        .footer-bridge .wave-layer {
+            position: absolute;
+            left: 0;
+            bottom: 0;
+            display: flex;
+            width: 300%;
+            height: 100%;
+            will-change: transform;
+        }
+
+        .nosotros-bridge .wave-layer svg,
+        .footer-bridge .wave-layer svg {
+            display: block;
+            flex: 0 0 33.333333%;
+            width: 33.333333%;
+            height: 100%;
+        }
+
+        .nosotros-bridge .wave-layer--back,
+        .footer-bridge .wave-layer--back {
+            opacity: 0.85;
+            animation: waveDrift 22s linear infinite;
+        }
+
+        .nosotros-bridge .wave-layer--front,
+        .footer-bridge .wave-layer--front {
+            opacity: 1;
+            animation: waveDrift 15s linear infinite;
+            animation-delay: -4s;
+        }
+
+        .footer-bridge {
+            background-color: #1A112A;
+        }
+
+        .footer-bridge::after {
+            display: none;
+        }
+
+        .footer-bridge .wave-layer {
+            z-index: 1;
+        }
+
+        .site-footer {
+            position: relative;
+            overflow: hidden;
+            padding-top: calc(clamp(64px, 11vw, 110px) + 2.5rem);
+        }
+
+        .site-footer > .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        .site-footer .footer-main-grid,
+        .site-footer .footer-copy {
+            border: 0 !important;
+            border-top: 0 !important;
+            border-bottom: 0 !important;
+            box-shadow: none !important;
+            outline: none !important;
+        }
+
+        @keyframes waveDrift {
+            from { transform: translate3d(0, 0, 0); }
+            to { transform: translate3d(-33.333333%, 0, 0); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .nosotros-bridge .wave-layer--back,
+            .nosotros-bridge .wave-layer--front,
+            .footer-bridge .wave-layer--back,
+            .footer-bridge .wave-layer--front {
+                animation: none;
+            }
+        }
+
+        .section-nosotros::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                linear-gradient(115deg, transparent 40%, rgba(255, 255, 255, 0.45) 50%, transparent 60%);
+            background-size: 220% 100%;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.6s ease;
+        }
+
+        .section-nosotros.is-visible::before {
+            opacity: 1;
+            animation: nosotrosShimmer 1.8s ease-out forwards;
+        }
+
+        @keyframes nosotrosShimmer {
+            from { background-position: 120% 0; }
+            to { background-position: -40% 0; }
+        }
+
+        .section-nosotros .nosotros-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1040px;
+            margin: 0 auto;
         }
 
         .section-nosotros h2 {
-            font-size: 2rem;
+            font-size: clamp(2.35rem, 4.2vw, 3.15rem);
             font-weight: 300;
             color: var(--primary);
-            margin-bottom: 1.2rem;
+            margin-bottom: 0.75rem;
+            opacity: 0;
+            transform: translateY(28px) scale(0.97);
+            filter: blur(8px);
+            transition:
+                opacity 1.8s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 1.8s cubic-bezier(0.22, 1, 0.36, 1),
+                filter 1.8s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .section-nosotros .nosotros-accent {
+            display: block;
+            width: 0;
+            height: 3px;
+            margin: 0 auto 1.85rem;
+            border-radius: 999px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary), var(--light-blue));
+            box-shadow: 0 0 18px rgba(113, 186, 255, 0.45);
+            transition: width 2s cubic-bezier(0.22, 1, 0.36, 1) 0.45s;
+        }
+
+        .section-nosotros h2 .highlight {
+            font-size: clamp(2.5rem, 4.8vw, 3.5rem);
         }
 
         .section-nosotros p {
-            max-width: 850px;
+            max-width: 960px;
             margin: 0 auto;
-            font-size: 1.2rem;
-            line-height: 1.7;
+            font-size: clamp(1.25rem, 2vw, 1.45rem);
+            line-height: 1.75;
             color: var(--text-light);
+            opacity: 0;
+            transform: translateY(36px);
+            filter: blur(6px);
+            transition:
+                opacity 2s cubic-bezier(0.22, 1, 0.36, 1) 0.55s,
+                transform 2s cubic-bezier(0.22, 1, 0.36, 1) 0.55s,
+                filter 2s cubic-bezier(0.22, 1, 0.36, 1) 0.55s,
+                box-shadow 0.6s ease,
+                border-color 0.6s ease;
+        }
+
+        .section-nosotros.is-visible h2 {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+
+        .section-nosotros.is-visible .nosotros-accent {
+            width: min(420px, 75%);
+        }
+
+        .section-nosotros.is-visible p {
+            opacity: 1;
+            transform: translateY(0);
+            filter: blur(0);
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .section-nosotros::before,
+            .section-nosotros.is-visible::before {
+                animation: none;
+                opacity: 0;
+            }
+
+            .section-nosotros h2,
+            .section-nosotros p,
+            .section-nosotros .nosotros-accent {
+                opacity: 1;
+                transform: none;
+                filter: none;
+                transition: none;
+                width: min(420px, 75%);
+            }
+        }
+
+        /* === Reveal Misión / secciones split === */
+        .reveal-on-scroll .reveal-from-left,
+        .reveal-on-scroll .reveal-from-right {
+            opacity: 0;
+            filter: blur(6px);
+            transition:
+                opacity 1.9s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 1.9s cubic-bezier(0.22, 1, 0.36, 1),
+                filter 1.9s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        .reveal-on-scroll .reveal-from-left {
+            transform: translateX(-48px);
+        }
+
+        .reveal-on-scroll .reveal-from-right {
+            transform: translateX(48px);
+            transition-delay: 0.35s;
+        }
+
+        .reveal-on-scroll .reveal-from-left .reveal-title,
+        .reveal-on-scroll .reveal-from-right .reveal-title {
+            opacity: 0;
+            transform: translateY(18px);
+            transition:
+                opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.25s,
+                transform 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.25s;
+        }
+
+        .reveal-on-scroll .reveal-from-left .reveal-text,
+        .reveal-on-scroll .reveal-from-right .reveal-text {
+            opacity: 0;
+            transform: translateY(22px);
+            transition:
+                opacity 1.7s cubic-bezier(0.22, 1, 0.36, 1) 0.55s,
+                transform 1.7s cubic-bezier(0.22, 1, 0.36, 1) 0.55s;
+        }
+
+        .reveal-on-scroll.is-visible .reveal-from-left,
+        .reveal-on-scroll.is-visible .reveal-from-right {
+            opacity: 1;
+            transform: translateX(0);
+            filter: blur(0);
+        }
+
+        .reveal-on-scroll.is-visible .reveal-from-left .reveal-title,
+        .reveal-on-scroll.is-visible .reveal-from-left .reveal-text,
+        .reveal-on-scroll.is-visible .reveal-from-right .reveal-title,
+        .reveal-on-scroll.is-visible .reveal-from-right .reveal-text {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1023px) {
+            .reveal-on-scroll .reveal-from-left,
+            .reveal-on-scroll .reveal-from-right {
+                transform: translateY(36px);
+            }
+
+            .reveal-on-scroll.is-visible .reveal-from-left,
+            .reveal-on-scroll.is-visible .reveal-from-right {
+                transform: translateY(0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .reveal-on-scroll .reveal-from-left,
+            .reveal-on-scroll .reveal-from-right,
+            .reveal-on-scroll .reveal-from-left .reveal-title,
+            .reveal-on-scroll .reveal-from-left .reveal-text,
+            .reveal-on-scroll .reveal-from-right .reveal-title,
+            .reveal-on-scroll .reveal-from-right .reveal-text {
+                opacity: 1;
+                transform: none;
+                filter: none;
+                transition: none;
+            }
+        }
+
+        /* === Fondo decorativo Misión / Visión (animado) === */
+        .section-brand-atmosphere {
+            position: relative;
+            overflow: hidden;
+            isolation: isolate;
+            background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 48%, #f3f6fb 100%);
+        }
+
+        .section-brand-atmosphere--alt {
+            background: linear-gradient(180deg, #f6f8fb 0%, #eef3f9 50%, #f8fafc 100%);
+        }
+
+        .section-brand-atmosphere .brand-bg-mesh {
+            position: absolute;
+            inset: -25%;
+            background:
+                radial-gradient(ellipse 45% 40% at 20% 40%, rgba(161, 61, 219, 0.14), transparent 60%),
+                radial-gradient(ellipse 40% 45% at 80% 55%, rgba(9, 111, 255, 0.13), transparent 58%),
+                radial-gradient(ellipse 35% 30% at 50% 90%, rgba(113, 186, 255, 0.14), transparent 55%);
+            animation: brandMeshDrift 18s ease-in-out infinite alternate;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .section-brand-atmosphere::before {
+            content: '';
+            position: absolute;
+            inset: -10%;
+            background-image:
+                radial-gradient(rgba(161, 61, 219, 0.1) 1.2px, transparent 1.2px);
+            background-size: 28px 28px;
+            mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 75%);
+            -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, #000 20%, transparent 75%);
+            opacity: 0.5;
+            pointer-events: none;
+            z-index: 0;
+            animation: brandDotsDrift 28s linear infinite;
+        }
+
+        .section-brand-atmosphere::after {
+            content: '';
+            position: absolute;
+            width: min(420px, 55vw);
+            height: min(420px, 55vw);
+            right: -8%;
+            top: 12%;
+            border-radius: 50%;
+            border: 1px solid rgba(113, 186, 255, 0.22);
+            box-shadow:
+                0 0 0 28px rgba(161, 61, 219, 0.03),
+                0 0 0 56px rgba(9, 111, 255, 0.025);
+            pointer-events: none;
+            z-index: 0;
+            animation: brandRingPulse 10s ease-in-out infinite;
+        }
+
+        .section-brand-atmosphere--mirror::after {
+            right: auto;
+            left: -8%;
+            top: auto;
+            bottom: 10%;
+            animation-delay: -3s;
+        }
+
+        .section-brand-atmosphere .brand-bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 0;
+            filter: blur(2px);
+        }
+
+        .section-brand-atmosphere .brand-bg-orb--one {
+            width: 180px;
+            height: 180px;
+            left: 6%;
+            bottom: 12%;
+            background: radial-gradient(circle, rgba(161, 61, 219, 0.18), transparent 70%);
+            animation: brandOrbFloatA 10s ease-in-out infinite;
+        }
+
+        .section-brand-atmosphere .brand-bg-orb--two {
+            width: 120px;
+            height: 120px;
+            right: 28%;
+            top: 18%;
+            background: radial-gradient(circle, rgba(113, 186, 255, 0.22), transparent 70%);
+            animation: brandOrbFloatB 12s ease-in-out infinite;
+        }
+
+        .section-brand-atmosphere--mirror .brand-bg-orb--one {
+            left: auto;
+            right: 8%;
+            bottom: 18%;
+            animation-delay: -2s;
+        }
+
+        .section-brand-atmosphere--mirror .brand-bg-orb--two {
+            right: auto;
+            left: 30%;
+            top: 22%;
+            animation-delay: -4s;
+        }
+
+        .section-brand-atmosphere .brand-bg-glow {
+            position: absolute;
+            left: 0;
+            top: 18%;
+            width: 4px;
+            height: 42%;
+            border-radius: 999px;
+            background: linear-gradient(180deg, transparent, var(--primary), var(--secondary), transparent);
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+            animation: brandGlowPulse 6s ease-in-out infinite;
+        }
+
+        .section-brand-atmosphere--mirror .brand-bg-glow {
+            left: auto;
+            right: 0;
+        }
+
+        .section-brand-atmosphere > .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        @keyframes brandMeshDrift {
+            0% { transform: translate3d(0, 0, 0) scale(1); }
+            50% { transform: translate3d(3%, -2%, 0) scale(1.05); }
+            100% { transform: translate3d(-2%, 3%, 0) scale(1.02); }
+        }
+
+        @keyframes brandDotsDrift {
+            from { transform: translate3d(0, 0, 0); }
+            to { transform: translate3d(-28px, -28px, 0); }
+        }
+
+        @keyframes brandRingPulse {
+            0%, 100% { transform: scale(1); opacity: 0.85; }
+            50% { transform: scale(1.08); opacity: 1; }
+        }
+
+        @keyframes brandOrbFloatA {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            33% { transform: translate3d(18px, -22px, 0) scale(1.08); }
+            66% { transform: translate3d(-12px, -8px, 0) scale(0.96); }
+        }
+
+        @keyframes brandOrbFloatB {
+            0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+            40% { transform: translate3d(-20px, 16px, 0) scale(1.1); }
+            70% { transform: translate3d(14px, -18px, 0) scale(0.94); }
+        }
+
+        @keyframes brandGlowPulse {
+            0%, 100% { opacity: 0.28; transform: scaleY(1); }
+            50% { opacity: 0.55; transform: scaleY(1.08); }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .section-brand-atmosphere .brand-bg-mesh,
+            .section-brand-atmosphere::before,
+            .section-brand-atmosphere::after,
+            .section-brand-atmosphere .brand-bg-orb--one,
+            .section-brand-atmosphere .brand-bg-orb--two,
+            .section-brand-atmosphere .brand-bg-glow {
+                animation: none;
+            }
+        }
+
+        /* === Sección Planes: título + reveal === */
+        #planes.section-planes-reveal {
+            overflow: hidden;
+        }
+
+        #planes .planes-title {
+            color: #111;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            text-transform: none;
+            opacity: 0;
+            transform: translateY(28px);
+            transition:
+                opacity 1.7s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 1.7s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+
+        #planes .planes-subtitle {
+            opacity: 0;
+            transform: translateY(20px);
+            transition:
+                opacity 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.25s,
+                transform 1.5s cubic-bezier(0.22, 1, 0.36, 1) 0.25s;
+        }
+
+        #planes .planes-keyword {
+            display: inline-block;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            background: linear-gradient(
+                110deg,
+                #A13DDB 0%,
+                #71BAFF 45%,
+                #A13DDB 100%
+            );
+            background-size: 200% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            -webkit-text-fill-color: transparent;
+            filter: blur(0.15px);
+            text-shadow: none;
+            animation:
+                planesKeywordFlow 9s ease-in-out infinite,
+                planesKeywordSoftBlur 7s ease-in-out infinite;
+            will-change: background-position, filter, transform;
+        }
+
+        #planes .service-card {
+            opacity: 0;
+            transform: translateY(40px) scale(0.98);
+            filter: blur(4px);
+            transition:
+                opacity 1.6s cubic-bezier(0.22, 1, 0.36, 1),
+                transform 1.6s cubic-bezier(0.22, 1, 0.36, 1),
+                filter 1.6s cubic-bezier(0.22, 1, 0.36, 1),
+                box-shadow 0.35s ease;
+        }
+
+        #planes .service-card:nth-child(1) { transition-delay: 0.2s; }
+        #planes .service-card:nth-child(2) { transition-delay: 0.4s; }
+        #planes .service-card:nth-child(3) { transition-delay: 0.6s; }
+
+        #planes.is-visible .planes-title,
+        #planes.is-visible .planes-subtitle,
+        #planes.is-visible .service-card {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            filter: blur(0);
+        }
+
+        #planes.is-visible .planes-title {
+            filter: none;
+        }
+
+        @keyframes planesKeywordFlow {
+            0% {
+                background-position: 0% 50%;
+                transform: translateY(0);
+            }
+            50% {
+                background-position: 100% 50%;
+                transform: translateY(-1px);
+            }
+            100% {
+                background-position: 0% 50%;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes planesKeywordSoftBlur {
+            0%, 100% {
+                filter: blur(0.1px);
+                opacity: 0.96;
+            }
+            50% {
+                filter: blur(0.55px);
+                opacity: 0.9;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #planes .planes-title,
+            #planes .planes-subtitle,
+            #planes .service-card {
+                opacity: 1;
+                transform: none;
+                filter: none;
+                transition: none;
+            }
+
+            #planes .planes-keyword {
+                animation: none;
+                filter: none;
+                opacity: 1;
+                background-position: 40% 50%;
+            }
         }
 
 
@@ -706,11 +1324,15 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
 
             .section-nosotros h2,
             .section-planes h2 {
-                font-size: 1.8rem;
+                font-size: 2.1rem;
+            }
+
+            .section-nosotros h2 .highlight {
+                font-size: 2.35rem;
             }
 
             .section-nosotros p {
-                font-size: 0.95rem;
+                font-size: 1.1rem;
             }
 
             .plan-card {
@@ -725,7 +1347,11 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
             }
 
             .section-nosotros h2 {
-                font-size: 1.7rem;
+                font-size: 1.95rem;
+            }
+
+            .section-nosotros h2 .highlight {
+                font-size: 2.15rem;
             }
 
             .section-planes h2 {
@@ -827,17 +1453,50 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
             letter-spacing: -0.5px;
             line-height: 1.4;
             max-width: 1000px;
-            opacity: 0;
-            transform: translateY(10px);
-            animation: fadeInUp 1s ease forwards;
-            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.4);
+            text-shadow:
+                0 2px 8px rgba(0, 0, 0, 0.55),
+                0 8px 28px rgba(0, 0, 0, 0.45),
+                0 0 40px rgba(5, 47, 96, 0.35);
         }
 
-        /* Animación suave de entrada */
-        @keyframes fadeInUp {
-            to {
+        .main-title-line {
+            display: block;
+            opacity: 0;
+            filter: blur(14px);
+            transform: translateY(28px) scale(0.96);
+            clip-path: inset(0 0 100% 0);
+            animation: heroTitleReveal 1.8s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+
+        .main-title-line:nth-child(2) {
+            animation-delay: 0.45s;
+        }
+
+        @keyframes heroTitleReveal {
+            0% {
+                opacity: 0;
+                filter: blur(14px);
+                transform: translateY(28px) scale(0.96);
+                clip-path: inset(0 0 100% 0);
+            }
+            55% {
+                filter: blur(2px);
+            }
+            100% {
                 opacity: 1;
-                transform: translateY(0);
+                filter: blur(0);
+                transform: translateY(0) scale(1);
+                clip-path: inset(0 0 0 0);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .main-title-line {
+                opacity: 1;
+                filter: none;
+                transform: none;
+                clip-path: none;
+                animation: none;
             }
         }
 
@@ -1352,9 +2011,8 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
         <!-- ✅ TEXTO CENTRADO SOBRE EL VIDEO -->
         <div class="text-center-full">
             <h1 class="main-title">
-                {{ $setting->web_sectionOne_title }}
-                <br>
-                {{ $setting->web_sectionOne_title_ln_2 }}
+                <span class="main-title-line">{{ $setting->web_sectionOne_title }}</span>
+                <span class="main-title-line">{{ $setting->web_sectionOne_title_ln_2 }}</span>
             </h1>
         </div>
 
@@ -1405,7 +2063,7 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
                     </a>
                 </div>
             </div> --}}
-            <flux:navbar>
+            <flux:navbar class="hero-nav-links">
                 <flux:navbar.item href="https://vivepluss.com/viveadmin" icon="home">VivePlusAdmin</flux:navbar.item>
                 <flux:navbar.item href="https://vivepluss.com/viveadmin" icon="puzzle-piece">Agencias</flux:navbar.item>
                 <flux:navbar.item href="https://tudrenviajes.xyz/app/pages/login.php" icon="user">Asistencia en Viajes</flux:navbar.item>
@@ -1449,64 +2107,93 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
 
         <!-- Redes sociales -->
         <div class="social-icons">
-            @if($setting->web_icons_redSocial != null)
+            @if(! empty($setting->web_icons_redSocial))
             @foreach ($setting->web_icons_redSocial as $red)
-            <a href="#"><i class="{{ $red }}"></i></a>
+            <a href="{{ $socialLinks[$red] ?? '#' }}" @if(($socialLinks[$red] ?? '#') !== '#') target="_blank" rel="noopener noreferrer" @endif aria-label="{{ $socialLabels[$red] ?? 'Red social' }}"><i class="{{ $red }}"></i></a>
             @endforeach
             @endif
         </div>
 
         <!-- Indicador de scroll -->
-        <div class="scroll-indicator">
+        <a href="#nosotros" class="scroll-indicator" aria-label="Ir a Sobre Nosotros">
             <i class="fas fa-chevron-down"></i><br>
-        </div>
+        </a>
 
     </section>
 
     <!-- 2. Sección ¿Quiénes Somos? -->
-    <section id="nosotros" class="section-nosotros">
-        <h2>{{ $setting->web_nosotrosTitle_parteIzquierda }} <span class="highlight" style="font-size: 2rem;">{{ $setting->web_nosotrosTitle_parteDerecha }}</span></h2>
-        <p class="text-gray-600 text-xl leading-relaxed card-effect p-6 rounded-xl border border-gray-100 bg-background-light">
-            {{ $setting->web_nosotros }}
-        </p>
+    <section id="nosotros" class="section-nosotros" aria-labelledby="nosotros-heading">
+        <div class="nosotros-bridge" aria-hidden="true">
+            <div class="wave-layer wave-layer--back">
+                {{-- Tres segmentos idénticos = bucle sin corte --}}
+                @for ($i = 0; $i < 3; $i++)
+                <svg viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="rgba(161, 61, 219, 0.28)" d="M0,0 L0,48 Q150,92 300,48 T600,48 T900,48 T1200,48 L1200,0 Z"></path>
+                </svg>
+                @endfor
+            </div>
+            <div class="wave-layer wave-layer--front">
+                @for ($i = 0; $i < 3; $i++)
+                <svg viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="rgba(113, 186, 255, 0.45)" d="M0,0 L0,58 Q150,98 300,58 T600,58 T900,58 T1200,58 L1200,0 Z"></path>
+                    <path fill="#F6F6F7" d="M0,72 Q150,108 300,72 T600,72 T900,72 T1200,72 L1200,120 L0,120 Z"></path>
+                </svg>
+                @endfor
+            </div>
+        </div>
+        <div class="nosotros-content">
+            <h2 id="nosotros-heading">{{ $setting->web_nosotrosTitle_parteIzquierda }} <span class="highlight">{{ $setting->web_nosotrosTitle_parteDerecha }}</span></h2>
+            <span class="nosotros-accent" aria-hidden="true"></span>
+            <p class="text-gray-600 text-xl leading-relaxed card-effect p-6 rounded-xl border border-gray-100 bg-background-light">
+                {{ $setting->web_nosotros }}
+            </p>
+        </div>
     </section>
 
     <!-- Sección 1: Misión (Texto Izquierda, Imagen Derecha) -->
-    <section class="min-screen-height flex items-center justify-center p-8 md:p-16 bg-white">
+    <section id="mision" class="section-brand-atmosphere reveal-on-scroll min-screen-height flex items-center justify-center p-8 md:p-16">
+        <div class="brand-bg-mesh" aria-hidden="true"></div>
+        <span class="brand-bg-orb brand-bg-orb--one" aria-hidden="true"></span>
+        <span class="brand-bg-orb brand-bg-orb--two" aria-hidden="true"></span>
+        <span class="brand-bg-glow" aria-hidden="true"></span>
         <div class="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
             <!-- Columna Izquierda: Misión -->
-            <div class="space-y-6 lg:order-1 order-2">
+            <div class="space-y-6 lg:order-1 order-2 reveal-from-left">
                 {{-- <span class="text-secondary-gold text-lg font-semibold tracking-wider uppercase">Nuestro Propósito</span> --}}
-                <h2 class="text-4xl md:text-5xl font-extrabold text-[#71BAFF] leading-tight">Misión</h2>
-                <p class="text-gray-600 text-lg leading-relaxed card-effect p-6">
+                <h2 class="reveal-title text-4xl md:text-5xl font-extrabold text-[#71BAFF] leading-tight">Misión</h2>
+                <p class="reveal-text text-gray-600 text-lg leading-relaxed card-effect p-6">
                     {{ $setting->web_mision }}
                 </p>
             </div>
 
             <!-- Columna Derecha: Imagen de Misión -->
-            <div class="lg:order-2 order-1 transform hover:scale-[1.01] transition duration-500 ease-in-out rounded-xl overflow-hidden shadow-2xl">
-                <img src="{{ asset('storage/'.$setting->web_imageMision) }}" alt="Representación de la Misión: Foco en el cliente y soluciones tecnológicas." class="w-full h-full object-cover rounded-xl" onerror="this.onerror=null; this.src='https://placehold.co/800x600/1e40af/ffffff?text=Imagen%20de%20Mision';">
+            <div class="reveal-from-right lg:order-2 order-1 rounded-xl overflow-hidden shadow-2xl">
+                <img src="{{ asset('storage/'.$setting->web_imageMision) }}" alt="Representación de la Misión: Foco en el cliente y soluciones tecnológicas." class="w-full h-full object-cover rounded-xl transform hover:scale-[1.01] transition duration-500 ease-in-out" onerror="this.onerror=null; this.src='https://placehold.co/800x600/1e40af/ffffff?text=Imagen%20de%20Mision';">
             </div>
 
         </div>
     </section>
 
     <!-- Sección 2: Visión (Imagen Izquierda, Texto Derecha) - Invertida -->
-    <section class="min-screen-height flex items-center justify-center p-8 md:p-16 bg-gray-50 border-t border-gray-100">
+    <section id="vision" class="section-brand-atmosphere section-brand-atmosphere--alt section-brand-atmosphere--mirror reveal-on-scroll min-screen-height flex items-center justify-center p-8 md:p-16">
+        <div class="brand-bg-mesh" aria-hidden="true"></div>
+        <span class="brand-bg-orb brand-bg-orb--one" aria-hidden="true"></span>
+        <span class="brand-bg-orb brand-bg-orb--two" aria-hidden="true"></span>
+        <span class="brand-bg-glow" aria-hidden="true"></span>
         <div class="container mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-center">
 
             <!-- Columna Izquierda: Imagen de Visión -->
-            <div class="lg:order-1 order-1 transform hover:scale-[1.01] transition duration-500 ease-in-out rounded-xl overflow-hidden shadow-2xl">
-                <img src="{{ asset('storage/'.$setting->web_imageVision) }}" alt="Representación de la Visión: Liderazgo y crecimiento global futuro." class="w-full h-full object-cover rounded-xl" onerror="this.onerror=null; this.src='https://placehold.co/800x600/d97706/ffffff?text=Imagen%20de%20Vision';">
+            <div class="reveal-from-left lg:order-1 order-1 rounded-xl overflow-hidden shadow-2xl">
+                <img src="{{ asset('storage/'.$setting->web_imageVision) }}" alt="Representación de la Visión: Liderazgo y crecimiento global futuro." class="w-full h-full object-cover rounded-xl transform hover:scale-[1.01] transition duration-500 ease-in-out" onerror="this.onerror=null; this.src='https://placehold.co/800x600/d97706/ffffff?text=Imagen%20de%20Vision';">
             </div>
 
             <!-- Columna Derecha: Visión -->
-            <div class="space-y-6 lg:order-2 order-2">
+            <div class="space-y-6 lg:order-2 order-2 reveal-from-right">
                 {{-- <span class="text-primary-blue text-lg font-semibold tracking-wider uppercase">Nuestro Sueño Futuro</span> --}}
-                <h2 class="text-4xl md:text-5xl font-extrabold text-[#71BAFF] leading-tight">Visión</h2>
+                <h2 class="reveal-title text-4xl md:text-5xl font-extrabold text-[#71BAFF] leading-tight">Visión</h2>
 
-                <p class="text-gray-600 text-lg leading-relaxed card-effect p-6">
+                <p class="reveal-text text-gray-600 text-lg leading-relaxed card-effect p-6">
                     {{ $setting->web_vision }}
                 </p>
                 {{-- <div class="pt-4">
@@ -1518,14 +2205,14 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
     </section>
 
     <!-- Sección PLanes -->
-    <section id="planes" class="py-20 bg-light">
+    <section id="planes" class="section-planes-reveal reveal-on-scroll py-20 bg-light">
         <div class="container mx-auto px-6">
             <!-- Encabezado -->
             <header class="text-center mb-12">
-                <h1 class="text-4xl sm:text-5xl font-extrabold mb-3" style="color: var(--text-dark);">
-                    {{ $setting->web_plansTitle }}
+                <h1 class="planes-title text-4xl sm:text-5xl font-extrabold mb-3">
+                    {!! $plansTitleFormatted !!}
                 </h1>
-                <p class="text-lg sm:text-xl" style="color: var(--text-light);">
+                <p class="planes-subtitle text-lg sm:text-xl" style="color: var(--text-light);">
                     {{ $setting->web_plansSubTitle }}
                 </p>
             </header>
@@ -1585,7 +2272,7 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
                     <i class="fas fa-comments text-tertiary text-3xl"></i>
                 </div>
                 <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Experiencias que inspiran confianza</h2>
-                <p class="text-xl max-w-3xl mx-auto mb-6 text-white">Viajeros como tú comparten sus historias de protección alrededor del mundo</p>
+                <p class="text-xl max-w-3xl mx-auto mb-6 text-white">Personas como tú comparten sus historias de protección alrededor del mundo</p>
 
                 <div class="w-20 h-1 bg-tertiary mx-auto"></div>
             </div>
@@ -1847,7 +2534,7 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
             <div id="instagram-posts-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
 
                 <!-- PUBLICACIÓN 1: Viaje a la Playa -->
-                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden transition-shadow duration-300 hover:shadow-2xl">
+                <a href="{{ $instagramUrl }}" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden transition-shadow duration-300 hover:shadow-2xl">
                     <img src="https://picsum.photos/600/600?random=101" onerror="this.src='https://placehold.co/600x600/40B7FF/ffffff?text=Playa'" alt="Publicación de Instagram: Playa y Sol" class="aspect-square-custom object-cover">
                     <div class="instagram-post-overlay">
                         <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1863,7 +2550,7 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
                 </a>
 
                 <!-- PUBLICACIÓN 2: Café y Trabajo -->
-                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden transition-shadow duration-300 hover:shadow-2xl">
+                <a href="{{ $instagramUrl }}" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden transition-shadow duration-300 hover:shadow-2xl">
                     <img src="https://picsum.photos/600/600?random=102" onerror="this.src='https://placehold.co/600x600/D0834B/ffffff?text=Café'" alt="Publicación de Instagram: Café y Laptop" class="aspect-square-custom object-cover">
                     <div class="instagram-post-overlay">
                         <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1878,7 +2565,7 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
                 </a>
 
                 <!-- PUBLICACIÓN 3: Arte Callejero (Solo visible en md y más) -->
-                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden hidden md:block transition-shadow duration-300 hover:shadow-2xl">
+                <a href="{{ $instagramUrl }}" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden hidden md:block transition-shadow duration-300 hover:shadow-2xl">
                     <img src="https://picsum.photos/600/600?random=103" onerror="this.src='https://placehold.co/600x600/3E993E/ffffff?text=Arte'" alt="Publicación de Instagram: Mural" class="aspect-square-custom object-cover">
                     <div class="instagram-post-overlay">
                         <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1893,7 +2580,7 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
                 </a>
 
                 <!-- PUBLICACIÓN 4: Tecnología y Código (Solo visible en lg y más) -->
-                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden hidden lg:block transition-shadow duration-300 hover:shadow-2xl">
+                <a href="{{ $instagramUrl }}" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden hidden lg:block transition-shadow duration-300 hover:shadow-2xl">
                     <img src="https://picsum.photos/600/600?random=104" onerror="this.src='https://placehold.co/600x600/000000/ffffff?text=Code'" alt="Publicación de Instagram: Código en Pantalla" class="aspect-square-custom object-cover">
                     <div class="instagram-post-overlay">
                         <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1908,7 +2595,7 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
                 </a>
 
                 {{-- <!-- PUBLICACIÓN 5: Comida y Receta -->
-                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden hidden xl:block transition-shadow duration-300 hover:shadow-2xl">
+                <a href="{{ $instagramUrl }}" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden hidden xl:block transition-shadow duration-300 hover:shadow-2xl">
                     <img src="https://picsum.photos/600/600?random=105" onerror="this.src='https://placehold.co/600x600/C51C30/ffffff?text=Comida'" alt="Publicación de Instagram: Plato Gourmet" class="aspect-square-custom object-cover">
                     <div class="instagram-post-overlay">
                         <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1927,7 +2614,7 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
 
             <!-- Botón de CTA (Call to Action) -->
             <div class="mt-12">
-                <a href="https://www.instagram.com/tuusuario/" target="_blank" class="theme-btn inline-flex items-center px-8 py-3 text-lg font-bold text-white rounded-full transition duration-300 ease-in-out transform hover:scale-105">
+                <a href="{{ $instagramUrl }}" target="_blank" class="theme-btn inline-flex items-center px-8 py-3 text-lg font-bold text-white rounded-full transition duration-300 ease-in-out transform hover:scale-105">
                     <!-- Icono de Instagram (SVG simple) -->
                     <svg class="w-6 h-6 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
@@ -1947,9 +2634,27 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
 
 
 
-    <footer class="bg-footer-dark text-gray-300 py-12 md:py-16 border-t-8 border-theme-primary shadow-2xl">
+    <footer class="site-footer bg-footer-dark text-gray-300 pb-12 md:pb-16 shadow-2xl">
+        <div class="footer-bridge" aria-hidden="true">
+            <div class="wave-layer wave-layer--back">
+                @for ($i = 0; $i < 3; $i++)
+                <svg viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="#EFEFEF" d="M0,0 L0,42 Q150,86 300,42 T600,42 T900,42 T1200,42 L1200,0 Z"></path>
+                    <path fill="rgba(161, 61, 219, 0.55)" d="M0,0 L0,52 Q150,96 300,52 T600,52 T900,52 T1200,52 L1200,0 Z"></path>
+                </svg>
+                @endfor
+            </div>
+            <div class="wave-layer wave-layer--front">
+                @for ($i = 0; $i < 3; $i++)
+                <svg viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                    <path fill="rgba(113, 186, 255, 0.5)" d="M0,0 L0,60 Q150,100 300,60 T600,60 T900,60 T1200,60 L1200,0 Z"></path>
+                    <path fill="#1A112A" d="M0,58 Q150,98 300,58 T600,58 T900,58 T1200,58 L1200,120 L0,120 Z"></path>
+                </svg>
+                @endfor
+            </div>
+        </div>
         <div class="container mx-auto px-8 md:px-16">
-            <div class="grid grid-cols-2 md:grid-cols-5 gap-10 border-b border-gray-700 pb-10 mb-8">
+            <div class="footer-main-grid grid grid-cols-2 md:grid-cols-5 gap-10 pb-10 mb-8">
 
                 <!-- Columna 1: Información de la Empresa -->
                 <div class="col-span-2 md:col-span-2 space-y-4">
@@ -1962,9 +2667,9 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
                     </p>
                     <div class="flex space-x-4 pt-2">
                         <!-- Iconos de Redes Sociales: El hover usará el color --light-blue gracias al CSS personalizado -->
-                        @if($setting->web_icons_redSocial != null)
+                        @if(! empty($setting->web_icons_redSocial))
                         @foreach ($setting->web_icons_redSocial as $red)
-                        <a href="#"><i class="{{ $red }}"></i></a>
+                        <a href="{{ $socialLinks[$red] ?? '#' }}" @if(($socialLinks[$red] ?? '#') !== '#') target="_blank" rel="noopener noreferrer" @endif aria-label="{{ $socialLabels[$red] ?? 'Red social' }}"><i class="{{ $red }}"></i></a>
                         @endforeach
                         @endif
                     </div>
@@ -1996,17 +2701,17 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
                     <h4 class="text-lg font-semibold text-white mb-2">Contacto</h4>
                     <ul class="space-y-2 text-sm">
                         <li class="flex items-center space-x-2">
-                            <!-- Usando el color primario (Púrpura) para los iconos -->
-                            <i data-lucide="mail" class="w-4 h-4 text-theme-primary"></i>
-                            <a href="mailto:info@techsolutions.com" class="text-gray-400 hover:text-theme-accent transition duration-200">{{ $setting->web_footerContactEmail }}</a>
-
+                            <i class="fas fa-envelope text-theme-primary"></i>
+                            <a href="mailto:{{ $contactEmail }}" class="text-gray-400 hover:text-theme-accent transition duration-200">{{ $contactEmail }}</a>
                         </li>
                         <li class="flex items-center space-x-2">
-                            <i data-lucide="phone" class="w-4 h-4 text-theme-primary"></i>
-                            <span class="text-gray-400">{{ $setting->web_footerContactPhone }}</span>
+                            <i class="fab fa-whatsapp text-theme-primary"></i>
+                            <a href="{{ $whatsappUrl }}" target="_blank" rel="noopener noreferrer" class="text-gray-400 hover:text-theme-accent transition duration-200">
+                                WhatsApp: {{ $contactPhone }}
+                            </a>
                         </li>
                         <li class="flex items-start space-x-2">
-                            <i data-lucide="map-pin" class="w-4 h-4 text-theme-primary mt-1"></i>
+                            <i class="fas fa-map-marker-alt text-theme-primary mt-1"></i>
                             <span class="text-gray-400">{{ $setting->web_footerContactAddress }}</span>
                         </li>
                     </ul>
@@ -2015,7 +2720,7 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
             </div>
 
             <!-- Derechos de Autor / Copyright -->
-            <div class="text-center text-gray-500 text-xs">
+            <div class="footer-copy text-center text-gray-500 text-xs pt-2">
                 &copy; 2025 INTEGRACORP. Todos los derechos reservados.
             </div>
 
@@ -2152,6 +2857,7 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
         // Función para inyectar todos los comentarios en el DOM
         function renderCommentsToSlider() {
             const list = document.getElementById('comments-list');
+            if (!list) return;
             list.innerHTML = positiveComments.map(generateCommentCard).join('');
         }
 
@@ -2164,6 +2870,13 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
             const prevBtn = document.getElementById('prev-btn');
             const nextBtn = document.getElementById('next-btn');
             const indicatorDots = document.getElementById('indicator-dots');
+            const sliderWrapper = document.getElementById('testimonial-slider-wrapper');
+
+            // Este slider custom ya no está en el DOM (se usa Glide); salir sin romper otras animaciones
+            if (!list || !prevBtn || !nextBtn || !indicatorDots || !sliderWrapper) {
+                return;
+            }
+
             const totalComments = positiveComments.length;
             let currentIndex = 0;
             const slideDuration = 5000;
@@ -2233,7 +2946,6 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
             nextBtn.addEventListener('click', showNext);
 
             // Pausa/Reanuda al pasar el ratón para una lectura interactiva
-            const sliderWrapper = document.getElementById('testimonial-slider-wrapper');
             sliderWrapper.addEventListener('mouseenter', pauseAutoSlide);
             sliderWrapper.addEventListener('mouseleave', startAutoSlide);
 
@@ -2267,21 +2979,61 @@ $setting = Configuration::first() ?? (object) $defaultConfig;
     </script>
 
     <script>
-        // Inicialización del carrusel
-        new Glide('.glide', {
-            type: 'carousel'
-            , perView: 1
-            , gap: 30
-            , autoplay: 4000
-            , breakpoints: {
-                768: {
-                    perView: 1
-                }
-                , 1024: {
-                    perView: 2
-                }
+        // Reveal al scroll: solo cuando la sección entra en viewport
+        (function () {
+            const sections = [
+                document.getElementById('nosotros'),
+                ...document.querySelectorAll('.reveal-on-scroll')
+            ].filter((el, index, arr) => el && arr.indexOf(el) === index);
+
+            if (!sections.length) return;
+
+            const reveal = (el) => el.classList.add('is-visible');
+            const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+            if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+                sections.forEach(reveal);
+                return;
             }
-        }).mount();
+
+            const observer = new IntersectionObserver((entries, obs) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting && entry.intersectionRatio >= 0.2) {
+                        reveal(entry.target);
+                        obs.unobserve(entry.target);
+                    }
+                });
+            }, {
+                threshold: [0.2, 0.35, 0.5],
+                rootMargin: '0px 0px -12% 0px'
+            });
+
+            sections.forEach((section) => observer.observe(section));
+        })();
+    </script>
+
+    <script>
+        // Inicialización del carrusel
+        try {
+            if (document.querySelector('.glide') && typeof Glide !== 'undefined') {
+                new Glide('.glide', {
+                    type: 'carousel'
+                    , perView: 1
+                    , gap: 30
+                    , autoplay: 4000
+                    , breakpoints: {
+                        768: {
+                            perView: 1
+                        }
+                        , 1024: {
+                            perView: 2
+                        }
+                    }
+                }).mount();
+            }
+        } catch (e) {
+            console.warn('Glide no pudo inicializarse:', e);
+        }
 
     </script>
 
