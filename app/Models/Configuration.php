@@ -35,6 +35,7 @@ class Configuration extends Model
         'web_icons_redSocial',
         'web_url_facebook',
         'web_url_instagram',
+        'web_instagram_posts',
         'web_url_twitter',
         'web_url_whatsapp',
         'web_headerLogo',
@@ -138,6 +139,7 @@ class Configuration extends Model
 
     protected $casts = [
         'web_icons_redSocial' => 'array',
+        'web_instagram_posts' => 'array',
     ];
     
     public function agency()
@@ -150,6 +152,15 @@ class Configuration extends Model
         return once(function (): string {
             return static::query()->value('currency_symbol') ?: 'EUR€';
         });
+    }
+
+    /**
+     * Las coberturas (montos de plan) siempre se expresan en dólares,
+     * independientemente de la moneda configurada para tarifas y totales.
+     */
+    public static function coverageCurrencySymbol(): string
+    {
+        return 'USD$';
     }
 
     public static function currencyName(): string

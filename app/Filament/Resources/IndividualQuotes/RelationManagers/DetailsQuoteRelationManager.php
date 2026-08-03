@@ -44,7 +44,7 @@ class DetailsQuoteRelationManager extends RelationManager
                     ->label('Cobertura')
                     ->searchable()
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
+                    ->suffix(fn (): string => ' ' . Configuration::coverageCurrencySymbol()),
                 TextColumn::make('fee')
                     ->label('Tarifa individual')
                     ->alignCenter()

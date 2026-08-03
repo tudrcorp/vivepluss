@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DownloadZone extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+
     protected $table = 'download_zones';
 
     protected $fillable = [

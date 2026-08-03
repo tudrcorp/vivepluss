@@ -50,6 +50,12 @@ $instagramUrl = filled($setting->web_url_instagram ?? null)
     ? $setting->web_url_instagram
     : 'https://www.instagram.com/';
 
+$instagramPosts = collect($setting->web_instagram_posts ?? [])
+    ->filter(fn ($post) => filled($post['url'] ?? null) && filled($post['image'] ?? null))
+    ->take(4)
+    ->values()
+    ->all();
+
 $plansTitleRaw = (string) ($setting->web_plansTitle ?? 'Elige el plan perfecto para ti');
 $plansTitleLower = mb_strtolower($plansTitleRaw);
 $plansTitleCased = mb_strtoupper(mb_substr($plansTitleLower, 0, 1)) . mb_substr($plansTitleLower, 1);
@@ -1946,10 +1952,9 @@ $plansTitleFormatted = preg_replace(
             transform: scale(1.05); /* Zoom ligero de la imagen */
         }
 
-        /* Estilo para el ícono 'Ver Post' (simulación de Likes/Comments) */
+        /* Estilo para el ícono de Instagram en el overlay */
         .instagram-post-overlay svg {
-        /* Usaremos un ícono de flecha simple por defecto, pero se puede simular Likes/Comments */
-            transform: rotate(90deg);
+            transform: none;
         }
 
         /* Estilo para el botón CTA con sombra suave */
@@ -2272,36 +2277,21 @@ $plansTitleFormatted = preg_replace(
                     <i class="fas fa-comments text-tertiary text-3xl"></i>
                 </div>
                 <h2 class="text-3xl md:text-4xl font-bold mb-4 text-white">Experiencias que inspiran confianza</h2>
-                <p class="text-xl max-w-3xl mx-auto mb-6 text-white">Personas como tú comparten sus historias de protección alrededor del mundo</p>
+                <p class="text-xl max-w-3xl mx-auto mb-6 text-white">Afiliados de Vivepluss comparten cómo nuestros planes de salud y asistencia los respaldaron</p>
 
                 <div class="w-20 h-1 bg-tertiary mx-auto"></div>
-            </div>
-
-            <!-- Elementos decorativos flotantes -->
-            <div class="hidden md:block">
-                <div class="absolute top-20 left-10 animate-float">
-                    <div class="bg-accent rounded-full w-10 h-10 opacity-20"></div>
-                </div>
-                <div class="absolute top-1/3 right-20 animate-float-delay">
-                    <div class="bg-tertiary rounded-full w-8 h-8 opacity-20"></div>
-                </div>
-                <div class="absolute bottom-40 left-1/4 animate-float-delay-2">
-                    <div class="bg-secondary rounded-full w-6 h-6 opacity-20"></div>
-                </div>
             </div>
 
             <!-- Carrusel de testimonios -->
             <div class="glide max-w-6xl mx-auto">
                 <div class="glide__track" data-glide-el="track">
                     <ul class="glide__slides">
-                        <!-- Testimonio 1 -->
+                        <!-- Testimonio 1: Plan Esencial / atención en casa -->
                         <li class="glide__slide">
                             <div class="testimonial-card p-8 h-full">
                                 <div class="flex items-start mb-6">
-                                    {{-- <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="María López" class="testimonial-avatar rounded-full mr-5"> --}}
                                     <div>
-                                        <h4 class="font-bold text-xl">MATEO JOSE PARADA BERMUDEZ</h4>
-
+                                        <h4 class="font-bold text-xl">Mateo Parada</h4>
                                         <div class="flex items-center mt-1">
                                             <div class="flex text-yellow-400 mr-4">
                                                 <i class="fas fa-star"></i>
@@ -2312,36 +2302,31 @@ $plansTitleFormatted = preg_replace(
                                             </div>
                                             <div class="flex items-center text-sm text-gray-500">
                                                 <div class="map-pin mr-2"></div>
-                                                <span>Barcelona, España</span>
+                                                <span>Caracas, Venezuela</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <p class="mb-8 text-lg italic relative">"Siii a través de ustedes la
-                                    atención excelente, muy rápida, 5 de puntuación!"</p>
-
+                                <p class="mb-8 text-lg italic relative">"Con el plan Esencial recibí atención médica en casa sin complicaciones. El proceso de afiliación fue claro y la respuesta, muy rápida."</p>
                                 <div class="flex items-center">
                                     <div class="bg-light p-3 rounded-lg mr-4">
-                                        <i class="fas fa-suitcase-rolling text-tertiary text-xl"></i>
+                                        <i class="fas fa-house-medical text-tertiary text-xl"></i>
                                     </div>
                                     <div class="text-sm">
-                                        <div class="font-semibold">Problema con equipaje</div>
-                                        <div class="text-gray-500">Resuelto en 24 horas</div>
+                                        <div class="font-semibold">Atención domiciliaria</div>
+                                        <div class="text-gray-500">Plan Esencial · Resuelto el mismo día</div>
                                     </div>
                                 </div>
                                 <i class="fas fa-quote-right quote-icon"></i>
                             </div>
                         </li>
 
-                        <!-- Testimonio 2 -->
+                        <!-- Testimonio 2: Plan Bienestar / urgencia -->
                         <li class="glide__slide">
                             <div class="testimonial-card p-8 h-full">
                                 <div class="flex items-start mb-6">
-                                    {{-- <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=774&q=80" alt="Carlos Mendoza" class="testimonial-avatar rounded-full mr-5"> --}}
                                     <div>
-                                        <h4 class="font-bold text-xl">EUKARYS VALERIA
-                                            CALZADILLA MARTINEZ</h4>
-
+                                        <h4 class="font-bold text-xl">Eukarys Calzadilla</h4>
                                         <div class="flex items-center mt-1">
                                             <div class="flex text-yellow-400 mr-4">
                                                 <i class="fas fa-star"></i>
@@ -2352,74 +2337,66 @@ $plansTitleFormatted = preg_replace(
                                             </div>
                                             <div class="flex items-center text-sm text-gray-500">
                                                 <div class="map-pin mr-2"></div>
-                                                <span>Samora, España</span>
-
+                                                <span>Valencia, Venezuela</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <p class="mb-8 text-lg italic relative">"Excelente 5!"</p>
-
+                                <p class="mb-8 text-lg italic relative">"Tuve una lesión repentina y el plan Bienestar me dio el respaldo que necesitaba. Me guiaron paso a paso y me sentí acompañada."</p>
                                 <div class="flex items-center">
                                     <div class="bg-light p-3 rounded-lg mr-4">
                                         <i class="fas fa-stethoscope text-tertiary text-xl"></i>
                                     </div>
                                     <div class="text-sm">
+                                        <div class="font-semibold">Urgencia menor</div>
+                                        <div class="text-gray-500">Plan Bienestar · Atendida en sitio</div>
+                                    </div>
+                                </div>
+                                <i class="fas fa-quote-right quote-icon"></i>
+                            </div>
+                        </li>
+
+                        <!-- Testimonio 3: Plan Premium / emergencia -->
+                        <li class="glide__slide">
+                            <div class="testimonial-card p-8 h-full">
+                                <div class="flex items-start mb-6">
+                                    <div>
+                                        <h4 class="font-bold text-xl">Damián Vivas</h4>
+                                        <div class="flex items-center mt-1">
+                                            <div class="flex text-yellow-400 mr-4">
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                                <i class="fas fa-star"></i>
+                                            </div>
+                                            <div class="flex items-center text-sm text-gray-500">
+                                                <div class="map-pin mr-2"></div>
+                                                <span>Maracaibo, Venezuela</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <p class="mb-8 text-lg italic relative">"En una emergencia real el plan Premium respondió con la cobertura que prometieron. Esa tranquilidad no tiene precio."</p>
+                                <div class="flex items-center">
+                                    <div class="bg-light p-3 rounded-lg mr-4">
+                                        <i class="fas fa-truck-medical text-tertiary text-xl"></i>
+                                    </div>
+                                    <div class="text-sm">
                                         <div class="font-semibold">Emergencia médica</div>
-                                        <div class="text-gray-500">Resuelto en 48 horas</div>
+                                        <div class="text-gray-500">Plan Premium · Cobertura activada</div>
                                     </div>
                                 </div>
                                 <i class="fas fa-quote-right quote-icon"></i>
                             </div>
                         </li>
 
-                        <!-- Testimonio 3 -->
+                        <!-- Testimonio 4: Afiliación / familia -->
                         <li class="glide__slide">
                             <div class="testimonial-card p-8 h-full">
                                 <div class="flex items-start mb-6">
-                                    {{-- <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=776&q=80" alt="Ana Rodríguez" class="testimonial-avatar rounded-full mr-5"> --}}
                                     <div>
-                                        <h4 class="font-bold text-xl">DAMIAN VIVAS BLASI</h4>
-
-                                        <div class="flex items-center mt-1">
-                                            <div class="flex text-yellow-400 mr-4">
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star"></i>
-                                                <i class="fas fa-star-half-alt"></i>
-                                            </div>
-                                            <div class="flex items-center text-sm text-gray-500">
-                                                <div class="map-pin mr-2"></div>
-                                                <span>Davenport, EEUU</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <p class="mb-8 text-lg italic relative">"Ok, 5 puntos 👍👍👍👍"</p>
-
-                                <div class="flex items-center">
-                                    <div class="bg-light p-3 rounded-lg mr-4">
-                                        <i class="fas fa-plane text-tertiary text-xl"></i>
-                                    </div>
-                                    <div class="text-sm">
-                                        <div class="font-semibold">Vuelo cancelado</div>
-                                        <div class="text-gray-500">Resuelto en 12 horas</div>
-                                    </div>
-                                </div>
-                                <i class="fas fa-quote-right quote-icon"></i>
-                            </div>
-                        </li>
-
-                        <!-- Testimonio 4 -->
-                        <li class="glide__slide">
-                            <div class="testimonial-card p-8 h-full">
-                                <div class="flex items-start mb-6">
-                                    {{-- <img src="https://images.unsplash.com/photo-1552058544-f2b08422138a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=798&q=80" alt="Juan Pérez" class="testimonial-avatar rounded-full mr-5"> --}}
-                                    <div>
-                                        <h4 class="font-bold text-xl">BETTY MARGARITA
-                                            HERNANDEZ DE MARTINEZ</h4>
-
+                                        <h4 class="font-bold text-xl">Betty Hernández</h4>
                                         <div class="flex items-center mt-1">
                                             <div class="flex text-yellow-400 mr-4">
                                                 <i class="fas fa-star"></i>
@@ -2430,35 +2407,31 @@ $plansTitleFormatted = preg_replace(
                                             </div>
                                             <div class="flex items-center text-sm text-gray-500">
                                                 <div class="map-pin mr-2"></div>
-                                                <span>Madrid, España</span>
+                                                <span>Barquisimeto, Venezuela</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <p class="mb-8 text-lg italic relative">"La asistencia fue perfecta ,
-                                    yo le diera 10 pero como la puntuación más alta es 5 , tienen 5 🥰"</p>
-
+                                <p class="mb-8 text-lg italic relative">"Afilé a mi familia en Vivepluss y el proceso fue sencillo y transparente. Precios claros y un equipo que realmente te explica cada plan."</p>
                                 <div class="flex items-center">
                                     <div class="bg-light p-3 rounded-lg mr-4">
-                                        <i class="fas fa-hotel text-tertiary text-xl"></i>
+                                        <i class="fas fa-users text-tertiary text-xl"></i>
                                     </div>
                                     <div class="text-sm">
-                                        <div class="font-semibold">Alojamiento alternativo</div>
-                                        <div class="text-gray-500">Resuelto en 6 horas</div>
+                                        <div class="font-semibold">Afiliación familiar</div>
+                                        <div class="text-gray-500">Asesoría completa · Sin sorpresas</div>
                                     </div>
                                 </div>
                                 <i class="fas fa-quote-right quote-icon"></i>
                             </div>
                         </li>
 
-                        <!-- Testimonio 5 -->
+                        <!-- Testimonio 5: Accidente / Bienestar -->
                         <li class="glide__slide">
                             <div class="testimonial-card p-8 h-full">
                                 <div class="flex items-start mb-6">
-                                    {{-- <img src="https://images.unsplash.com/photo-1552058544-f2b08422138a?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=798&q=80" alt="Juan Pérez" class="testimonial-avatar rounded-full mr-5"> --}}
                                     <div>
-                                        <h4 class="font-bold text-xl">JUAN PENAGOS</h4>
-
+                                        <h4 class="font-bold text-xl">Juan Penagos</h4>
                                         <div class="flex items-center mt-1">
                                             <div class="flex text-yellow-400 mr-4">
                                                 <i class="fas fa-star"></i>
@@ -2469,28 +2442,24 @@ $plansTitleFormatted = preg_replace(
                                             </div>
                                             <div class="flex items-center text-sm text-gray-500">
                                                 <div class="map-pin mr-2"></div>
-                                                <span>Orlando, EEUU</span>
+                                                <span>Maracay, Venezuela</span>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <p class="mb-8 text-lg italic relative">"Muchas gracias cuenten con mi recomendación a todos los
-                                    viajeros cercanos"</p>
-
+                                <p class="mb-8 text-lg italic relative">"Después de un accidente menor, Vivepluss me respaldó como lo describen en sus planes. Los recomiendo a quien busque protección real."</p>
                                 <div class="flex items-center">
                                     <div class="bg-light p-3 rounded-lg mr-4">
-                                        <i class="fas fa-hotel text-tertiary text-xl"></i>
+                                        <i class="fas fa-hand-holding-medical text-tertiary text-xl"></i>
                                     </div>
                                     <div class="text-sm">
-                                        <div class="font-semibold">Alojamiento alternativo</div>
-                                        <div class="text-gray-500">Resuelto en 6 horas</div>
+                                        <div class="font-semibold">Respaldo por accidente</div>
+                                        <div class="text-gray-500">Plan Bienestar · Atención ágil</div>
                                     </div>
                                 </div>
                                 <i class="fas fa-quote-right quote-icon"></i>
                             </div>
                         </li>
-
-
                     </ul>
                 </div>
 
@@ -2533,81 +2502,31 @@ $plansTitleFormatted = preg_replace(
             <!-- CUERPO DEL FEED: GRID DE PUBLICACIONES -->
             <div id="instagram-posts-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 md:gap-6">
 
-                <!-- PUBLICACIÓN 1: Viaje a la Playa -->
-                <a href="{{ $instagramUrl }}" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden transition-shadow duration-300 hover:shadow-2xl">
-                    <img src="https://picsum.photos/600/600?random=101" onerror="this.src='https://placehold.co/600x600/40B7FF/ffffff?text=Playa'" alt="Publicación de Instagram: Playa y Sol" class="aspect-square-custom object-cover">
-                    <div class="instagram-post-overlay">
-                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
-                        <span class="ml-2 mr-4 text-xl">1.2K</span>
-
-                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                        </svg>
-                        <span class="ml-2 text-xl">120</span>
-                    </div>
-                </a>
-
-                <!-- PUBLICACIÓN 2: Café y Trabajo -->
-                <a href="{{ $instagramUrl }}" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden transition-shadow duration-300 hover:shadow-2xl">
-                    <img src="https://picsum.photos/600/600?random=102" onerror="this.src='https://placehold.co/600x600/D0834B/ffffff?text=Café'" alt="Publicación de Instagram: Café y Laptop" class="aspect-square-custom object-cover">
-                    <div class="instagram-post-overlay">
-                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
-                        <span class="ml-2 mr-4 text-xl">890</span>
-                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                        </svg>
-                        <span class="ml-2 text-xl">55</span>
-                    </div>
-                </a>
-
-                <!-- PUBLICACIÓN 3: Arte Callejero (Solo visible en md y más) -->
-                <a href="{{ $instagramUrl }}" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden hidden md:block transition-shadow duration-300 hover:shadow-2xl">
-                    <img src="https://picsum.photos/600/600?random=103" onerror="this.src='https://placehold.co/600x600/3E993E/ffffff?text=Arte'" alt="Publicación de Instagram: Mural" class="aspect-square-custom object-cover">
-                    <div class="instagram-post-overlay">
-                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
-                        <span class="ml-2 mr-4 text-xl">2.5K</span>
-                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                        </svg>
-                        <span class="ml-2 text-xl">412</span>
-                    </div>
-                </a>
-
-                <!-- PUBLICACIÓN 4: Tecnología y Código (Solo visible en lg y más) -->
-                <a href="{{ $instagramUrl }}" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden hidden lg:block transition-shadow duration-300 hover:shadow-2xl">
-                    <img src="https://picsum.photos/600/600?random=104" onerror="this.src='https://placehold.co/600x600/000000/ffffff?text=Code'" alt="Publicación de Instagram: Código en Pantalla" class="aspect-square-custom object-cover">
-                    <div class="instagram-post-overlay">
-                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
-                        <span class="ml-2 mr-4 text-xl">987</span>
-                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                        </svg>
-                        <span class="ml-2 text-xl">23</span>
-                    </div>
-                </a>
-
-                {{-- <!-- PUBLICACIÓN 5: Comida y Receta -->
-                <a href="{{ $instagramUrl }}" target="_blank" class="instagram-post-card rounded-lg shadow-xl overflow-hidden hidden xl:block transition-shadow duration-300 hover:shadow-2xl">
-                    <img src="https://picsum.photos/600/600?random=105" onerror="this.src='https://placehold.co/600x600/C51C30/ffffff?text=Comida'" alt="Publicación de Instagram: Plato Gourmet" class="aspect-square-custom object-cover">
-                    <div class="instagram-post-overlay">
-                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
-                        <span class="ml-2 mr-4 text-xl">4.1K</span>
-                        <svg class="w-6 h-6 instagram-icon-color" viewBox="0 0 24 24" fill="white" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"></path>
-                        </svg>
-                        <span class="ml-2 text-xl">88</span>
-                    </div>
-                </a> --}}
+                @forelse ($instagramPosts as $index => $post)
+                    @php
+                        $postUrl = $post['url'];
+                        $postImage = str_starts_with($post['image'], 'http')
+                            ? $post['image']
+                            : asset('storage/' . ltrim($post['image'], '/'));
+                        $visibilityClass = match ($index) {
+                            2 => 'hidden md:block',
+                            3 => 'hidden lg:block',
+                            default => '',
+                        };
+                    @endphp
+                    <a href="{{ $postUrl }}" target="_blank" rel="noopener noreferrer" class="instagram-post-card rounded-lg shadow-xl overflow-hidden transition-shadow duration-300 hover:shadow-2xl {{ $visibilityClass }}">
+                        <img src="{{ $postImage }}" alt="Publicación de Instagram {{ $index + 1 }}" class="aspect-square-custom object-cover" loading="lazy">
+                        <div class="instagram-post-overlay">
+                            <svg class="w-8 h-8 instagram-icon-color" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12 8a4 4 0 0 1 4 3.37z"></path>
+                                <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                            </svg>
+                        </div>
+                    </a>
+                @empty
+                    {{-- Sin publicaciones configuradas: no se muestran placeholders --}}
+                @endforelse
 
             </div>
             <!-- FIN DEL CUERPO DEL FEED -->

@@ -189,6 +189,7 @@
         use App\Models\Configuration;
         $setting = Configuration::first();
             $currency = $setting?->currency_symbol ?? 'EUR€';
+            $coverageCurrency = Configuration::coverageCurrencySymbol();
     @endphp
 
 
@@ -443,9 +444,9 @@
                                     font-weight: bold;
                                 ">
                                 @if($fila == "EMERGENCIAS MÉDICAS POR PATOLOGIAS LISTADAS")
-                                    <span style="font-size: 14px; font-weight: bold; color: {{ $setting->primaryColor }};">{{ $currency }} {{ number_format($pagador['cobertura'], 2, ',', '.') }}</span>
+                                    <span style="font-size: 14px; font-weight: bold; color: {{ $setting->primaryColor }};">{{ $coverageCurrency }} {{ number_format($pagador['cobertura'], 2, ',', '.') }}</span>
                                 @elseif($fila == "ASISTENCIA MÉDICA POR ACCIDENTES")
-                                    <span style="font-size: 14px; font-weight: bold; color: {{ $setting->primaryColor }};">{{ $currency }} {{ number_format($pagador['cobertura'], 2, ',', '.') }}</span>
+                                    <span style="font-size: 14px; font-weight: bold; color: {{ $setting->primaryColor }};">{{ $coverageCurrency }} {{ number_format($pagador['cobertura'], 2, ',', '.') }}</span>
                                 @else
                                     <img src="{{ public_path('storage/certificados/check-beneficios.png') }}" style="width: 12px; height: 12px;" alt="">
                                 @endif

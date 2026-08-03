@@ -8,6 +8,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\FileUpload;
 use Filament\Schemas\Components\Fieldset;
@@ -69,7 +70,7 @@ class ConfigurationForm
                             ->default('EUR€')
                             ->required()
                             ->native(false)
-                            ->helperText('Se usa en cotizaciones, afiliaciones y documentos (tarifas, totales y coberturas).'),
+                            ->helperText('Se usa en cotizaciones, afiliaciones y documentos (tarifas y totales). Las coberturas siempre se muestran en USD$.'),
                     ])->columnSpanFull(),
                 Fieldset::make('Pagina Web')
                     ->schema([
@@ -359,6 +360,36 @@ class ConfigurationForm
                                 ->label('Horario de Atención')
                                 ->required()
                         ])->columnSpanFull(),
+
+                        Fieldset::make('Sección Instagram')
+                            ->schema([
+                                Repeater::make('web_instagram_posts')
+                                    ->label('Publicaciones recientes')
+                                    ->helperText('Agrega hasta 4 publicaciones. Pega la URL del post de Instagram y sube la imagen que quieres mostrar en la web.')
+                                    ->schema([
+                                        TextInput::make('url')
+                                            ->label('URL de la publicación')
+                                            ->url()
+                                            ->required()
+                                            ->placeholder('https://www.instagram.com/p/XXXXXXXX/')
+                                            ->maxLength(500),
+                                        FileUpload::make('image')
+                                            ->label('Imagen de la publicación')
+                                            ->image()
+                                            ->directory('web-images/instagram')
+                                            ->visibility('public')
+                                            ->required()
+                                            ->helperText('Instagram no permite cargar la imagen automáticamente; súbela desde el post.'),
+                                    ])
+                                    ->columns(2)
+                                    ->defaultItems(0)
+                                    ->maxItems(4)
+                                    ->reorderable()
+                                    ->collapsible()
+                                    ->itemLabel(fn (array $state): ?string => filled($state['url'] ?? null)
+                                        ? (string) $state['url']
+                                        : 'Nueva publicación'),
+                            ])->columnSpanFull(),
 
                         Fieldset::make('Footer Web')
                             ->schema([

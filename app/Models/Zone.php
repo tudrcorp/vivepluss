@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Zone extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+
     protected $table = 'zones';
 
     protected $fillable = [

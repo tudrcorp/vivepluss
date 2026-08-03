@@ -6,9 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    protected $connection = 'mysql_vivepluss';
+
     public function up(): void
     {
-        Schema::create('download_zones', function (Blueprint $table) {
+        Schema::connection($this->connection)->create('download_zones', function (Blueprint $table) {
             $table->id();
             $table->foreignId('zone_id')->constrained('zones')->cascadeOnDelete();
             $table->unsignedInteger('position')->default(1);
@@ -24,6 +26,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('download_zones');
+        Schema::connection($this->connection)->dropIfExists('download_zones');
     }
 };

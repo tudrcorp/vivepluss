@@ -54,12 +54,12 @@ class ZoneResource extends Resource
 
     public static function shouldRegisterNavigation(): bool
     {
-        return false;
+        return Auth::user()?->is_whiteCompanyAdmin == 1
+            || Auth::user()?->agency_type == 'MASTER';
     }
 
     public static function canAccess(): bool
     {
-        return Auth::user()?->is_whiteCompanyAdmin == 1
-            || Auth::user()?->agency_type == 'MASTER';
+        return static::shouldRegisterNavigation();
     }
 }

@@ -6,9 +6,11 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
+    protected $connection = 'mysql_vivepluss';
+
     public function up(): void
     {
-        Schema::create('zones', function (Blueprint $table) {
+        Schema::connection($this->connection)->create('zones', function (Blueprint $table) {
             $table->id();
             $table->string('code')->unique();
             $table->string('zone');
@@ -21,6 +23,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('zones');
+        Schema::connection($this->connection)->dropIfExists('zones');
     }
 };

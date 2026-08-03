@@ -137,6 +137,7 @@
         use App\Models\Configuration;
         $setting = Configuration::first();
             $currency = $setting?->currency_symbol ?? 'EUR€';
+            $coverageCurrency = \App\Models\Configuration::coverageCurrencySymbol();
     @endphp
 
     <!-- Primera página: Imagen de fondo -->
@@ -190,12 +191,12 @@
 
                     <th style="font-weight: bold; color: white;">RANGO DE EDAD</th>
                     <th style="font-weight: bold; color: white;">POBLACIÓN</th>
-                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $currency }} 5K</th>
-                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $currency }} 10K</th>
-                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $currency }} 20K</th>
-                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $currency }} 30K</th>
-                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $currency }} 40K</th>
-                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $currency }} 50K</th>
+                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $coverageCurrency }} 5K</th>
+                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $coverageCurrency }} 10K</th>
+                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $coverageCurrency }} 20K</th>
+                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $coverageCurrency }} 30K</th>
+                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $coverageCurrency }} 40K</th>
+                    <th style="font-weight: bold; color: white;">TARIFA ANUAL<br>{{ $coverageCurrency }} 50K</th>
 
                 </tr>
                 @foreach ($data as $key => $value)

@@ -109,7 +109,8 @@ class TablaBeneficioCobertura extends Component
 
         $colorPrimary = $config->primaryColor ?? '#1f2937'; // Fallback
         $colorInfo = $config->infoColor ?? '#3b82f6'; // Fallback
-        $currency = $config->currency_symbol ?? Configuration::currencySymbol();
+        // Coberturas siempre en USD$, sin importar la moneda del sistema
+        $currency = Configuration::coverageCurrencySymbol();
 
         return view('livewire.tabla-beneficio-cobertura', compact('coverageColumnWidth', 'coverages', 'benefits', 'matrix', 'colorPrimary', 'colorInfo', 'currency'));
     }
