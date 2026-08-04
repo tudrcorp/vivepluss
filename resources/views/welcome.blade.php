@@ -56,6 +56,23 @@ $instagramPosts = collect($setting->web_instagram_posts ?? [])
     ->values()
     ->all();
 
+$ubicacionTitle = $setting->web_ubicacionTitle ?? '¿Dónde Encontrarnos?';
+$ubicacionSubTitle = $setting->web_ubicacionSubTitle ?? '';
+$ubicacionDireccion = $setting->web_ubicacionDireccion
+    ?? ($setting->web_footerContactAddress ?? '');
+$ubicacionHorarios = $setting->web_ubicacionHorarios ?? '';
+$ubicacionUrl = $setting->web_ubicacionUrl ?? '';
+
+$mapExternalUrl = filled($ubicacionUrl)
+    ? $ubicacionUrl
+    : (filled($ubicacionDireccion)
+        ? 'https://www.google.com/maps/search/?api=1&query=' . urlencode($ubicacionDireccion)
+        : null);
+
+// Coordenadas por defecto: Multicentro Paseo El Parral, Valencia (MapLibre usa [lng, lat])
+$mapCenterLng = -68.02837;
+$mapCenterLat = 10.20536;
+
 $plansTitleRaw = (string) ($setting->web_plansTitle ?? 'Elige el plan perfecto para ti');
 $plansTitleLower = mb_strtolower($plansTitleRaw);
 $plansTitleCased = mb_strtoupper(mb_substr($plansTitleLower, 0, 1)) . mb_substr($plansTitleLower, 1);
@@ -111,6 +128,9 @@ $plansTitleFormatted = preg_replace(
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+
+    <!-- MapLibre GL JS (mapa 3D) -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.1/dist/maplibre-gl.css" />
 
 
     <!-- Estilos Inline en el Head -->
@@ -1624,23 +1644,35 @@ $plansTitleFormatted = preg_replace(
             color: var(--primary);
         }
 
-        /* Estilo personalizado para el iframe para asegurar el aspecto 16:9 en cualquier ancho */
+        /* Contenedor del mapa MapLibre 3D */
         .map-container {
             position: relative;
             width: 100%;
-            /* Altura del 50% del viewport height para que el mapa sea prominente */
-            height: 50vh;
+            height: 320px;
             overflow: hidden;
-            border-radius: 0.5rem;
-            /* Bordes redondeados */
+            border-radius: 0.75rem;
         }
 
-        .map-container iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
+        @media (min-width: 1024px) {
+            .map-container {
+                height: 420px;
+            }
+        }
+
+        #ubicacion-map {
             width: 100%;
             height: 100%;
+        }
+
+        .maplibre-popup-content {
+            font-family: inherit;
+            padding: 10px 12px;
+            border-radius: 10px;
+        }
+
+        .maplibre-popup-close-button {
+            font-size: 16px;
+            padding: 2px 6px;
         }
 
 
@@ -2548,17 +2580,71 @@ $plansTitleFormatted = preg_replace(
 
     </section> <!-- Fin de la Sección Completa -->
 
+    <!-- SECCIÓN UBICACIÓN Y MAPA 3D (MapLibre) -->
+    <section id="ubicacion" class="w-full bg-white py-16 md:py-20 px-4 md:px-12 lg:px-24">
+        <div class="max-w-7xl mx-auto">
+            <div class="mb-12 text-center">
+                <h2 class="text-4xl md:text-5xl font-extrabold theme-text-dark">
+                    {{ $ubicacionTitle }}
+                </h2>
+                @if(filled($ubicacionSubTitle))
+                <p class="mt-4 text-lg theme-text-light max-w-3xl mx-auto">
+                    {{ $ubicacionSubTitle }}
+                </p>
+                @endif
+            </div>
 
+            <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10 items-stretch">
+                <div class="lg:col-span-2 flex flex-col justify-center space-y-6">
+                    @if(filled($ubicacionDireccion))
+                    <div class="card-effect p-6 rounded-xl border border-gray-100 bg-background-light">
+                        <div class="flex items-start space-x-3">
+                            <i class="fas fa-map-marker-alt theme-primary-text text-xl mt-1"></i>
+                            <div>
+                                <h3 class="text-lg font-bold theme-text-dark mb-1">Dirección</h3>
+                                <p class="theme-text-light leading-relaxed">{{ $ubicacionDireccion }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
+                    @if(filled($ubicacionHorarios))
+                    <div class="card-effect p-6 rounded-xl border border-gray-100 bg-background-light">
+                        <div class="flex items-start space-x-3">
+                            <i class="fas fa-clock theme-primary-text text-xl mt-1"></i>
+                            <div>
+                                <h3 class="text-lg font-bold theme-text-dark mb-1">Horario</h3>
+                                <p class="theme-text-light leading-relaxed">{{ $ubicacionHorarios }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
 
+                    @if(filled($mapExternalUrl))
+                    <div>
+                        <a href="{{ $mapExternalUrl }}" target="_blank" rel="noopener noreferrer" class="theme-btn inline-flex items-center px-6 py-3 text-base font-bold text-white rounded-full transition duration-300 ease-in-out transform hover:scale-105">
+                            <i class="fas fa-directions mr-2"></i>
+                            Cómo llegar
+                        </a>
+                    </div>
+                    @endif
+                </div>
 
+                <div class="lg:col-span-3">
+                    <div class="map-container shadow-xl rounded-xl overflow-hidden border border-gray-100">
+                        <div id="ubicacion-map" role="img" aria-label="Mapa interactivo de ubicación"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <footer class="site-footer bg-footer-dark text-gray-300 pb-12 md:pb-16 shadow-2xl">
         <div class="footer-bridge" aria-hidden="true">
             <div class="wave-layer wave-layer--back">
                 @for ($i = 0; $i < 3; $i++)
                 <svg viewBox="0 0 1200 120" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
-                    <path fill="#EFEFEF" d="M0,0 L0,42 Q150,86 300,42 T600,42 T900,42 T1200,42 L1200,0 Z"></path>
+                    <path fill="#ffffff" d="M0,0 L0,42 Q150,86 300,42 T600,42 T900,42 T1200,42 L1200,0 Z"></path>
                     <path fill="rgba(161, 61, 219, 0.55)" d="M0,0 L0,52 Q150,96 300,52 T600,52 T900,52 T1200,52 L1200,0 Z"></path>
                 </svg>
                 @endfor
@@ -2631,7 +2717,7 @@ $plansTitleFormatted = preg_replace(
                         </li>
                         <li class="flex items-start space-x-2">
                             <i class="fas fa-map-marker-alt text-theme-primary mt-1"></i>
-                            <span class="text-gray-400">{{ $setting->web_footerContactAddress }}</span>
+                            <span class="text-gray-400">{{ $ubicacionDireccion }}</span>
                         </li>
                     </ul>
                 </div>
@@ -2956,7 +3042,125 @@ $plansTitleFormatted = preg_replace(
 
     </script>
 
+    <script src="https://cdn.jsdelivr.net/npm/maplibre-gl@5.6.1/dist/maplibre-gl.js"></script>
+    <script>
+        (function () {
+            const mapEl = document.getElementById('ubicacion-map');
+            if (!mapEl || typeof maplibregl === 'undefined') {
+                console.error('MapLibre no cargó correctamente.');
+                if (mapEl) {
+                    mapEl.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100%;color:#666;padding:1.5rem;text-align:center;">No se pudo cargar el mapa. Revisa la conexión o recarga la página.</div>';
+                }
+                return;
+            }
 
+            const center = [{{ $mapCenterLng }}, {{ $mapCenterLat }}];
+            const address = @json($ubicacionDireccion);
+
+            const map = new maplibregl.Map({
+                container: 'ubicacion-map',
+                style: 'https://tiles.openfreemap.org/styles/bright',
+                center: center,
+                zoom: 15.5,
+                pitch: 45,
+                bearing: -17.6,
+                antialias: true
+            });
+
+            map.addControl(new maplibregl.NavigationControl({ visualizePitch: true }), 'top-right');
+
+            map.on('error', function (e) {
+                console.error('Error del mapa MapLibre:', e && e.error ? e.error : e);
+            });
+
+            map.on('load', function () {
+                map.resize();
+
+                const layers = map.getStyle().layers || [];
+                let labelLayerId;
+                for (let i = 0; i < layers.length; i++) {
+                    if (layers[i].type === 'symbol' && layers[i].layout && layers[i].layout['text-field']) {
+                        labelLayerId = layers[i].id;
+                        break;
+                    }
+                }
+
+                if (!map.getSource('openfreemap')) {
+                    map.addSource('openfreemap', {
+                        url: 'https://tiles.openfreemap.org/planet',
+                        type: 'vector'
+                    });
+                }
+
+                if (!map.getLayer('3d-buildings')) {
+                    map.addLayer(
+                        {
+                            id: '3d-buildings',
+                            source: 'openfreemap',
+                            'source-layer': 'building',
+                            type: 'fill-extrusion',
+                            minzoom: 15,
+                            filter: ['!=', ['get', 'hide_3d'], true],
+                            paint: {
+                                'fill-extrusion-color': [
+                                    'interpolate',
+                                    ['linear'],
+                                    ['get', 'render_height'],
+                                    0, '#d4d4d8',
+                                    40, '#A13DDB',
+                                    120, '#71BAFF'
+                                ],
+                                'fill-extrusion-height': [
+                                    'interpolate',
+                                    ['linear'],
+                                    ['zoom'],
+                                    15,
+                                    0,
+                                    16,
+                                    ['get', 'render_height']
+                                ],
+                                'fill-extrusion-base': [
+                                    'case',
+                                    ['>=', ['get', 'zoom'], 16],
+                                    ['get', 'render_min_height'],
+                                    0
+                                ]
+                            }
+                        },
+                        labelLayerId
+                    );
+                }
+
+                const popupHtml = address
+                    ? '<strong style="color:#A13DDB;">VivePluss</strong><br><span style="font-size:13px;color:#444;">' + address + '</span>'
+                    : '<strong style="color:#A13DDB;">VivePluss</strong>';
+
+                new maplibregl.Marker({ color: '#A13DDB' })
+                    .setLngLat(center)
+                    .setPopup(new maplibregl.Popup({ offset: 28 }).setHTML(popupHtml))
+                    .addTo(map)
+                    .togglePopup();
+            });
+
+            window.addEventListener('resize', function () {
+                map.resize();
+            });
+
+            if ('IntersectionObserver' in window) {
+                const io = new IntersectionObserver(function (entries) {
+                    entries.forEach(function (entry) {
+                        if (entry.isIntersecting) {
+                            map.resize();
+                        }
+                    });
+                }, { threshold: 0.15 });
+                io.observe(mapEl);
+            }
+
+            // Por si el contenedor aún no tenía tamaño al iniciar
+            setTimeout(function () { map.resize(); }, 300);
+        })();
+    </script>
 
     @fluxScripts
 

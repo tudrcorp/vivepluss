@@ -351,7 +351,8 @@ class ConfigurationForm
                                 ->required()
                                 ->maxLength(255),
                             TextInput::make('web_ubicacionUrl')
-                                ->label('URL del Mapa Embebido de Google Maps')
+                                ->label('URL del Mapa (Cómo llegar / Google Maps)')
+                                ->helperText('Se usa en el botón «Cómo llegar». El mapa 3D de la web se muestra con MapLibre.')
                                 ->required(),
                             TextInput::make('web_ubicacionDireccion')
                                 ->label('Dirección Principal')
