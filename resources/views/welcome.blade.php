@@ -3137,9 +3137,19 @@ $plansTitleFormatted = preg_replace(
 
                 new maplibregl.Marker({ color: '#A13DDB' })
                     .setLngLat(center)
-                    .setPopup(new maplibregl.Popup({ offset: 28 }).setHTML(popupHtml))
+                    .setPopup(new maplibregl.Popup({
+                        offset: 28,
+                        // Evita que el popup robe el foco y el navegador salte a #ubicacion al cargar
+                        focusAfterOpen: false
+                    }).setHTML(popupHtml))
                     .addTo(map)
                     .togglePopup();
+
+                // El canvas de MapLibre es enfocable; evitar salto de scroll al inicializar
+                const canvas = map.getCanvas();
+                if (canvas) {
+                    canvas.setAttribute('tabindex', '-1');
+                }
             });
 
             window.addEventListener('resize', function () {
