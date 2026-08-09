@@ -7,6 +7,7 @@ use App\Models\User;
 
 use App\Models\AgeRange;
 use Filament\Actions\Action;
+use App\Models\Configuration;
 use App\Models\CorporateQuote;
 use Illuminate\Support\Facades\DB;
 use App\Models\DetailCorporateQuote;
@@ -69,12 +70,12 @@ class CreateCorporateQuote extends CreateRecord
                 //guardar en la variable de sesion los detalles de la cotizacion
                 session()->put('details_quote', $data['details_quote']);
             }
-
-            return $data;
-        } else {
-
-            return $data;
         }
+
+        $data['white_company_id'] = Configuration::where('white_company_id', Auth::user()->white_company_id)->value('white_company_id')
+            ?? Configuration::query()->value('white_company_id');
+
+        return $data;
     }
 
     protected function afterCreate(): void

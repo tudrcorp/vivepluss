@@ -41,7 +41,8 @@ class CorporateQuote extends Model
         'data_doc',
         'observation_dress_tailor',
         'type',
-        'ownerAccountManagers'
+        'ownerAccountManagers',
+        'white_company_id',
 
     ];
 
