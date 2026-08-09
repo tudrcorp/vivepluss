@@ -237,8 +237,12 @@ class AgentsTable
                         ->action(function (Agent $record) {
 
                             try {
+                                $codeAgent = 'AGT-000' . $record->id;
+                                $codeAgency = $record->owner_code;
 
                                 $record->status = 'ACTIVO';
+                                $record->code_agency = $codeAgency;
+                                $record->code_agent = $codeAgent;
                                 $record->save();
 
                                 //4. creamos el usuario en la tabla users (AGENTES)
@@ -247,9 +251,9 @@ class AgentsTable
                                 $user->email = $record->email;
                                 $user->password = Hash::make('12345678');
                                 $user->is_agent = true;
-                                $user->code_agency = $record->code_agency;
-                                $user->code_agent = 'AGT-000' . $record->id;
-                                $user->link_agent = env('APP_URL') . '/at/lk/' . Crypt::encryptString($record->code_agent);
+                                $user->code_agency = $codeAgency;
+                                $user->code_agent = $codeAgent;
+                                $user->link_agent = env('APP_URL') . '/at/lk/' . Crypt::encryptString($codeAgent);
                                 $user->agent_id = $record->id;
                                 $user->status = 'ACTIVO';
                                 $user->save();

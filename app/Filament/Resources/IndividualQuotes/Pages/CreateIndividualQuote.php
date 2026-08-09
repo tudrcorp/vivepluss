@@ -7,6 +7,7 @@ use App\Models\User;
 
 use App\Models\AgeRange;
 use Filament\Actions\Action;
+use App\Models\Configuration;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Contracts\View\View;
 use Illuminate\Support\Facades\Auth;
@@ -68,6 +69,9 @@ class CreateIndividualQuote extends CreateRecord
             //guardar en la variable de sesion los detalles de la cotizacion
             session()->put('details_quote', $data['details_quote']);
         }
+
+        $data['white_company_id'] = Configuration::where('white_company_id', Auth::user()->white_company_id)->value('white_company_id')
+            ?? Configuration::query()->value('white_company_id');
 
         return $data;
     }

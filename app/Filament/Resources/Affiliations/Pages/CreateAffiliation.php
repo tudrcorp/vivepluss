@@ -9,6 +9,7 @@ use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Affiliate;
 use Filament\Actions\Action;
+use App\Models\Configuration;
 use App\Models\IndividualQuote;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -54,6 +55,9 @@ class CreateAffiliation extends CreateRecord
             $data['email_payer'] = $data['email_ti'];
             $data['phone_payer'] = $data['phone_ti'];
         }
+
+        $data['white_company_id'] = Configuration::where('white_company_id', Auth::user()->white_company_id)->value('white_company_id')
+            ?? Configuration::query()->value('white_company_id');
 
         return $data;
     }

@@ -105,7 +105,9 @@ class Affiliation extends Model
         'service_providers',
 
         //...Fecha de Vigencia de la afiliacion
-        'effective_date'
+        'effective_date',
+
+        'white_company_id',
         
     ];
 

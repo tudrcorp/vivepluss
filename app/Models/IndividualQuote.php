@@ -29,7 +29,8 @@ class IndividualQuote extends Model
         'owner_code',
         'owner_agent',
         'plan',
-        'ownerAccountManagers'
+        'ownerAccountManagers',
+        'white_company_id',
 
     ];
 
