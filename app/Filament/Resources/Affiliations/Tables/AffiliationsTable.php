@@ -30,6 +30,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Support\Enums\FontWeight;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Schemas\Components\Section;
@@ -137,21 +138,29 @@ class AffiliationsTable
                 ColumnGroup::make('Información del Titular', [
                     TextColumn::make('full_name_ti')
                         ->label('Nombre titular')
-                        ->badge()
-                        ->color('azulOscuro')
+                        ->icon('heroicon-o-user')
+                        ->weight(FontWeight::SemiBold)
                         ->searchable(),
                     TextColumn::make('nro_identificacion_ti')
                         ->label('CI. titular')
-                        ->badge()
-                        ->color('azulOscuro')
+                        ->icon('heroicon-o-identification')
+                        ->copyable()
+                        ->copyMessage('CI copiada')
+                        ->copyMessageDuration(1500)
                         ->searchable(),
                     TextColumn::make('phone_ti')
                         ->label('Telefono titular')
                         ->icon('heroicon-m-phone')
+                        ->copyable()
+                        ->copyMessage('Teléfono copiado')
+                        ->copyMessageDuration(1500)
                         ->searchable(),
                     TextColumn::make('email_ti')
                         ->label('Email titular')
                         ->icon('heroicon-m-envelope')
+                        ->copyable()
+                        ->copyMessage('Email copiado')
+                        ->copyMessageDuration(1500)
                         ->searchable(),
                 ]),
 
@@ -159,20 +168,23 @@ class AffiliationsTable
                 ColumnGroup::make('Información del Tomador', [
                     TextColumn::make('full_name_payer')
                         ->label('Nombre y Apellido')
-                        ->badge()
+                        ->icon('heroicon-o-user')
+                        ->weight(FontWeight::SemiBold)
                         ->alignCenter()
-                        ->color('azulOscuro')
                         ->searchable(),
                     TextColumn::make('nro_identificacion_payer')
                         ->label('Numero de Identificación')
-                        ->badge()
+                        ->icon('heroicon-o-identification')
                         ->alignCenter()
-                        ->color('azulOscuro')
+                        ->copyable()
+                        ->copyMessage('Identificación copiada')
+                        ->copyMessageDuration(1500)
                         ->searchable(),
                 ]),
 
                 TextColumn::make('created_by')
                     ->label('Creado por')
+                    ->toggleable(isToggledHiddenByDefault: true)
                     ->searchable(),
 
                 TextColumn::make('activated_at')
@@ -180,6 +192,7 @@ class AffiliationsTable
                     ->color('warning')
                     ->icon('heroicon-s-calendar')
                     ->badge()
+                    ->alignCenter()
                     ->searchable(),
 
                 TextColumn::make('effective_date')
@@ -187,11 +200,12 @@ class AffiliationsTable
                     ->color('success')
                     ->icon('heroicon-s-calendar')
                     ->badge()
+                    ->alignCenter()
                     ->searchable(),
 
                 TextColumn::make('status')
                     ->label('Estatus')
-
+                    ->alignCenter()
                     ->badge()
                     ->color(function (mixed $state): string {
                         return match ($state) {

@@ -59,3 +59,7 @@ Core business entities and how they relate:
 ### Auth
 
 Fortify-based auth with two-factor support (`app/Actions/Fortify`), plus a custom `DuplicatedSession` middleware applied to the Filament panel to prevent concurrent sessions. Logout redirects to an external URL (`config('parametros.REDIRECT_LOGOUT_EXTERNAL_URL')`) via the `/external` route, which also invalidates the Filament guard/session.
+
+### Dashboard widgets
+
+`app/Filament/Widgets/` holds the panel dashboard: `StatsOverview` (a plain `Widget`, not `StatsOverviewWidget`, rendering its own Blade view at `resources/views/filament/widgets/stats-overview.blade.php`) plus several `ChartWidget` subclasses (`VentasVsPlanChart`, `VentasVsPlanCorpChart`, `VentasAgenciasChart`, `VentasAgentesChart`) that query sales/quote data via `DB::` and `Configuration` for chart colors. Widgets are auto-discovered by the panel provider like resources/pages.

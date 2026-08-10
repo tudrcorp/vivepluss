@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 class Configuration extends Model
 {
@@ -145,6 +146,17 @@ class Configuration extends Model
     public function agency()
     {
         return $this->belongsTo(Agency::class);
+    }
+
+    /**
+     * Resolves the white_company_id scope for the current panel: the tenant
+     * matching the authenticated user's white_company_id, falling back to
+     * the first configured tenant when there's no match.
+     */
+    public static function currentWhiteCompanyId(): int|string|null
+    {
+        return static::where('white_company_id', Auth::user()->white_company_id)->value('white_company_id')
+            ?? static::query()->value('white_company_id');
     }
 
     public static function currencySymbol(): string

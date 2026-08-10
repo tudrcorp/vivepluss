@@ -4,3 +4,7 @@
 @source '../../../../app/Filament/**/*';
 @source '../../../../resources/views/filament/**/*';
 
+.fi-wi-stats-overview-stat {
+    @apply transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md;
+}
+
