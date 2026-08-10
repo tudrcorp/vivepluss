@@ -48,7 +48,9 @@ class VentasPorPlanChart extends ChartWidget
             ->where($statusColumn, 'ACTIVA')
             ->whereRaw("YEAR({$effectiveDate}) = ?", [$year])
             ->selectRaw("{$planIdColumn} as plan_id, MONTH({$effectiveDate}) as month, SUM({$totalColumn}) as total")
-            ->groupBy(DB::raw($planIdColumn), DB::raw("MONTH({$effectiveDate})"));
+            // Group by SELECT aliases so ONLY_FULL_GROUP_BY (common in prod) does not
+            // reject the nested COALESCE/STR_TO_DATE expression as a non-grouped column.
+            ->groupBy('plan_id', 'month');
 
         $scope($query);
 
