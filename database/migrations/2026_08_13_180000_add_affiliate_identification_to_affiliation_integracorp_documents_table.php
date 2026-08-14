@@ -25,11 +25,15 @@ return new class extends Migration
                 $table->unsignedBigInteger('affiliate_id')->nullable()->after('affiliation_corporate_id');
                 $table->unsignedBigInteger('affiliate_corporate_id')->nullable()->after('affiliate_id');
                 $table->string('affiliate_identification')->default('')->after('affiliate_corporate_id');
-
-                $table->foreign('affiliate_id')->references('id')->on('affiliates')->nullOnDelete();
-                $table->foreign('affiliate_corporate_id')->references('id')->on('affiliate_corporates')->nullOnDelete();
             });
         }
+
+        // El nombre autogenerado de affiliate_corporate_id supera los 64
+        // caracteres de MySQL; si se mezclan columnas + FKs en el mismo
+        // Schema::table y la FK falla, las columnas ya existen y un reintento
+        // saltaría este bloque. Se agregan aparte, con nombres cortos.
+        $this->ensureForeignKey('affiliate_id', 'affiliates', 'aidocs_affiliate_id_fk');
+        $this->ensureForeignKey('affiliate_corporate_id', 'affiliate_corporates', 'aidocs_affiliate_corporate_id_fk');
 
         if (! $this->indexExists('aidocs_code_type_affiliate_unique')) {
             if ($this->indexExists('aidocs_code_type_unique')) {
@@ -54,11 +58,33 @@ return new class extends Migration
 
         if (Schema::hasColumn('affiliation_integracorp_documents', 'affiliate_identification')) {
             Schema::table('affiliation_integracorp_documents', function (Blueprint $table) {
-                $table->dropForeign(['affiliate_id']);
-                $table->dropForeign(['affiliate_corporate_id']);
+                $table->dropForeign('aidocs_affiliate_id_fk');
+                $table->dropForeign('aidocs_affiliate_corporate_id_fk');
                 $table->dropColumn(['affiliate_id', 'affiliate_corporate_id', 'affiliate_identification']);
             });
         }
+    }
+
+    private function ensureForeignKey(string $column, string $onTable, string $name): void
+    {
+        if (! Schema::hasTable($onTable) || $this->hasForeignKeyOn($column)) {
+            return;
+        }
+
+        Schema::table('affiliation_integracorp_documents', function (Blueprint $table) use ($column, $onTable, $name) {
+            $table->foreign($column, $name)->references('id')->on($onTable)->nullOnDelete();
+        });
+    }
+
+    private function hasForeignKeyOn(string $column): bool
+    {
+        foreach (Schema::getForeignKeys('affiliation_integracorp_documents') as $foreignKey) {
+            if (in_array($column, $foreignKey['columns'], true)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     private function indexExists(string $indexName): bool
