@@ -5,6 +5,7 @@ namespace App\Filament\Resources\Affiliations;
 use App\Filament\Resources\Affiliations\Pages\CreateAffiliation;
 use App\Filament\Resources\Affiliations\Pages\EditAffiliation;
 use App\Filament\Resources\Affiliations\Pages\ListAffiliations;
+use App\Filament\Resources\Affiliations\Pages\ManageAffiliates;
 use App\Filament\Resources\Affiliations\RelationManagers\ObservationsRelationManager;
 use App\Filament\Resources\Affiliations\Schemas\AffiliationForm;
 use App\Filament\Resources\Affiliations\Tables\AffiliationsTable;
@@ -12,7 +13,6 @@ use App\Models\Affiliation;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Table;
 use UnitEnum;
 
@@ -24,10 +24,9 @@ class AffiliationResource extends Resource
 
     protected static ?string $navigationLabel = 'Consultar Afiliaciones';
 
-    protected static string | UnitEnum | null $navigationGroup = 'INDIVIDUALES';
+    protected static string|UnitEnum|null $navigationGroup = 'INDIVIDUALES';
 
     protected static ?int $navigationSort = 2;
-    
 
     public static function form(Schema $schema): Schema
     {
@@ -54,6 +53,7 @@ class AffiliationResource extends Resource
             'index' => ListAffiliations::route('/'),
             'create' => CreateAffiliation::route('/create'),
             'edit' => EditAffiliation::route('/{record}/edit'),
+            'affiliates' => ManageAffiliates::route('/{record}/affiliates'),
         ];
     }
 }

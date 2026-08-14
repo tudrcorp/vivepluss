@@ -2,15 +2,15 @@
 
 namespace App\Livewire;
 
-use App\Models\Plan;
-use Livewire\Component;
-use App\Models\Coverage;
 use App\Models\BenefitPlan;
 use App\Models\Configuration;
+use App\Models\Coverage;
+use App\Models\Plan;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\HtmlString;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\HtmlString;
+use Livewire\Component;
 
 class TablaBeneficioCobertura extends Component
 {
@@ -30,10 +30,10 @@ class TablaBeneficioCobertura extends Component
 
             $icon = new HtmlString('<i class="fas fa-heart text-red-500"></i>');
 
-            if (!$planId) {
+            if (! $planId) {
                 return [
-                    'coverages' => new Collection(),
-                    'benefits' => new Collection(),
+                    'coverages' => new Collection,
+                    'benefits' => new Collection,
                     'matrix' => [],
                 ];
             }
@@ -48,12 +48,11 @@ class TablaBeneficioCobertura extends Component
             // 70% del ancho de la tabla dividido entre el número de coberturas.
             $coverageColumnWidth = $totalCoverages > 0 ? (70 / $totalCoverages) : 0;
 
-
             // 2. Obtener todos los Beneficios (Filas de la tabla)
             $benefits = BenefitPlan::where('plan_id', $planId)->get(['benefit_id', 'description']);
             Log::info($benefits);
             // 3. Obtener los datos del pivot (limite_uso) para las coberturas de este plan
-            $pivotData = DB::table('benefit_coverages')
+            $pivotData = DB::connection('mysql_vivepluss')->table('benefit_coverages')
                 ->select('benefit_id', 'coverage_id', 'limit')
                 ->whereIn('coverage_id', $coverages->keys())
                 ->get();
@@ -69,7 +68,7 @@ class TablaBeneficioCobertura extends Component
 
                 foreach ($coverages as $coverage) {
                     $limitRecord = $pivotData->first(
-                        fn($item) => $item->benefit_id == $benefit->benefit_id && $item->coverage_id == $coverage->id
+                        fn ($item) => $item->benefit_id == $benefit->benefit_id && $item->coverage_id == $coverage->id
                     );
 
                     // Lógica modificada: Si el registro del límite NO existe, se asigna '✅' en lugar de 'N/A'
@@ -85,11 +84,12 @@ class TablaBeneficioCobertura extends Component
                 'coverageColumnWidth' => $coverageColumnWidth,
             ];
         } catch (\Throwable $th) {
-            Log::error('Error al calcular edades: ' . $th->getMessage());
+            Log::error('Error al calcular edades: '.$th->getMessage());
+
             // Retornar estructura vacía en caso de error
             return [
-                'coverages' => new Collection(),
-                'benefits' => new Collection(),
+                'coverages' => new Collection,
+                'benefits' => new Collection,
                 'matrix' => [],
                 'coverageColumnWidth' => 0,
             ];

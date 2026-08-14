@@ -14,6 +14,7 @@ use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Pages\ListRecords;
 use Filament\Schemas\Components\Tabs\Tab;
+use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 
 class ListDownloadZones extends ListRecords
@@ -24,9 +25,12 @@ class ListDownloadZones extends ListRecords
 
     protected static ?string $title = 'Zona de descarga';
 
-    protected static ?string $subtitle = 'Aquí puedes gestionar los recursos disponibles para los agentes';
-
     public ?string $activeTab = null;
+
+    public function getHeader(): ?View
+    {
+        return view('filament.resources.download-zones.list-header');
+    }
 
     public function getHeaderActions(): array
     {
@@ -36,6 +40,7 @@ class ListDownloadZones extends ListRecords
                 ->icon('heroicon-o-bars-3')
                 ->color('gray')
                 ->visible(fn (): bool => DownloadZoneResource::canManage() && filled($this->getActiveZoneId()))
+                ->extraAttributes(['class' => 'ios-action-btn'])
                 ->modalHeading('Reordenar documentos')
                 ->modalDescription('Arrastra y suelta para cambiar el orden. Al guardar, el orden se aplicará en esta pestaña.')
                 ->modalSubmitActionLabel('Guardar orden')
@@ -114,7 +119,8 @@ class ListDownloadZones extends ListRecords
             CreateAction::make()
                 ->label('Cargar Documento')
                 ->icon('heroicon-o-plus')
-                ->visible(fn (): bool => DownloadZoneResource::canManage()),
+                ->visible(fn (): bool => DownloadZoneResource::canManage())
+                ->extraAttributes(['class' => 'ios-action-btn']),
         ];
     }
 

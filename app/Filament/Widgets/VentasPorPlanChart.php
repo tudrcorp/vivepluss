@@ -13,11 +13,11 @@ class VentasPorPlanChart extends ChartWidget
 {
     protected ?string $heading = 'Ventas por Tipo de Plan';
 
-    protected ?string $maxHeight = '380px';
+    protected ?string $maxHeight = '340px';
 
     protected bool $isCollapsible = true;
 
-    protected int|string|array $columnSpan = 'full';
+    protected int|string|array $columnSpan = ['default' => 'full', 'lg' => 1];
 
     private const MONTH_LABELS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
@@ -126,6 +126,23 @@ class VentasPorPlanChart extends ChartWidget
                 mode: 'index',
                 intersect: false,
             },
+            hover: {
+                mode: 'index',
+                intersect: false,
+            },
+            animation: {
+                duration: 700,
+                easing: 'easeOutQuart',
+            },
+            elements: {
+                line: {
+                    borderWidth: 2,
+                },
+                point: {
+                    hoverBorderWidth: 2,
+                    hitRadius: 12,
+                },
+            },
             plugins: {
                 legend: {
                     display: true,
@@ -133,11 +150,16 @@ class VentasPorPlanChart extends ChartWidget
                     labels: {
                         usePointStyle: true,
                         boxWidth: 8,
+                        padding: 16,
                     },
                 },
                 tooltip: {
                     mode: 'index',
                     intersect: false,
+                    padding: 10,
+                    cornerRadius: 8,
+                    displayColors: true,
+                    boxPadding: 4,
                     callbacks: {
                         label: function (context) {
                             const value = context.parsed.y ?? 0;

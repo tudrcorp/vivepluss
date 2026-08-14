@@ -10,6 +10,10 @@ return new class extends Migration
 
     public function up(): void
     {
+        if (Schema::connection($this->connection)->hasColumn('configurations', 'currency_symbol')) {
+            return;
+        }
+
         Schema::connection($this->connection)->table('configurations', function (Blueprint $table) {
             $table->string('currency_symbol', 10)->default('EUR€')->after('infoColor');
         });

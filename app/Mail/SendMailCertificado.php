@@ -3,26 +3,25 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Mail\Mailables\Address;
 
 class SendMailCertificado extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public $certificado;
+    public string $certificadoPath;
 
     /**
-     * Create a new message instance.
+     * @param  string  $certificadoPath  Ruta absoluta del certificado en disco.
      */
-    public function __construct($certificado)
+    public function __construct(string $certificadoPath)
     {
-        $this->certificado = $certificado;
-        //
+        $this->certificadoPath = $certificadoPath;
     }
 
     /**
@@ -32,7 +31,7 @@ class SendMailCertificado extends Mailable
     {
         return new Envelope(
             from: new Address('vivepluss@vivepluss.com', 'VIVE PLUS'),
-            subject: 'Certificado de Afiliación', 
+            subject: 'Certificado de Afiliación',
         );
     }
 
@@ -49,13 +48,12 @@ class SendMailCertificado extends Mailable
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {
         return [
-            public_path('storage/certificados-doc/' . $this->certificado),
-            // $this->attachFromStorage('public/ejemploCSV.csv', 'ejemploCSV.csv'),
+            $this->certificadoPath,
         ];
     }
 }

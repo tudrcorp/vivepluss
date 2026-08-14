@@ -2,10 +2,12 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Resources\IndividualQuotes\IndividualQuoteResource;
 use App\Models\Agency;
 use App\Models\Agent;
 use App\Models\Configuration;
 use App\Models\CorporateQuote;
+use App\Models\CreditReconciliation;
 use App\Models\IndividualQuote;
 use Filament\Widgets\Widget;
 
@@ -92,6 +94,26 @@ class StatsOverview extends Widget
      */
     private const MONTH_LABELS = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
 
+    /**
+     * Crédito disponible de la empresa (marca blanca) actual: lo asignado por
+     * Integracorp en `white_companies.assigned_credit` menos lo ya consumido en
+     * pagos a crédito (`credit_reconciliations`), para que el analista vea de
+     * primera mano cuánto le queda, no el total original fijo.
+     */
+    public function getAssignedCredit(): string
+    {
+        $whiteCompanyId = Configuration::currentWhiteCompanyId();
+
+        $availableCredit = CreditReconciliation::remainingCredit($whiteCompanyId);
+
+        return number_format($availableCredit, 2, ',', '.');
+    }
+
+    public function getCurrencySymbol(): string
+    {
+        return Configuration::currencySymbol();
+    }
+
     public function getStats(): array
     {
         $whiteCompanyId = Configuration::currentWhiteCompanyId();
@@ -129,6 +151,10 @@ class StatsOverview extends Widget
                     'accent' => '#fbbf24',
                     'points' => $this->monthlySeries(IndividualQuote::class, $whiteCompanyId),
                     'comparison' => $this->monthOverMonth(IndividualQuote::class, $whiteCompanyId),
+                    'action' => [
+                        'label' => 'Crear cotización individual',
+                        'url' => IndividualQuoteResource::getUrl('create'),
+                    ],
                 ],
                 [
                     'label' => 'Cotizaciones Corporativas',

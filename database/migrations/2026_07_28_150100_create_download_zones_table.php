@@ -10,6 +10,10 @@ return new class extends Migration
 
     public function up(): void
     {
+        if (Schema::connection($this->connection)->hasTable('download_zones')) {
+            return;
+        }
+
         Schema::connection($this->connection)->create('download_zones', function (Blueprint $table) {
             $table->id();
             $table->foreignId('zone_id')->constrained('zones')->cascadeOnDelete();

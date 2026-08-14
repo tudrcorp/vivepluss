@@ -4,6 +4,28 @@
             <p class="text-sm text-gray-500 dark:text-gray-400">{{ $description }}</p>
         @endif
 
+        <div class="relative overflow-hidden rounded-2xl border border-gray-950/10 bg-white p-5 shadow-sm dark:border-white/10 dark:bg-[#0b0f19] dark:shadow-black/40">
+            <div
+                class="pointer-events-none absolute inset-0 opacity-[0.15]"
+                style="background-image: radial-gradient(currentColor 1px, transparent 1px); background-size: 10px 10px; color: #34d399;"
+            ></div>
+
+            <div class="relative flex items-center gap-3">
+                <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-emerald-500/10 text-emerald-500">
+                    {{ svg('heroicon-o-banknotes', 'h-6 w-6') }}
+                </span>
+
+                <div>
+                    <p class="text-xs font-medium tracking-wide text-gray-500 uppercase dark:text-gray-400">
+                        Crédito Disponible
+                    </p>
+                    <p class="text-2xl font-bold text-gray-950 dark:text-white">
+                        {{ $this->getCurrencySymbol() }} {{ $this->getAssignedCredit() }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
             @foreach ($this->getStats() as $index => $stat)
                 <div
@@ -36,13 +58,25 @@
                             };
                         @endphp
 
-                        <span
-                            title="{{ $comparison['current'] }} este mes vs {{ $comparison['previous'] }} el mes pasado"
-                            class="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold {{ $badgeClasses }}"
-                        >
-                            {{ svg($badgeIcon, 'h-3.5 w-3.5') }}
-                            {{ $comparison['label'] }}
-                        </span>
+                        <div class="flex shrink-0 items-center gap-2">
+                            @if ($action = $stat['action'] ?? null)
+                                <a
+                                    href="{{ $action['url'] }}"
+                                    title="{{ $action['label'] }}"
+                                    class="inline-flex h-6 w-6 items-center justify-center rounded-full bg-gray-950/5 text-gray-500 transition-colors hover:bg-gray-950/10 hover:text-gray-950 dark:bg-white/10 dark:text-gray-400 dark:hover:bg-white/20 dark:hover:text-white"
+                                >
+                                    {{ svg('heroicon-s-plus', 'h-3.5 w-3.5') }}
+                                </a>
+                            @endif
+
+                            <span
+                                title="{{ $comparison['current'] }} este mes vs {{ $comparison['previous'] }} el mes pasado"
+                                class="inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-1 text-xs font-semibold {{ $badgeClasses }}"
+                            >
+                                {{ svg($badgeIcon, 'h-3.5 w-3.5') }}
+                                {{ $comparison['label'] }}
+                            </span>
+                        </div>
                     </div>
 
                     <div class="relative mt-4">

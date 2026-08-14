@@ -8,3 +8,208 @@
     @apply transition-all duration-200 ease-out hover:-translate-y-0.5 hover:shadow-md;
 }
 
+/*
+ * iOS-style treatment for header action buttons (pill shape, spring-like
+ * press feedback) applied via ->extraAttributes(['class' => 'ios-action-btn'])
+ * on the Create/etc. actions in the list-header views.
+ */
+.ios-action-btn.fi-btn {
+    border-radius: 9999px;
+    padding-inline: 1.125rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), 0 1px 1px rgba(0, 0, 0, 0.04);
+    transition: transform 150ms cubic-bezier(0.4, 0, 0.2, 1), box-shadow 150ms ease, filter 150ms ease;
+}
+
+.ios-action-btn.fi-btn:hover {
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.12);
+    filter: brightness(1.04);
+}
+
+.ios-action-btn.fi-btn:active {
+    transform: scale(0.96);
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.06);
+    filter: brightness(0.97);
+}
+
+.dark .ios-action-btn.fi-btn {
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5), 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+.dark .ios-action-btn.fi-btn:hover {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+/*
+ * Mobile navigation as a bottom sheet instead of Filament's default
+ * left-side drawer, to read as a native app menu (à la iOS action sheets)
+ * on small screens. Desktop (lg+) sidebar behavior is untouched.
+ */
+@media (max-width: 1023.98px) {
+    .fi-sidebar {
+        inset-inline: 0;
+        top: auto;
+        bottom: 0;
+        width: 100%;
+        max-height: 82dvh;
+        border-start-start-radius: 1.25rem;
+        border-start-end-radius: 1.25rem;
+        padding-top: 1.5rem;
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 0.5rem);
+        box-shadow: 0 -12px 32px rgba(0, 0, 0, 0.18);
+        transition: transform 320ms cubic-bezier(0.32, 0.72, 0, 1);
+        overflow: hidden;
+    }
+
+    .fi-sidebar::before {
+        content: '';
+        position: absolute;
+        top: 0.625rem;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 2.75rem;
+        height: 0.3125rem;
+        border-radius: 9999px;
+        background: rgba(120, 120, 128, 0.36);
+    }
+
+    .dark .fi-sidebar::before {
+        background: rgba(235, 235, 245, 0.3);
+    }
+
+    /*
+     * Filament positions the sidebar via the `translate` CSS property (not
+     * `transform`), sliding it in from the left (-100% on the X axis). Reset
+     * that with `translate: none` and drive the open/closed state with
+     * `transform` instead so the two don't compose into a diagonal slide.
+     */
+    .fi-sidebar.fi-sidebar-open,
+    .fi-sidebar:not(.fi-sidebar-open) {
+        translate: none;
+    }
+
+    .fi-sidebar.fi-sidebar-open {
+        transform: translateY(0);
+    }
+
+    .fi-sidebar:not(.fi-sidebar-open) {
+        transform: translateY(100%);
+    }
+
+    .fi-sidebar-close-overlay {
+        backdrop-filter: blur(2px);
+    }
+}
+
+/*
+ * Card layout for the Cotizaciones Individuales table on mobile, in place of
+ * Filament's default stacked label/value rows — trialed on this one resource
+ * (scoped via `.fi-ta-cards-mobile`, set through ->extraAttributes() on the
+ * table) before rolling the pattern out elsewhere. Only kicks in below the
+ * `sm` breakpoint (640px), matching ->stackedOnMobile()'s own cutoff; above
+ * that the regular table returns untouched.
+ */
+@media (max-width: 639.98px) {
+    .fi-ta-cards-mobile .fi-ta-table-stacked-on-mobile > tbody {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .fi-ta-cards-mobile .fi-ta-table-stacked-on-mobile > tbody > tr {
+        position: relative;
+        display: flex;
+        flex-wrap: wrap;
+        align-items: flex-start;
+        gap: 0.375rem 0.5rem;
+        padding: 1rem;
+        padding-inline-end: 2.75rem;
+        border-radius: 1rem;
+        background-color: var(--color-white);
+        border: 1px solid rgba(0, 0, 0, 0.06);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 20px rgba(0, 0, 0, 0.06);
+    }
+
+    .dark .fi-ta-cards-mobile .fi-ta-table-stacked-on-mobile > tbody > tr {
+        background-color: var(--color-gray-900);
+        border-color: rgba(255, 255, 255, 0.08);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2), 0 8px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .fi-ta-cards-mobile .fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell {
+        flex: 1 1 100%;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding-block: 0.3125rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+    }
+
+    .dark .fi-ta-cards-mobile .fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell {
+        border-bottom-color: rgba(255, 255, 255, 0.07);
+    }
+
+    .fi-ta-cards-mobile .fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell:last-of-type {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .fi-ta-cards-mobile .fi-ta-cell-label {
+        padding-top: 0;
+        font-size: 0.6875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+    }
+
+    .fi-ta-cards-mobile .fi-ta-cell-content {
+        display: flex;
+        flex: 1 1 auto;
+        justify-content: flex-end;
+        text-align: end;
+    }
+
+    /* Badge-valued fields (Agencia, Código, Tipo, Estatus) read as a row of
+       chips up top instead of repeating label: value lines. */
+    .fi-ta-cards-mobile .fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell:has(.fi-badge) {
+        flex: 0 1 auto;
+        order: -1;
+        border-bottom: none;
+        padding-block: 0;
+    }
+
+    .fi-ta-cards-mobile .fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell:has(.fi-badge) .fi-ta-cell-label {
+        display: none;
+    }
+
+    /* Requester name reads as the card's title. */
+    .fi-ta-cards-mobile .fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell-full-name {
+        order: -2;
+        flex-basis: 100%;
+        border-bottom: none;
+        padding-block: 0 0.25rem;
+    }
+
+    .fi-ta-cards-mobile .fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell-full-name .fi-ta-cell-label {
+        display: none;
+    }
+
+    .fi-ta-cards-mobile .fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell-full-name .fi-ta-cell-content {
+        justify-content: flex-start;
+        text-align: start;
+        font-size: 1rem;
+    }
+
+    /* Kebab actions menu pinned to the card's top-right corner. */
+    .fi-ta-cards-mobile .fi-ta-table-stacked-on-mobile > tbody > tr > .fi-ta-cell:has(.fi-ta-actions) {
+        position: absolute;
+        top: 0.625rem;
+        inset-inline-end: 0.625rem;
+        flex: 0 0 auto;
+        border-bottom: none;
+        padding: 0;
+    }
+}
+

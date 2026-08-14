@@ -5,20 +5,16 @@ namespace App\Filament\Resources\IndividualQuotes\RelationManagers;
 use App\Filament\Resources\IndividualQuotes\IndividualQuoteResource;
 use App\Models\Agency;
 use App\Models\Configuration;
-use Filament\Actions\CreateAction;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Tables\Table;
-
-use App\Models\Agent;
-use Filament\Actions\Action;
-use App\Models\IndividualQuote;
 use Filament\Actions\BulkAction;
-use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\Auth;
 use Filament\Actions\BulkActionGroup;
-use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\CreateAction;
+use Filament\Notifications\Notification;
+use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Auth;
 
 class DetailsQuoteRelationManager extends RelationManager
 {
@@ -44,37 +40,37 @@ class DetailsQuoteRelationManager extends RelationManager
                     ->label('Cobertura')
                     ->searchable()
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(fn (): string => ' ' . Configuration::coverageCurrencySymbol()),
+                    ->suffix(fn (): string => ' '.Configuration::coverageCurrencySymbol()),
                 TextColumn::make('fee')
                     ->label('Tarifa individual')
                     ->alignCenter()
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
+                    ->suffix(fn (): string => ' '.Configuration::currencySymbol()),
                 TextColumn::make('subtotal_anual')
                     ->label('Total anual')
                     ->alignCenter()
-                    ->description(fn($record): string => $record->total_persons . ' personas')
+                    ->description(fn ($record): string => $record->total_persons.' personas')
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
+                    ->suffix(fn (): string => ' '.Configuration::currencySymbol()),
                 TextColumn::make('subtotal_biannual')
                     ->label('Total semestral')
                     ->alignCenter()
-                    ->description(fn($record): string => $record->total_persons . ' personas')
+                    ->description(fn ($record): string => $record->total_persons.' personas')
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
+                    ->suffix(fn (): string => ' '.Configuration::currencySymbol()),
                 TextColumn::make('subtotal_quarterly')
                     ->label('Total trimestral')
                     ->alignCenter()
-                    ->description(fn($record): string => $record->total_persons . ' personas')
+                    ->description(fn ($record): string => $record->total_persons.' personas')
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol()),
+                    ->suffix(fn (): string => ' '.Configuration::currencySymbol()),
                 TextColumn::make('subtotal_monthly')
                     ->label('Total Mensual')
                     ->alignCenter()
-                    ->description(fn($record): string => $record->total_persons . ' personas')
+                    ->description(fn ($record): string => $record->total_persons.' personas')
                     ->numeric(decimalPlaces: 0)
-                    ->suffix(fn (): string => ' ' . Configuration::currencySymbol())
-                    ->hidden(fn(): bool => Agency::where('code', Auth::user()->code_agency)->first()->activate_monthly_frequency == 0),
+                    ->suffix(fn (): string => ' '.Configuration::currencySymbol())
+                    ->hidden(fn (): bool => Agency::where('code', Auth::user()->code_agency)->first()->activate_monthly_frequency == 0),
                 TextColumn::make('status')
                     ->label('Estatus')
                     ->badge()
@@ -87,7 +83,7 @@ class DetailsQuoteRelationManager extends RelationManager
                     })
                     ->sortable(),
             ])
-            //agrupar por planes y por coberturas
+            // agrupar por planes y por coberturas
             ->defaultGroup('ageRange.range')
             ->filters([
                 SelectFilter::make('coverage_id')
@@ -99,49 +95,89 @@ class DetailsQuoteRelationManager extends RelationManager
                 // CreateAction::make(),
             ])
             ->toolbarActions([
-                // BulkActionGroup::make([
-                // BulkAction::make('quote_multiple')
-                //     ->label('Preparar afiliación')
-                //     ->color('success')
-                //     ->icon('heroicon-c-receipt-percent')
-                //     ->requiresConfirmation()
-                //     ->deselectRecordsAfterCompletion()
-                //     ->action(function (Collection $records, RelationManager $livewire) {
-                //         // dd($records);
-                //         try {
+                BulkActionGroup::make([
+                    BulkAction::make('prepare_affiliation')
+                        ->label('Preparar afiliación')
+                        ->color('success')
+                        ->icon('heroicon-c-receipt-percent')
+                        ->requiresConfirmation()
+                        ->modalHeading('Preparar afiliación')
+                        ->modalDescription('Se usará la población total de la(s) fila(s) seleccionada(s) para determinar cuántos afiliados debe registrar en el formulario de afiliación.')
+                        ->deselectRecordsAfterCompletion()
+                        ->action(function (Collection $records, RelationManager $livewire) {
+                            try {
+                                if ($records->contains(fn ($record) => $record->status === 'EJECUTADA')) {
+                                    Notification::make()
+                                        ->title('No es posible afiliar')
+                                        ->body('Una o más filas seleccionadas ya fueron ejecutadas en una afiliación anterior.')
+                                        ->icon('heroicon-s-x-circle')
+                                        ->danger()
+                                        ->send();
 
-                //             //Guardo data records en una varaiable de sesion, si la variable de session exite y tiene informacion se actualiza
+                                    return;
+                                }
 
-                //             session()->get('data_records', []);
+                                $individualQuote = $livewire->getOwnerRecord();
 
-                //             session()->put('data_records', $records->toArray());
+                                /**
+                                 * El número de afiliados a registrar es la suma de la población (total_persons)
+                                 * de todas las filas seleccionadas: una cotización puede tener varias filas para
+                                 * un mismo plan (una por rango de edad), así que sumar es lo correcto en vez de
+                                 * tomar solo la primera fila.
+                                 */
+                                $totalPersons = (int) $records->sum('total_persons');
 
-                //             $data_records = session()->get('data_records');
+                                $planIds = $records->pluck('plan_id')->unique();
+                                $planId = $planIds->count() === 1 ? $planIds->first() : null;
 
-                //             /**
-                //              * Actualizo el status a APROBADA
-                //              */
-                //             $record = $records->first();
+                                $coverageIds = $records->pluck('coverage_id')->unique();
+                                $coverageId = $coverageIds->count() === 1 ? $coverageIds->first() : null;
 
-                //             $individual_quote = IndividualQuote::where('id', $livewire->ownerRecord->id)->first();
-                //             $individual_quote->status = 'APROBADA';
-                //             $individual_quote->save();
+                                /**
+                                 * IDs de las filas de detalle realmente seleccionadas por el analista,
+                                 * para que el formulario de afiliación calcule la tarifa solo con esas
+                                 * filas en vez de recalcular sobre todas las filas del plan+cobertura
+                                 * (que pueden incluir otros rangos de edad de la misma cotización).
+                                 */
+                                $detailIds = $records->pluck('id')->implode(',');
 
-                //         if ($records->count() == 1) {
-                //                 return redirect()->route('filament.agents.resources.affiliations.create', ['plan_id' => $record->plan_id, 'individual_quote_id' => $livewire->ownerRecord->id]);
-                //             }
+                                /**
+                                 * La información viaja al formulario de afiliación por variable de sesión
+                                 * (mismo mecanismo que ya consume AffiliationForm/CreateAffiliation). Se
+                                 * elimina en CreateAffiliation::afterCreate() una vez la afiliación queda
+                                 * completada, para no dejar datos obsoletos en la sesión del analista.
+                                 */
+                                session()->put('persons', $totalPersons);
 
-                //             if ($records->count() > 1) {
-                //                 return redirect()->route('filament.agents.resources.affiliations.create', ['plan_id' => null, 'individual_quote_id' => $livewire->ownerRecord->id]);
-                //             }
-                //         } catch (\Throwable $th) {
-                //             dd($th);
-                //             // $parte_entera = 0;
-                //         }
-                //     }),
+                                $individualQuote->status = 'APROBADA';
+                                $individualQuote->save();
 
-                // DeleteBulkAction::make(),
-                // ]),
+                                Notification::make()
+                                    ->title('COTIZACIÓN APROBADA')
+                                    ->body('Nro. '.$individualQuote->code.', puede proceder a afiliar '.$totalPersons.' persona(s).')
+                                    ->icon('heroicon-s-user-group')
+                                    ->iconColor('success')
+                                    ->persistent()
+                                    ->success()
+                                    ->send();
+
+                                return redirect()->route('filament.viveadmin.resources.affiliations.create', [
+                                    'id' => $individualQuote->id,
+                                    'plan_id' => $planId,
+                                    'coverage_id' => $coverageId,
+                                    'detail_ids' => $detailIds,
+                                ]);
+                            } catch (\Throwable $th) {
+                                Notification::make()
+                                    ->title('ERROR')
+                                    ->body($th->getMessage())
+                                    ->icon('heroicon-s-x-circle')
+                                    ->danger()
+                                    ->send();
+                            }
+                        })
+                        ->hidden(fn (RelationManager $livewire) => $livewire->getOwnerRecord()->status === 'EJECUTADA'),
+                ]),
             ]);
     }
 }

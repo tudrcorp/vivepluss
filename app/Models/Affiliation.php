@@ -2,17 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Model;
-
-use App\Mail\CertificateEmail;
-use Barryvdh\DomPDF\Facade\Pdf;
 use App\Jobs\SendTarjetaAfiliado;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use App\Jobs\SendNotificacionAfiliacionIndividual;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Affiliation extends Model
 {
@@ -25,14 +19,14 @@ class Affiliation extends Model
         'owner_code',
         'owner_agent',
         'plan_id',
-        
+
         /** Datos del pagador */
         'full_name_payer',
         'nro_identificacion_payer',
         'phone_payer',
         'email_payer',
         'relationship_payer',
-        
+
         /** Datos del titular */
         'full_name_ti',
         'nro_identificacion_ti',
@@ -47,7 +41,6 @@ class Affiliation extends Model
         'phone_ti',
         'email_ti',
 
-        
         'cuestion_1',
         'cuestion_2',
         'cuestion_3',
@@ -65,7 +58,7 @@ class Affiliation extends Model
         'cuestion_15',
         'cuestion_16',
         'observations_cuestions',
-        
+
         'full_name_applicant',
         'signature_applicant',
         'nro_identificacion_applicant',
@@ -81,7 +74,7 @@ class Affiliation extends Model
         'observations_payment',
         'fee_anual',
 
-        //despues de afiliar el poago
+        // despues de afiliar el poago
         'payment_frequency',
         'coverage_id',
         'activated_at',
@@ -96,25 +89,31 @@ class Affiliation extends Model
         'feedback',
         'feedback_dos',
 
-        //...Unidad de Negocio y linea de servicio
+        // ...Unidad de Negocio y linea de servicio
         'business_unit_id',
         'business_line_id',
         'ownerAccountManagers',
 
-        //PROVEEDORRES DE SERVICIOS
+        // PROVEEDORRES DE SERVICIOS
         'service_providers',
 
-        //...Fecha de Vigencia de la afiliacion
+        // ...Fecha de Vigencia de la afiliacion
         'effective_date',
 
         'white_company_id',
-        
+
+        // Tarifa negociada con Integracorp para esta afiliación (empresa aliada),
+        // congelada la primera vez que se resuelve para que no cambie entre cuotas.
+        'white_company_sale_price',
+        'white_company_neta',
+        'white_company_fee_id',
+
     ];
 
     /**
      * Get the user that owns the Agent
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function accountManager()
     {
@@ -124,6 +123,8 @@ class Affiliation extends Model
     protected $casts = [
         'upload_documents' => 'array',
         'service_providers' => 'array',
+        'white_company_sale_price' => 'decimal:2',
+        'white_company_neta' => 'decimal:2',
     ];
 
     public function city()
@@ -145,7 +146,6 @@ class Affiliation extends Model
     {
         return $this->belongsTo(Region::class);
     }
-
 
     public function agent()
     {
@@ -192,68 +192,6 @@ class Affiliation extends Model
         return $this->hasMany(AffiliationObservation::class)->orderByDesc('created_at');
     }
 
-    public function sendCertificate($record, $titular, $afiliates)
-    {
-        // dd($record, $titular, $afiliates);
-        try {
-
-            $data = $record->toArray();
-
-            $name_pdf = 'CER-' . $record->code . '.pdf';
-
-            if (isset($record->agent)) {
-                $name_agent = $record->agent->name;
-            } else {
-                $name_agent = isset($record->agency->name_corporative) ? $record->agency->name_corporative : 'TuDrEnCasa';
-            }
-
-            $plan = $record->plan->description;
-
-            if (isset($record->coverage_id)) {
-                $coverage   = $record->coverage->price;
-            } else {
-                $coverage   = 0;
-            }
-
-            /**
-             * Agregamos la informacion al array principal que viaja a la vista del certificado
-             * ----------------------------------------------------------------------------------------------------
-             */
-            $data['name_agent']  = $name_agent;
-            $data['plan']        = $plan;
-            $data['coverage']    = $coverage;
-
-            if ($plan == 'PLAN INICIAL') {
-                $colorTitle      = '#305B93';
-                $titleBeneficios = 'beneficios del plan inicial';
-                $imageBeneficios = 'beneficiosInicial.png';
-            }
-            if ($plan == 'PLAN IDEAL') {
-                $colorTitle      = '#052F60';
-                $titleBeneficios = 'beneficios del plan ideal';
-                $imageBeneficios = 'beneficiosIdeal.png';
-            }
-            if ($plan == 'PLAN ESPECIAL') {
-                $colorTitle      = '#529471';
-                $titleBeneficios = 'beneficios del plan emergencias medicas';
-                $imageBeneficios = 'beneficiosEspecial.png';
-            }
-
-            $data['colorTitle']      = $colorTitle;
-            $data['titleBeneficios'] = $titleBeneficios;
-            $data['imageBeneficios'] = $imageBeneficios;
-
-            SendNotificacionAfiliacionIndividual::dispatch($titular['full_name'], Auth::user()->email, $name_pdf, $data, $afiliates);
-            //code...
-            
-        } catch (\Throwable $th) {
-            dd($th);
-            //throw $th;
-        }
-        
-
-    }
-
     public function documents()
     {
         return $this->hasMany(AffiliationIndividualDocument::class);
@@ -265,65 +203,6 @@ class Affiliation extends Model
          * JOB
          */
         SendTarjetaAfiliado::dispatch($details);
-    }
-
-    public function sendCertificateOnlyHolder($record, $afiliates)
-    {
-
-        try {
-
-            $data = $record->toArray();
-
-            $name_pdf = 'CER-' . $record->code . '.pdf';
-
-            if (isset($record->agent)) {
-                $name_agent = $record->agent->name;
-            } else {
-                $name_agent = isset($record->agency->name_corporative) ? $record->agency->name_corporative : 'TuDrEnCasa';
-            }
-
-            $plan = $record->plan->description;
-
-            if (isset($record->coverage_id)) {
-                $coverage   = $record->coverage->price;
-            } else {
-                $coverage   = 0;
-            }
-
-            /**
-             * Agregamos la informacion al array principal que viaja a la vista del certificado
-             * ----------------------------------------------------------------------------------------------------
-             */
-            $data['name_agent']  = $name_agent;
-            $data['plan']        = $plan;
-            $data['coverage']    = $coverage;
-
-            if ($plan == 'PLAN INICIAL') {
-                $colorTitle      = '#305B93';
-                $titleBeneficios = 'beneficios del plan inicial';
-                $imageBeneficios = 'beneficiosInicial.png';
-            }
-            if ($plan == 'PLAN IDEAL') {
-                $colorTitle      = '#052F60';
-                $titleBeneficios = 'beneficios del plan ideal';
-                $imageBeneficios = 'beneficiosIdeal.png';
-            }
-            if ($plan == 'PLAN ESPECIAL') {
-                $colorTitle      = '#529471';
-                $titleBeneficios = 'beneficios del plan emergencias medicas';
-                $imageBeneficios = 'beneficiosEspecial.png';
-            }
-
-            $data['colorTitle']      = $colorTitle;
-            $data['titleBeneficios'] = $titleBeneficios;
-            $data['imageBeneficios'] = $imageBeneficios;
-            // dd(count($afiliates), $afiliates);
-            SendNotificacionAfiliacionIndividual::dispatch($afiliates[0]['full_name'], Auth::user()->email, $name_pdf, $data, $afiliates);
-            //code...
-        } catch (\Throwable $th) {
-            dd($th);
-            //throw $th;
-        }
     }
 
     public function affiliationIndividualPlans(): HasMany
@@ -340,7 +219,4 @@ class Affiliation extends Model
     {
         return $this->hasOne(BusinessLine::class, 'id', 'business_line_id');
     }
-
-    
-    
 }

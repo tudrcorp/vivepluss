@@ -2,21 +2,21 @@
 
 namespace App\Filament\Resources\AffiliationCorporates;
 
-use BackedEnum;
-use Filament\Tables\Table;
-use Filament\Schemas\Schema;
-use Filament\Resources\Resource;
-use App\Models\AffiliationCorporate;
-use Filament\Support\Icons\Heroicon;
+use App\Filament\Resources\AffiliationCorporates\Pages\CreateAffiliationCorporate;
 use App\Filament\Resources\AffiliationCorporates\Pages\EditAffiliationCorporate;
 use App\Filament\Resources\AffiliationCorporates\Pages\ListAffiliationCorporates;
-use App\Filament\Resources\AffiliationCorporates\Pages\CreateAffiliationCorporate;
+use App\Filament\Resources\AffiliationCorporates\Pages\ManageAffiliateCorporates;
+use App\Filament\Resources\AffiliationCorporates\RelationManagers\AffiliationCorporatePlansRelationManager;
+use App\Filament\Resources\AffiliationCorporates\RelationManagers\CorporateAffiliatesRelationManager;
 use App\Filament\Resources\AffiliationCorporates\RelationManagers\ObservationsRelationManager;
+use App\Filament\Resources\AffiliationCorporates\RelationManagers\PaidMembershipCorporatesRelationManager;
 use App\Filament\Resources\AffiliationCorporates\Schemas\AffiliationCorporateForm;
 use App\Filament\Resources\AffiliationCorporates\Tables\AffiliationCorporatesTable;
-use App\Filament\Resources\AffiliationCorporates\RelationManagers\CorporateAffiliatesRelationManager;
-use App\Filament\Resources\AffiliationCorporates\RelationManagers\PaidMembershipCorporatesRelationManager;
-use App\Filament\Resources\AffiliationCorporates\RelationManagers\AffiliationCorporatePlansRelationManager;
+use App\Models\AffiliationCorporate;
+use BackedEnum;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables\Table;
 use UnitEnum;
 
 class AffiliationCorporateResource extends Resource
@@ -27,10 +27,10 @@ class AffiliationCorporateResource extends Resource
 
     protected static ?string $navigationLabel = 'Consultar Afiliaciones';
 
-    protected static string | UnitEnum | null $navigationGroup = 'CORPORATIVAS';
+    protected static string|UnitEnum|null $navigationGroup = 'CORPORATIVAS';
 
     protected static ?int $navigationSort = 4;
-    
+
     public static function form(Schema $schema): Schema
     {
         return AffiliationCorporateForm::configure($schema);
@@ -57,6 +57,7 @@ class AffiliationCorporateResource extends Resource
             'index' => ListAffiliationCorporates::route('/'),
             'create' => CreateAffiliationCorporate::route('/create'),
             'edit' => EditAffiliationCorporate::route('/{record}/edit'),
+            'affiliates' => ManageAffiliateCorporates::route('/{record}/affiliates'),
         ];
     }
 }

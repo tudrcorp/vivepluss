@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Auth;
 class Configuration extends Model
 {
     protected $connection = 'mysql_vivepluss';
-    
+
     protected $table = 'configurations';
-    
+
     protected $fillable = [
         'agency_id',
         'code_agency',
@@ -19,6 +19,8 @@ class Configuration extends Model
         'faviconDefault',
         'brandLogo',
         'brandLogoHeight',
+        'quote_cover_individual',
+        'quote_back_cover_individual',
         'primaryColor',
         'infoColor',
         'currency_symbol',
@@ -41,23 +43,23 @@ class Configuration extends Model
         'web_url_whatsapp',
         'web_headerLogo',
         'web_nosotros',
-        
+
         'web_mision',
         'web_imageMision',
-        
+
         'web_vision',
         'web_imageVision',
-        
+
         'web_namePlan_1',
         'web_pricePlan_1',
         'web_descriptionPlan_1',
         'web_descriptionBottonPlan_1',
-        
+
         'web_namePlan_2',
         'web_pricePlan_2',
         'web_descriptionPlan_2',
         'web_descriptionBottonPlan_2',
-        
+
         'web_namePlan_3',
         'web_pricePlan_3',
         'web_descriptionPlan_3',
@@ -68,7 +70,7 @@ class Configuration extends Model
         'web_descriptionPricePlan_2',
         'web_formaPagoPlan_3',
         'web_descriptionPricePlan_3',
-        
+
         'web_footerPlans',
         'web_footerBottonPlans',
 
@@ -113,7 +115,7 @@ class Configuration extends Model
         'duplicatedSession',
         'agents_module_enabled',
 
-        //agregados
+        // agregados
         'web_imagePlan_1',
         'web_imagePlan_2',
         'web_imagePlan_3',
@@ -133,16 +135,19 @@ class Configuration extends Model
         'web_Plan_3_items_3',
         'web_Plan_3_items_4',
 
-        
-        
-          
+        'document_notifications_enabled',
+        'document_notification_emails',
+        'document_notification_phones',
     ];
 
     protected $casts = [
         'web_icons_redSocial' => 'array',
         'web_instagram_posts' => 'array',
+        'document_notifications_enabled' => 'boolean',
+        'document_notification_emails' => 'array',
+        'document_notification_phones' => 'array',
     ];
-    
+
     public function agency()
     {
         return $this->belongsTo(Agency::class);

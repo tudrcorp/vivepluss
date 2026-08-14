@@ -54,6 +54,11 @@ class IndividualQuotesTable
             ->defaultSort('created_at', 'desc')
             ->heading(fn (): string => Configuration::first()->table_quote_ind_table_title == null ? 'Cotizaciones' : Configuration::first()->table_quote_ind_table_title)
             ->description(fn (): string => Configuration::first()->table_quote_ind_table_description == null ? '.....' : Configuration::first()->table_quote_ind_table_description)
+            // Card layout on mobile (see resources/css/filament/viveadmin/theme.css,
+            // scoped to `.fi-ta-cards-mobile`): trial run for this table only, per
+            // product request, before rolling the pattern out to other resources.
+            ->stackedOnMobile()
+            ->extraAttributes(['class' => 'fi-ta-cards-mobile'])
             ->columns([
                 TextColumn::make('code_agency')
                     ->default(fn ($record): string => $record->code_agency ?? '-----')

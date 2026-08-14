@@ -33,13 +33,14 @@ class Sale extends Model
         'payment_frequency',
         'bank',
         'status_payment_commission',
-        "pay_amount_usd",
-        "pay_amount_ves",
-        "type_roll",
-        "bank_usd",
-        "bank_ves",
-        "payment_date",
-        "observations"
+        'pay_amount_usd',
+        'pay_amount_ves',
+        'type_roll',
+        'bank_usd',
+        'bank_ves',
+        'payment_date',
+        'observations',
+        'white_company_id',
     ];
 
     public function affiliation()
@@ -72,10 +73,13 @@ class Sale extends Model
         return $this->hasMany(Collection::class);
     }
 
+    public function commission()
+    {
+        return $this->hasOne(Commission::class);
+    }
+
     public function agencyMasterName()
     {
         return $this->belongsTo(Agency::class, 'owner_code', 'code');
     }
-
-    
 }

@@ -38,7 +38,13 @@ class Collection extends Model
         'days',
         'created_by',
         'bank',
-        
+        'pay_amount_usd',
+        'pay_amount_ves',
+        'bank_usd',
+        'bank_ves',
+        'filter_next_payment_date',
+        'white_company_id',
+
     ];
 
     public function affiliation()
@@ -85,6 +91,4 @@ class Collection extends Model
     {
         return $this->belongsTo(Agent::class);
     }
-
-    
 }

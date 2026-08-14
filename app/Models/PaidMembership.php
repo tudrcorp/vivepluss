@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class PaidMembership extends Model
 {
     protected $table = 'paid_memberships';
-    
+
     protected $fillable = [
         'affiliation_id',
         'agent_id',
@@ -38,9 +38,11 @@ class PaidMembership extends Model
         'created_by',
         'aproved_by',
 
-        //Agregado
+        // Agregado
         'name_ti_usd',
         'date_payment_voucher',
+        'invoice_number',
+        'white_company_id',
 
     ];
 
@@ -63,6 +65,4 @@ class PaidMembership extends Model
     {
         return $this->belongsTo(Coverage::class);
     }
-
-    
 }

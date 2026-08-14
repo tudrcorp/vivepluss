@@ -2,65 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use Carbon\Carbon;
-use App\Models\Fee;
-use App\Models\City;
-use App\Models\Plan;
-use App\Models\State;
 use App\Models\Agency;
-use App\Models\Region;
 use App\Models\AgeRange;
 use App\Models\BusinessLine;
-use Illuminate\Http\Request;
+use App\Models\City;
 use App\Models\CorporateQuote;
-use App\Models\IndividualQuote;
-use App\Models\DataNotification;
-use App\Models\TelemedicineCase;
 use App\Models\CorporateQuoteData;
+use App\Models\DataNotification;
+use App\Models\DetailCorporateQuote;
+use App\Models\DetailIndividualQuote;
+use App\Models\Fee;
+use App\Models\IndividualQuote;
+use App\Models\Plan;
+use App\Models\Region;
+use App\Models\State;
+use App\Models\TelemedicineCase;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Models\DetailCorporateQuote;
-use Illuminate\Support\Facades\Auth;
-use App\Models\CorporateQuoteRequest;
-use App\Models\DetailIndividualQuote;
-use Illuminate\Support\Facades\Crypt;
-use Filament\Notifications\Notification;
-use App\Models\CorporateQuoteRequestData;
-use App\Jobs\GenerateCertificateCorporate;
-use App\Models\DetailsCorporateQuoteRequest;
 
 class UtilsController extends Controller
 {
     /**
      * Obtener los paises
-     * 
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
-     * 
-     * @return array
-     * 
      */
     public static function getCountries(): array
     {
         return [
-            '+1'   => '🇺🇸 +1 (Estados Unidos)',
-            '+44'  => '🇬🇧 +44 (Reino Unido)',
-            '+49'  => '🇩🇪 +49 (Alemania)',
-            '+33'  => '🇫🇷 +33 (Francia)',
-            '+34'  => '🇪🇸 +34 (España)',
-            '+39'  => '🇮🇹 +39 (Italia)',
-            '+7'   => '🇷🇺 +7 (Rusia)',
-            '+55'  => '🇧🇷 +55 (Brasil)',
-            '+91'  => '🇮🇳 +91 (India)',
-            '+86'  => '🇨🇳 +86 (China)',
-            '+81'  => '🇯🇵 +81 (Japón)',
-            '+82'  => '🇰🇷 +82 (Corea del Sur)',
-            '+52'  => '🇲🇽 +52 (México)',
-            '+58'  => '🇻🇪 +58 (Venezuela)',
-            '+57'  => '🇨🇴 +57 (Colombia)',
-            '+54'  => '🇦🇷 +54 (Argentina)',
-            '+56'  => '🇨🇱 +56 (Chile)',
-            '+51'  => '🇵🇪 +51 (Perú)',
+            '+1' => '🇺🇸 +1 (Estados Unidos)',
+            '+44' => '🇬🇧 +44 (Reino Unido)',
+            '+49' => '🇩🇪 +49 (Alemania)',
+            '+33' => '🇫🇷 +33 (Francia)',
+            '+34' => '🇪🇸 +34 (España)',
+            '+39' => '🇮🇹 +39 (Italia)',
+            '+7' => '🇷🇺 +7 (Rusia)',
+            '+55' => '🇧🇷 +55 (Brasil)',
+            '+91' => '🇮🇳 +91 (India)',
+            '+86' => '🇨🇳 +86 (China)',
+            '+81' => '🇯🇵 +81 (Japón)',
+            '+82' => '🇰🇷 +82 (Corea del Sur)',
+            '+52' => '🇲🇽 +52 (México)',
+            '+58' => '🇻🇪 +58 (Venezuela)',
+            '+57' => '🇨🇴 +57 (Colombia)',
+            '+54' => '🇦🇷 +54 (Argentina)',
+            '+56' => '🇨🇱 +56 (Chile)',
+            '+51' => '🇵🇪 +51 (Perú)',
             '+502' => '🇬🇹 +502 (Guatemala)',
             '+503' => '🇸🇻 +503 (El Salvador)',
             '+504' => '🇭🇳 +504 (Honduras)',
@@ -71,34 +63,34 @@ class UtilsController extends Controller
             '+592' => '🇬🇾 +592 (Guyana)',
             '+591' => '🇧🇴 +591 (Bolivia)',
             '+598' => '🇺🇾 +598 (Uruguay)',
-            '+20'  => '🇪🇬 +20 (Egipto)',
-            '+27'  => '🇿🇦 +27 (Sudáfrica)',
+            '+20' => '🇪🇬 +20 (Egipto)',
+            '+27' => '🇿🇦 +27 (Sudáfrica)',
             '+234' => '🇳🇬 +234 (Nigeria)',
             '+212' => '🇲🇦 +212 (Marruecos)',
             '+971' => '🇦🇪 +971 (Emiratos Árabes)',
-            '+92'  => '🇵🇰 +92 (Pakistán)',
+            '+92' => '🇵🇰 +92 (Pakistán)',
             '+880' => '🇧🇩 +880 (Bangladesh)',
-            '+62'  => '🇮🇩 +62 (Indonesia)',
-            '+63'  => '🇵🇭 +63 (Filipinas)',
-            '+66'  => '🇹🇭 +66 (Tailandia)',
-            '+60'  => '🇲🇾 +60 (Malasia)',
-            '+65'  => '🇸🇬 +65 (Singapur)',
-            '+61'  => '🇦🇺 +61 (Australia)',
-            '+64'  => '🇳🇿 +64 (Nueva Zelanda)',
-            '+90'  => '🇹🇷 +90 (Turquía)',
+            '+62' => '🇮🇩 +62 (Indonesia)',
+            '+63' => '🇵🇭 +63 (Filipinas)',
+            '+66' => '🇹🇭 +66 (Tailandia)',
+            '+60' => '🇲🇾 +60 (Malasia)',
+            '+65' => '🇸🇬 +65 (Singapur)',
+            '+61' => '🇦🇺 +61 (Australia)',
+            '+64' => '🇳🇿 +64 (Nueva Zelanda)',
+            '+90' => '🇹🇷 +90 (Turquía)',
             '+375' => '🇧🇾 +375 (Bielorrusia)',
             '+372' => '🇪🇪 +372 (Estonia)',
             '+371' => '🇱🇻 +371 (Letonia)',
             '+370' => '🇱🇹 +370 (Lituania)',
-            '+48'  => '🇵🇱 +48 (Polonia)',
-            '+40'  => '🇷🇴 +40 (Rumania)',
-            '+46'  => '🇸🇪 +46 (Suecia)',
-            '+47'  => '🇳🇴 +47 (Noruega)',
-            '+45'  => '🇩🇰 +45 (Dinamarca)',
-            '+41'  => '🇨🇭 +41 (Suiza)',
-            '+43'  => '🇦🇹 +43 (Austria)',
-            '+31'  => '🇳🇱 +31 (Países Bajos)',
-            '+32'  => '🇧🇪 +32 (Bélgica)',
+            '+48' => '🇵🇱 +48 (Polonia)',
+            '+40' => '🇷🇴 +40 (Rumania)',
+            '+46' => '🇸🇪 +46 (Suecia)',
+            '+47' => '🇳🇴 +47 (Noruega)',
+            '+45' => '🇩🇰 +45 (Dinamarca)',
+            '+41' => '🇨🇭 +41 (Suiza)',
+            '+43' => '🇦🇹 +43 (Austria)',
+            '+31' => '🇳🇱 +31 (Países Bajos)',
+            '+32' => '🇧🇪 +32 (Bélgica)',
             '+353' => '🇮🇪 +353 (Irlanda)',
             '+375' => '🇧🇾 +375 (Bielorrusia)',
             '+380' => '🇺🇦 +380 (Ucrania)',
@@ -106,7 +98,7 @@ class UtilsController extends Controller
             '+995' => '🇬🇪 +995 (Georgia)',
             '+976' => '🇲🇳 +976 (Mongolia)',
             '+998' => '🇺🇿 +998 (Uzbekistán)',
-            '+84'  => '🇻🇳 +84 (Vietnam)',
+            '+84' => '🇻🇳 +84 (Vietnam)',
             '+856' => '🇱🇦 +856 (Laos)',
             '+374' => '🇦🇲 +374 (Armenia)',
             '+965' => '🇰🇼 +965 (Kuwait)',
@@ -119,13 +111,13 @@ class UtilsController extends Controller
         ];
     }
 
-
     /**
      * Obtiene los planes
-     * 
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
-     * 
+     *
      * @return void
      */
     public static function getPlans()
@@ -135,10 +127,11 @@ class UtilsController extends Controller
 
     /**
      * Obtiene la ciudad
-     * 
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
-     * 
+     *
      * @return void
      */
     public static function getCity($city): int
@@ -148,10 +141,11 @@ class UtilsController extends Controller
 
     /**
      * Obtiene el estado
-     * 
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
-     * 
+     *
      * @return void
      */
     public static function getState($state): int
@@ -161,10 +155,11 @@ class UtilsController extends Controller
 
     /**
      * Obtiene el Region
-     * 
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
-     * 
+     *
      * @return void
      */
     public static function getRegion($state): string
@@ -176,29 +171,30 @@ class UtilsController extends Controller
 
     /**
      * Notificacion al Administrador
-     * 
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
-     * 
+     *
      * @return void
      */
-    static function notificacionToAdmin($data)
+    public static function notificacionToAdmin($data)
     {
 
         $accion = $data['action'];
-        $objeto   = $data['objeto'];
-        $mensaje  = $data['message'];
-        $fecha    = $data['created_at'];
+        $objeto = $data['objeto'];
+        $mensaje = $data['message'];
+        $fecha = $data['created_at'];
         $icon = $data['icon'];
 
-        if($icon == 'success') {
+        if ($icon == 'success') {
             $icon = '✅';
         }
 
         if ($icon == 'error') {
             $icon = '❌';
         }
-        
+
         try {
 
             $body = <<<HTML
@@ -213,33 +209,33 @@ class UtilsController extends Controller
  
             HTML;
 
-            $params = array(
+            $params = [
                 'token' => config('parameters.TOKEN'),
                 'to' => '+584127018390',
-                'body' => $body
-            );
+                'body' => $body,
+            ];
             $curl = curl_init();
-            curl_setopt_array($curl, array(
-                CURLOPT_URL =>  config('parameters.CURLOPT_URL'),
+            curl_setopt_array($curl, [
+                CURLOPT_URL => config('parameters.CURLOPT_URL'),
                 CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => "",
+                CURLOPT_ENCODING => '',
                 CURLOPT_MAXREDIRS => 10,
                 CURLOPT_TIMEOUT => 30,
                 CURLOPT_SSL_VERIFYHOST => 0,
                 CURLOPT_SSL_VERIFYPEER => 0,
                 CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => "POST",
+                CURLOPT_CUSTOMREQUEST => 'POST',
                 CURLOPT_POSTFIELDS => http_build_query($params),
-                CURLOPT_HTTPHEADER => array(
-                    "content-type: application/x-www-form-urlencoded"
-                ),
-            ));
+                CURLOPT_HTTPHEADER => [
+                    'content-type: application/x-www-form-urlencoded',
+                ],
+            ]);
 
             $response = curl_exec($curl);
             $err = curl_error($curl);
 
             curl_close($curl);
-            
+
         } catch (\Throwable $th) {
             dd($th);
             Log::error($th->getMessage());
@@ -248,46 +244,51 @@ class UtilsController extends Controller
 
     /**
      * Obtiene el cliente
-     * Para la cotizacion individual interactiva    
-     * 
+     * Para la cotizacion individual interactiva
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
-     * 
+     *
      * @return void
      */
     public static function getClient($id): string
     {
         $id = Crypt::decryptString($id);
+
         return IndividualQuote::where('id', $id)->first()->full_name;
     }
 
     /**
      * Obtiene el cliente
-     * Para la cotizacion CORPORATIVA interactiva    
-     * 
+     * Para la cotizacion CORPORATIVA interactiva
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
-     * 
+     *
      * @return void
      */
     public static function getClientCor($id): string
     {
         $id = Crypt::decryptString($id);
+
         return CorporateQuote::where('id', $id)->first()->full_name;
     }
 
     /**
      * Normaliza el teléfono venezolano
-     * 
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
-     * 
+     *
      * @return void
      */
     public static function normalizeVenezuelanPhone($phone): ?string
     {
         // Si está vacío o no es un string, devolvemos null
-        if (empty($phone) || !is_string($phone)) {
+        if (empty($phone) || ! is_string($phone)) {
             return null;
         }
 
@@ -299,7 +300,7 @@ class UtilsController extends Controller
 
         // Validar que empiece por un código de área válido de Venezuela
         // Áreas comunes: 412, 414, 416, 424, 426
-        if (!preg_match('/^(412|414|416|424|426)(\d{7})$/', $clean, $matches)) {
+        if (! preg_match('/^(412|414|416|424|426)(\d{7})$/', $clean, $matches)) {
             return null; // No es un número venezolano válido
         }
 
@@ -307,16 +308,17 @@ class UtilsController extends Controller
         $number = $matches[2];
 
         // Formato E.164: +58 + código de área (sin cero) + número
-        return '+58' . $areaCode . $number;
+        return '+58'.$areaCode.$number;
     }
 
     /**
      * Crear cotizacion corporativa General
      * El sistema genera la cotizaciones sin datos de población
-     * 
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
-     * 
+     *
      * @return void
      */
     public static function createCorporateQuoteGeneral($id, $details)
@@ -328,7 +330,7 @@ class UtilsController extends Controller
 
             // $details = DetailCorporateQuote::where('corporate_quote_id', $id)->get()->toArray();
 
-            //Rango de edades
+            // Rango de edades
             $array = [];
 
             for ($i = 0; $i < count($details); $i++) {
@@ -351,7 +353,7 @@ class UtilsController extends Controller
             /**
              * Verificamos si tenemos mas de un plan
              * ----------------------------------------------------------------------------------------------------
-             * 
+             *
              * Si tenemos mas de un plan entonces la cotización es de CM
              * Si tenemos un plan entonces la cotización es de ese plan
              */
@@ -367,13 +369,12 @@ class UtilsController extends Controller
                 $corporate_quote->save();
             }
 
-
             /**
              * For para realizar el guardado en la tabla de detalle de cotizacion
              * ----------------------------------------------------------------------------------------------------
              */
             for ($i = 0; $i < count($resultado); $i++) {
-                //Guardamos el detalle de la cotizacion en la tabla de detalle de cotizacion como segundo paso
+                // Guardamos el detalle de la cotizacion en la tabla de detalle de cotizacion como segundo paso
                 $plan_ageRange = AgeRange::where('plan_id', $resultado[$i]['plan_id'])
                     ->where('id', $resultado[$i]['age_range_id'])
                     ->with('fees')
@@ -384,20 +385,20 @@ class UtilsController extends Controller
 
                     $fee = Fee::where('id', $plan_ageRange[0]['fees'][$j]['id'])->first();
 
-                    $detail_corporate_quote = new DetailCorporateQuote();
-                    $detail_corporate_quote->corporate_quote_id            = $corporate_quote->id;
+                    $detail_corporate_quote = new DetailCorporateQuote;
+                    $detail_corporate_quote->corporate_quote_id = $corporate_quote->id;
                     // $detail_corporate_quote->corporate_quote_request_id    = $livewire->id;
-                    $detail_corporate_quote->plan_id               = $resultado[$i]['plan_id'];
-                    $detail_corporate_quote->age_range_id          = $resultado[$i]['age_range_id'];
-                    $detail_corporate_quote->coverage_id           = $fee->coverage_id;
-                    $detail_corporate_quote->fee                   = $fee->price;
-                    $detail_corporate_quote->total_persons         = $resultado[$i]['total_persons'];
-                    $detail_corporate_quote->subtotal_anual        = $resultado[$i]['total_persons'] * $fee->price;
-                    $detail_corporate_quote->subtotal_quarterly    = ($resultado[$i]['total_persons'] * $fee->price) / 4;
-                    $detail_corporate_quote->subtotal_biannual     = ($resultado[$i]['total_persons'] * $fee->price) / 2;
-                    $detail_corporate_quote->subtotal_monthly      = ($resultado[$i]['total_persons'] * $fee->price) / 12;
-                    $detail_corporate_quote->status                = 'PRE-APROBADA';
-                    $detail_corporate_quote->created_by            = Auth::user()->name;
+                    $detail_corporate_quote->plan_id = $resultado[$i]['plan_id'];
+                    $detail_corporate_quote->age_range_id = $resultado[$i]['age_range_id'];
+                    $detail_corporate_quote->coverage_id = $fee->coverage_id;
+                    $detail_corporate_quote->fee = $fee->price;
+                    $detail_corporate_quote->total_persons = $resultado[$i]['total_persons'];
+                    $detail_corporate_quote->subtotal_anual = $resultado[$i]['total_persons'] * $fee->price;
+                    $detail_corporate_quote->subtotal_quarterly = ($resultado[$i]['total_persons'] * $fee->price) / 4;
+                    $detail_corporate_quote->subtotal_biannual = ($resultado[$i]['total_persons'] * $fee->price) / 2;
+                    $detail_corporate_quote->subtotal_monthly = ($resultado[$i]['total_persons'] * $fee->price) / 12;
+                    $detail_corporate_quote->status = 'PRE-APROBADA';
+                    $detail_corporate_quote->created_by = Auth::user()->name;
                     $detail_corporate_quote->save();
                 }
             }
@@ -405,11 +406,11 @@ class UtilsController extends Controller
             // dd($corporate_quote);
             /**
              * LOgica para el envio de correo con los detalles de la cotizacion
-             * @param $this->data [Data del formulario]
-             * @param $record [Data de la cotizacion guardada en la base de dastos]
-             * ----------------------------------------------------------------------------------------------------
+             *
+             * @param  $this->data  [Data del formulario]
+             * @param  $record  [Data de la cotizacion guardada en la base de dastos]
+             *                 ----------------------------------------------------------------------------------------------------
              */
-
             if ($corporate_quote->plan == 1) {
                 $detalle = DB::table('detail_corporate_quotes')
                     ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
@@ -430,9 +431,8 @@ class UtilsController extends Controller
                     'email' => $corporate_quote->email,
                     'phone' => $corporate_quote->phone,
                     'date' => $corporate_quote->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
-
 
                 CorporateQuoteController::generatePdfPlanIncial($details, Auth::id());
             }
@@ -459,9 +459,8 @@ class UtilsController extends Controller
                     'email' => $corporate_quote->email,
                     'phone' => $corporate_quote->phone,
                     'date' => $corporate_quote->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
-
 
                 CorporateQuoteController::generatePdfPlanIdeal($details, Auth::id());
             }
@@ -488,7 +487,7 @@ class UtilsController extends Controller
                     'email' => $corporate_quote->email,
                     'phone' => $corporate_quote->phone,
                     'date' => $corporate_quote->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
 
                 // dd($details);
@@ -525,13 +524,13 @@ class UtilsController extends Controller
                             'email' => $corporate_quote->email,
                             'phone' => $corporate_quote->phone,
                             'date' => $corporate_quote->created_at->format('d-m-Y'),
-                            'data' => $detalle_1
+                            'data' => $detalle_1,
                         ];
 
                         array_push($group_details, $details_inicial);
                     }
 
-                    //prueba
+                    // prueba
                     if ($details[$i]['plan_id'] != 1) {
                         $detalle = DB::table('detail_corporate_quotes')
                             ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
@@ -550,7 +549,7 @@ class UtilsController extends Controller
                             'email' => $corporate_quote->email,
                             'phone' => $corporate_quote->phone,
                             'date' => $corporate_quote->created_at->format('d-m-Y'),
-                            'data' => $detalle
+                            'data' => $detalle,
                         ];
                         // dd($details_ideal);
                         array_push($group_details, $details);
@@ -628,13 +627,14 @@ class UtilsController extends Controller
                 CorporateQuoteController::generatePdfMultiple($collect_final, Auth::id());
             }
 
-            //Actualizamos la solicitud de cotizacion
+            // Actualizamos la solicitud de cotizacion
             // $livewire->status = 'APROBADA';
             // $livewire->save();
 
             return true;
         } catch (\Throwable $th) {
-            Log::error('Error al calcular edades: ' . $th->getMessage());
+            Log::error('Error al calcular edades: '.$th->getMessage());
+
             return false;
         }
     }
@@ -643,10 +643,11 @@ class UtilsController extends Controller
      * Crear cotizacion corporativa Especifica
      * Este metodo se encarga de crear una cotizacion corporativa especifica
      * utilizando los rango de edades seleccionados por el agente y el plan seleccionado
-     * 
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
-     * 
+     *
      * @return void
      */
     public static function createCorporateQuoteEspecific($record, $array_form, $array_details, $details_quote)
@@ -666,7 +667,7 @@ class UtilsController extends Controller
              * ----------------------------------------------------------------------------------------------------
              */
             for ($i = 0; $i < count($array_details); $i++) {
-                //Guardamos el detalle de la cotizacion en la tabla de detalle de cotizacion como segundo paso
+                // Guardamos el detalle de la cotizacion en la tabla de detalle de cotizacion como segundo paso
                 if ($array_details[$i]['age_range_id'] != null && $array_details[$i]['total_persons'] != null) {
                     $plan_ageRange = AgeRange::where('plan_id', $array_details[$i]['plan_id'])
                         ->where('id', $array_details[$i]['age_range_id'])
@@ -677,34 +678,34 @@ class UtilsController extends Controller
                     for ($j = 0; $j < count($plan_ageRange[0]['fees']); $j++) {
 
                         $fee = Fee::where('id', $plan_ageRange[0]['fees'][$j]['id'])->first();
-                        $detail_individual_quote = new DetailCorporateQuote();
-                        $detail_individual_quote->corporate_quote_id   = $array_form['id'];
-                        $detail_individual_quote->plan_id               = $array_details[$i]['plan_id'];
-                        $detail_individual_quote->age_range_id          = $array_details[$i]['age_range_id'];
-                        $detail_individual_quote->coverage_id           = $fee->coverage_id;
-                        $detail_individual_quote->fee                   = $fee->price;
-                        $detail_individual_quote->total_persons         = $array_details[$i]['total_persons'];
-                        $detail_individual_quote->subtotal_anual        = $array_details[$i]['total_persons'] * $fee->price;
-                        $detail_individual_quote->subtotal_quarterly    = ($array_details[$i]['total_persons'] * $fee->price) / 4;
-                        $detail_individual_quote->subtotal_biannual     = ($array_details[$i]['total_persons'] * $fee->price) / 2;
-                        $detail_individual_quote->subtotal_monthly      = ($array_details[$i]['total_persons'] * $fee->price) / 12;
-                        $detail_individual_quote->status                = 'PRE-APROBADA';
-                        $detail_individual_quote->created_by            = Auth::user()->name;
+                        $detail_individual_quote = new DetailCorporateQuote;
+                        $detail_individual_quote->corporate_quote_id = $array_form['id'];
+                        $detail_individual_quote->plan_id = $array_details[$i]['plan_id'];
+                        $detail_individual_quote->age_range_id = $array_details[$i]['age_range_id'];
+                        $detail_individual_quote->coverage_id = $fee->coverage_id;
+                        $detail_individual_quote->fee = $fee->price;
+                        $detail_individual_quote->total_persons = $array_details[$i]['total_persons'];
+                        $detail_individual_quote->subtotal_anual = $array_details[$i]['total_persons'] * $fee->price;
+                        $detail_individual_quote->subtotal_quarterly = ($array_details[$i]['total_persons'] * $fee->price) / 4;
+                        $detail_individual_quote->subtotal_biannual = ($array_details[$i]['total_persons'] * $fee->price) / 2;
+                        $detail_individual_quote->subtotal_monthly = ($array_details[$i]['total_persons'] * $fee->price) / 12;
+                        $detail_individual_quote->status = 'PRE-APROBADA';
+                        $detail_individual_quote->created_by = Auth::user()->name;
                         $detail_individual_quote->save();
                     }
                 }
             }
 
-            //elimino la variable de sesion para evitar sobrecargar
+            // elimino la variable de sesion para evitar sobrecargar
             session()->forget('details_quote');
 
             /**
              * LOgica para el envio de correo con los detalles de la cotizacion
-             * @param $this->data [Data del formulario]
-             * @param $record [Data de la cotizacion guardada en la base de dastos]
-             * ----------------------------------------------------------------------------------------------------
+             *
+             * @param  $this->data  [Data del formulario]
+             * @param  $record  [Data de la cotizacion guardada en la base de dastos]
+             *                 ----------------------------------------------------------------------------------------------------
              */
-
             if ($record->plan == 1) {
                 $detalle = DB::table('detail_corporate_quotes')
                     ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
@@ -725,7 +726,7 @@ class UtilsController extends Controller
                     'email' => $record->email,
                     'phone' => $record->phone,
                     'date' => $record->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
 
                 CorporateQuoteController::generatePdfPlanIncial($details, Auth::id());
@@ -753,7 +754,7 @@ class UtilsController extends Controller
                     'email' => $record->email,
                     'phone' => $record->phone,
                     'date' => $record->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
 
                 CorporateQuoteController::generatePdfPlanIdeal($details, Auth::id());
@@ -780,7 +781,7 @@ class UtilsController extends Controller
                     'email' => $record->email,
                     'phone' => $record->phone,
                     'date' => $record->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
 
                 // $record->sendPropuestaEconomicaPlanEspecial($details);
@@ -817,7 +818,7 @@ class UtilsController extends Controller
                             'email' => $record->email,
                             'phone' => $record->phone,
                             'date' => $record->created_at->format('d-m-Y'),
-                            'data' => $detalle_1
+                            'data' => $detalle_1,
                         ];
 
                         array_push($group_details, $details_inicial);
@@ -840,7 +841,7 @@ class UtilsController extends Controller
                             'email' => $record->email,
                             'phone' => $record->phone,
                             'date' => $record->created_at->format('d-m-Y'),
-                            'data' => $detalle_2
+                            'data' => $detalle_2,
                         ];
 
                         array_push($group_details, $details_ideal);
@@ -863,7 +864,7 @@ class UtilsController extends Controller
                             'email' => $record->email,
                             'phone' => $record->phone,
                             'date' => $record->created_at->format('d-m-Y'),
-                            'data' => $detalle_3
+                            'data' => $detalle_3,
                         ];
 
                         array_push($group_details, $details_especial);
@@ -892,7 +893,8 @@ class UtilsController extends Controller
             }
         } catch (\Throwable $th) {
             dd($th);
-            Log::error('Error al calcular edades: ' . $th->getMessage());
+            Log::error('Error al calcular edades: '.$th->getMessage());
+
             return false;
         }
     }
@@ -904,15 +906,17 @@ class UtilsController extends Controller
         } else {
             $parte_entera = 101 + Agency::max('id');
         }
-        return 'TDG-' . $parte_entera;
+
+        return 'TDG-'.$parte_entera;
     }
 
     /**
      * Crea una nueva cotización corporativa con población
-     * 
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
-     * 
+     *
      * @return void
      */
     public static function createCorporateQuote($livewire)
@@ -921,24 +925,22 @@ class UtilsController extends Controller
 
             $corporate_quote = CorporateQuote::find($livewire->ownerRecord->id);
 
-
             /**
              * Array para el detalle de la solicutud
              * Con ente array obtenemos los planes asociados a la solicitud
-             * 
+             *
              * En este paso tambien actualizamos la solicitud de cotizacion
              */
             $details_plans_corporate_quote = DetailCorporateQuote::select('plan_id')->where('corporate_quote_id', $livewire->ownerRecord->id)->groupBy('plan_id')->get()->toArray();
 
-
-            //Poblacion
+            // Poblacion
             $poblacion = CorporateQuoteData::where('corporate_quote_id', $livewire->ownerRecord->id)->get()->toArray();
 
             $array = [];
 
             for ($i = 0; $i < count($details_plans_corporate_quote); $i++) {
 
-                //Rabgo de edades segun el plan
+                // Rabgo de edades segun el plan
                 $rangos = DB::table('age_ranges')->select('id', 'range', 'plan_id', 'age_init', 'age_end')->where('plan_id', $details_plans_corporate_quote[$i]['plan_id'])->orderBy('range')->get();
                 // dd($rangos, $poblacion);
                 foreach ($poblacion as $persona) {
@@ -962,7 +964,7 @@ class UtilsController extends Controller
             $resultado = collect($array)
                 ->groupBy('plan_id')
                 ->flatMap(function ($grupoPorPlan, $planId) {
-                    return $grupoPorPlan->groupBy('age_range_id')->map(fn($subgrupo, $rangoId) => [
+                    return $grupoPorPlan->groupBy('age_range_id')->map(fn ($subgrupo, $rangoId) => [
                         'plan_id' => $planId,
                         'age_range_id' => $rangoId,
                         'total_persons' => $subgrupo->count(),
@@ -974,28 +976,28 @@ class UtilsController extends Controller
             /**
              * Verificamos si tenemos mas de un plan
              * ----------------------------------------------------------------------------------------------------
-             * 
+             *
              * Si tenemos mas de un plan entonces la cotización es de CM
              * Si tenemos un plan entonces la cotización es de ese plan
              */
             $total_plans = count($resultado);
-            if($total_plans > 1){
+            if ($total_plans > 1) {
                 $corporate_quote->plan = 'CM';
                 $corporate_quote->save();
             }
-            if($total_plans == 1){
+            if ($total_plans == 1) {
                 $corporate_quote->plan = $resultado[0]['plan_id'];
                 $corporate_quote->save();
             }
 
             DetailCorporateQuote::where('corporate_quote_id', $livewire->ownerRecord->id)->delete();
-                
+
             /**
              * For para realizar el guardado en la tabla de detalle de cotizacion
              * ----------------------------------------------------------------------------------------------------
              */
             for ($i = 0; $i < count($resultado); $i++) {
-                //Guardamos el detalle de la cotizacion en la tabla de detalle de cotizacion como segundo paso
+                // Guardamos el detalle de la cotizacion en la tabla de detalle de cotizacion como segundo paso
                 $plan_ageRange = AgeRange::where('plan_id', $resultado[$i]['plan_id'])
                     ->where('id', $resultado[$i]['age_range_id'])
                     ->with('fees')
@@ -1006,31 +1008,31 @@ class UtilsController extends Controller
 
                     $fee = Fee::where('id', $plan_ageRange[0]['fees'][$j]['id'])->first();
 
-                    $detail_corporate_quote = new DetailCorporateQuote();
-                    $detail_corporate_quote->corporate_quote_id    = $corporate_quote->id;
-                    $detail_corporate_quote->corporate_quote_request_id    = $livewire->ownerRecord->id;
-                    $detail_corporate_quote->plan_id               = $resultado[$i]['plan_id'];
-                    $detail_corporate_quote->age_range_id          = $resultado[$i]['age_range_id'];
-                    $detail_corporate_quote->coverage_id           = $fee->coverage_id;
-                    $detail_corporate_quote->fee                   = $fee->price;
-                    $detail_corporate_quote->total_persons         = $resultado[$i]['total_persons'];
-                    $detail_corporate_quote->subtotal_anual        = $resultado[$i]['total_persons'] * $fee->price;
-                    $detail_corporate_quote->subtotal_quarterly    = ($resultado[$i]['total_persons'] * $fee->price) / 4;
-                    $detail_corporate_quote->subtotal_biannual     = ($resultado[$i]['total_persons'] * $fee->price) / 2;
-                    $detail_corporate_quote->subtotal_monthly      = ($resultado[$i]['total_persons'] * $fee->price) / 12;
-                    $detail_corporate_quote->status                = 'PRE-APROBADA';
-                    $detail_corporate_quote->created_by            = Auth::user()->name;
+                    $detail_corporate_quote = new DetailCorporateQuote;
+                    $detail_corporate_quote->corporate_quote_id = $corporate_quote->id;
+                    $detail_corporate_quote->corporate_quote_request_id = $livewire->ownerRecord->id;
+                    $detail_corporate_quote->plan_id = $resultado[$i]['plan_id'];
+                    $detail_corporate_quote->age_range_id = $resultado[$i]['age_range_id'];
+                    $detail_corporate_quote->coverage_id = $fee->coverage_id;
+                    $detail_corporate_quote->fee = $fee->price;
+                    $detail_corporate_quote->total_persons = $resultado[$i]['total_persons'];
+                    $detail_corporate_quote->subtotal_anual = $resultado[$i]['total_persons'] * $fee->price;
+                    $detail_corporate_quote->subtotal_quarterly = ($resultado[$i]['total_persons'] * $fee->price) / 4;
+                    $detail_corporate_quote->subtotal_biannual = ($resultado[$i]['total_persons'] * $fee->price) / 2;
+                    $detail_corporate_quote->subtotal_monthly = ($resultado[$i]['total_persons'] * $fee->price) / 12;
+                    $detail_corporate_quote->status = 'PRE-APROBADA';
+                    $detail_corporate_quote->created_by = Auth::user()->name;
                     $detail_corporate_quote->save();
                 }
             }
 
             /**
              * LOgica para el envio de correo con los detalles de la cotizacion
-             * @param $this->data [Data del formulario]
-             * @param $record [Data de la cotizacion guardada en la base de dastos]
-             * ----------------------------------------------------------------------------------------------------
+             *
+             * @param  $this->data  [Data del formulario]
+             * @param  $record  [Data de la cotizacion guardada en la base de dastos]
+             *                 ----------------------------------------------------------------------------------------------------
              */
-
             if ($corporate_quote->plan == 1) {
                 $detalle = DB::table('detail_corporate_quotes')
                     ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
@@ -1051,7 +1053,7 @@ class UtilsController extends Controller
                     'email' => $corporate_quote->email,
                     'phone' => $corporate_quote->phone,
                     'date' => $corporate_quote->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
 
                 $corporate_quote->sendPropuestaEconomicaPlanInicial($details);
@@ -1079,7 +1081,7 @@ class UtilsController extends Controller
                     'email' => $corporate_quote->email,
                     'phone' => $corporate_quote->phone,
                     'date' => $corporate_quote->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
 
                 $corporate_quote->sendPropuestaEconomicaPlanIdeal($details);
@@ -1106,7 +1108,7 @@ class UtilsController extends Controller
                     'email' => $corporate_quote->email,
                     'phone' => $corporate_quote->phone,
                     'date' => $corporate_quote->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
 
                 $corporate_quote->sendPropuestaEconomicaPlanEspecial($details);
@@ -1142,7 +1144,7 @@ class UtilsController extends Controller
                             'email' => $corporate_quote->email,
                             'phone' => $corporate_quote->phone,
                             'date' => $corporate_quote->created_at->format('d-m-Y'),
-                            'data' => $detalle_1
+                            'data' => $detalle_1,
                         ];
 
                         array_push($group_details, $details_inicial);
@@ -1165,7 +1167,7 @@ class UtilsController extends Controller
                             'email' => $corporate_quote->email,
                             'phone' => $corporate_quote->phone,
                             'date' => $corporate_quote->created_at->format('d-m-Y'),
-                            'data' => $detalle_2
+                            'data' => $detalle_2,
                         ];
                         // dd($details_ideal);
                         array_push($group_details, $details_ideal);
@@ -1188,7 +1190,7 @@ class UtilsController extends Controller
                             'email' => $corporate_quote->email,
                             'phone' => $corporate_quote->phone,
                             'date' => $corporate_quote->created_at->format('d-m-Y'),
-                            'data' => $detalle_3
+                            'data' => $detalle_3,
                         ];
                         // dd($details_especial);
                         array_push($group_details, $details_especial);
@@ -1215,85 +1217,41 @@ class UtilsController extends Controller
                 $corporate_quote->sendPropuestaEconomicaMultiple($collect_final);
             }
 
-            //Actualizamos la solicitud de cotizacion
+            // Actualizamos la solicitud de cotizacion
             // $livewire->status = 'APROBADA';
             // $livewire->save();
 
             return true;
-            
+
         } catch (\Throwable $th) {
             dd($th);
-            Log::error('Error al calcular edades: ' . $th->getMessage());
+            Log::error('Error al calcular edades: '.$th->getMessage());
+
             return false;
         }
-    }
-
-    /**
-     * Crea el certificado parta la afiliacion corporativa
-     * 
-     * @author TuDrGroup
-     * @version 1.0
-     * 
-     * @return void
-     */
-    public static function createCertificateCorporate($record, $afiliates)
-    {
-        // dd($record, $afiliates->toArray());
-        try {
-
-            $data = $record->toArray();
-
-            $name_pdf = 'CER-' . $record->code . '.pdf';
-
-            if (isset($record->agent)) {
-                $name_agent = $record->agent->name;
-            } else {
-                $name_agent = $record->agency->name_corporative;
-            }
-
-            if (isset($record->coverage_id)) {
-                $coverage   = $record->coverage->price;
-            } else {
-                $coverage   = 0;
-            }
-
-            /**
-             * Agregamos la informacion al array principal que viaja a la vista del certificado
-             * ----------------------------------------------------------------------------------------------------
-             */
-            $data['name_agent']  = $name_agent;
-
-
-            GenerateCertificateCorporate::dispatch($data, $afiliates, Auth::user(), $name_pdf);
-            //code...
-            
-        } catch (\Throwable $th) {
-            dd($th);
-        }
-        
-
     }
 
     public static function formatMount($amount)
     {
         // Redondear a 0 decimales si termina en .00
-        $formatted = number_format((float)$amount, 0, ',', '.');
-        return '$' . $formatted;
+        $formatted = number_format((float) $amount, 0, ',', '.');
+
+        return '$'.$formatted;
     }
 
     /**
      * Crear cotizacion individual
      * Este metodo se encarga de crear una cotizacion individual
      * utilizando los rango de edades seleccionados por el agente y el plan seleccionado
-     * 
+     *
      * @author TuDrGroup
+     *
      * @version 1.0
+     *
+     * @param  $record  [Data de la cotizacion guardada en la base de dastos]
+     * @param  $array_form  [Data del formulario]
+     * @param  $array_details  [Data del detalle de la cotizacion]
      * @return void
-     * 
-     * @param $record [Data de la cotizacion guardada en la base de dastos]
-     * @param $array_form [Data del formulario]
-     * @param $array_details [Data del detalle de la cotizacion]
-     *  
      */
     public static function storeDetailsIndividualQuote($record, $array_form, $array_details, $details_quote)
     {
@@ -1312,29 +1270,29 @@ class UtilsController extends Controller
              * ----------------------------------------------------------------------------------------------------
              */
             for ($i = 0; $i < count($array_details); $i++) {
-                //Guardamos el detalle de la cotizacion en la tabla de detalle de cotizacion como segundo paso
+                // Guardamos el detalle de la cotizacion en la tabla de detalle de cotizacion como segundo paso
                 if ($array_details[$i]['age_range_id'] != null && $array_details[$i]['total_persons'] != null) {
                     // dd($array_details[$i]['age_range_id'], $array_details[$i]['total_persons']);
                     $calculo = Fee::where('plan_id', $array_details[$i]['plan_id'])->where('age_range_id', $array_details[$i]['age_range_id'])->get()->toArray();
-                    
+
                     for ($j = 0; $j < count($calculo); $j++) {
 
-                        $detail_individual_quote = new DetailIndividualQuote();
-                        $detail_individual_quote->individual_quote_id   = $array_form['id'];
-                        $detail_individual_quote->plan_id               = $array_details[$i]['plan_id'];
-                        $detail_individual_quote->age_range_id          = $array_details[$i]['age_range_id'];
-                        $detail_individual_quote->coverage_id           = $calculo[$j]['coverage_id'];
-                        $detail_individual_quote->fee                   = $calculo[$j]['price'];
-                        $detail_individual_quote->total_persons         = $array_details[$i]['total_persons'];
-                        $detail_individual_quote->subtotal_anual        = $array_details[$i]['total_persons'] * $calculo[$j]['price'];
-                        $detail_individual_quote->subtotal_quarterly    = ($array_details[$i]['total_persons'] * $calculo[$j]['price']) / 4;
-                        $detail_individual_quote->subtotal_biannual     = ($array_details[$i]['total_persons'] * $calculo[$j]['price']) / 2;
-                        $detail_individual_quote->subtotal_monthly      = ($array_details[$i]['total_persons'] * $calculo[$j]['price']) / 12;
-                        $detail_individual_quote->status                = 'PRE-APROBADA';
-                        $detail_individual_quote->created_by            = Auth::user()->name;
+                        $detail_individual_quote = new DetailIndividualQuote;
+                        $detail_individual_quote->individual_quote_id = $array_form['id'];
+                        $detail_individual_quote->plan_id = $array_details[$i]['plan_id'];
+                        $detail_individual_quote->age_range_id = $array_details[$i]['age_range_id'];
+                        $detail_individual_quote->coverage_id = $calculo[$j]['coverage_id'];
+                        $detail_individual_quote->fee = $calculo[$j]['price'];
+                        $detail_individual_quote->total_persons = $array_details[$i]['total_persons'];
+                        $detail_individual_quote->subtotal_anual = $array_details[$i]['total_persons'] * $calculo[$j]['price'];
+                        $detail_individual_quote->subtotal_quarterly = ($array_details[$i]['total_persons'] * $calculo[$j]['price']) / 4;
+                        $detail_individual_quote->subtotal_biannual = ($array_details[$i]['total_persons'] * $calculo[$j]['price']) / 2;
+                        $detail_individual_quote->subtotal_monthly = ($array_details[$i]['total_persons'] * $calculo[$j]['price']) / 12;
+                        $detail_individual_quote->status = 'PRE-APROBADA';
+                        $detail_individual_quote->created_by = Auth::user()->name;
                         $detail_individual_quote->save();
                     }
-                    
+
                     // $plan_ageRange = AgeRange::where('plan_id', $array_details[$i]['plan_id'])
                     //     ->where('id', $array_details[$i]['age_range_id'])
                     //     ->with('fees')
@@ -1362,17 +1320,16 @@ class UtilsController extends Controller
                 }
             }
 
-            //elimino la variable de sesion para evitar sobrecargar
+            // elimino la variable de sesion para evitar sobrecargar
             session()->forget('details_quote');
-
 
             /**
              * LOgica para el envio de correo con los detalles de la cotizacion
-             * @param $this->data [Data del formulario]
-             * @param $record [Data de la cotizacion guardada en la base de dastos]
-             * ----------------------------------------------------------------------------------------------------
+             *
+             * @param  $this->data  [Data del formulario]
+             * @param  $record  [Data de la cotizacion guardada en la base de dastos]
+             *                 ----------------------------------------------------------------------------------------------------
              */
-
             if ($record->plan == 1) {
                 $detalle = DB::table('detail_individual_quotes')
                     ->join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
@@ -1393,7 +1350,7 @@ class UtilsController extends Controller
                     'email' => $record->email,
                     'phone' => $record->phone,
                     'date' => $record->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
 
                 IndividualQuoteController::generatePdfPlanIncial($details, Auth::id());
@@ -1421,7 +1378,7 @@ class UtilsController extends Controller
                     'email' => $record->email,
                     'phone' => $record->phone,
                     'date' => $record->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
 
                 IndividualQuoteController::generatePdfPlanIdeal($details, Auth::id());
@@ -1448,7 +1405,7 @@ class UtilsController extends Controller
                     'email' => $record->email,
                     'phone' => $record->phone,
                     'date' => $record->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
 
                 IndividualQuoteController::generatePdfPlanEspecial($details, Auth::id());
@@ -1484,7 +1441,7 @@ class UtilsController extends Controller
                             'email' => $record->email,
                             'phone' => $record->phone,
                             'date' => $record->created_at->format('d-m-Y'),
-                            'data' => $detalle_1
+                            'data' => $detalle_1,
                         ];
 
                         array_push($group_details, $details_inicial);
@@ -1507,7 +1464,7 @@ class UtilsController extends Controller
                             'email' => $record->email,
                             'phone' => $record->phone,
                             'date' => $record->created_at->format('d-m-Y'),
-                            'data' => $detalle_2
+                            'data' => $detalle_2,
                         ];
 
                         array_push($group_details, $details_ideal);
@@ -1530,7 +1487,7 @@ class UtilsController extends Controller
                             'email' => $record->email,
                             'phone' => $record->phone,
                             'date' => $record->created_at->format('d-m-Y'),
-                            'data' => $detalle_3
+                            'data' => $detalle_3,
                         ];
 
                         array_push($group_details, $details_especial);
@@ -1561,9 +1518,10 @@ class UtilsController extends Controller
 
             return true;
 
-            //code...
+            // code...
         } catch (\Throwable $th) {
-            Log::error('Error al calcular edades: ' . $th->getMessage());
+            Log::error('Error al calcular edades: '.$th->getMessage());
+
             return false;
         }
     }
@@ -1585,7 +1543,7 @@ class UtilsController extends Controller
 
                 if ($infoArray['header_title'] != null) {
 
-                    $record->heading = $infoArray['header_title'] . ' ' . $array[$i]['fullName'];
+                    $record->heading = $infoArray['header_title'].' '.$array[$i]['fullName'];
                     $body = <<<HTML
     
                     *{$record->heading}* 
@@ -1594,28 +1552,28 @@ class UtilsController extends Controller
     
                     HTML;
 
-                    $params = array(
+                    $params = [
                         'token' => config('parameters.TOKEN'),
                         'to' => $array[$i]['phone'],
-                        'image' => config('parameters.PUBLIC_URL') . '/' . $infoArray['file'],
-                        'caption' => $body
-                    );
+                        'image' => config('parameters.PUBLIC_URL').'/'.$infoArray['file'],
+                        'caption' => $body,
+                    ];
                     $curl = curl_init();
-                    curl_setopt_array($curl, array(
-                        CURLOPT_URL => "https://api.ultramsg.com/instance117518/messages/image",
+                    curl_setopt_array($curl, [
+                        CURLOPT_URL => 'https://api.ultramsg.com/instance117518/messages/image',
                         CURLOPT_RETURNTRANSFER => true,
-                        CURLOPT_ENCODING => "",
+                        CURLOPT_ENCODING => '',
                         CURLOPT_MAXREDIRS => 10,
                         CURLOPT_TIMEOUT => 30,
                         CURLOPT_SSL_VERIFYHOST => 0,
                         CURLOPT_SSL_VERIFYPEER => 0,
                         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                        CURLOPT_CUSTOMREQUEST => "POST",
+                        CURLOPT_CUSTOMREQUEST => 'POST',
                         CURLOPT_POSTFIELDS => http_build_query($params),
-                        CURLOPT_HTTPHEADER => array(
-                            "content-type: application/x-www-form-urlencoded"
-                        ),
-                    ));
+                        CURLOPT_HTTPHEADER => [
+                            'content-type: application/x-www-form-urlencoded',
+                        ],
+                    ]);
 
                     $response = curl_exec($curl);
                     $err = curl_error($curl);
@@ -1632,28 +1590,28 @@ class UtilsController extends Controller
     
                     HTML;
 
-                    $params = array(
+                    $params = [
                         'token' => 'yuvh9eq5kn8bt666',
                         'to' => $array[$i],
                         'image' => 'https://tudrgroup.com/images/01K535GEERHFKCBC108PTWCCG4.png',
-                        'caption' => $body
-                    );
+                        'caption' => $body,
+                    ];
                     $curl = curl_init();
-                    curl_setopt_array($curl, array(
-                        CURLOPT_URL => "https://api.ultramsg.com/instance117518/messages/image",
+                    curl_setopt_array($curl, [
+                        CURLOPT_URL => 'https://api.ultramsg.com/instance117518/messages/image',
                         CURLOPT_RETURNTRANSFER => true,
-                        CURLOPT_ENCODING => "",
+                        CURLOPT_ENCODING => '',
                         CURLOPT_MAXREDIRS => 10,
                         CURLOPT_TIMEOUT => 30,
                         CURLOPT_SSL_VERIFYHOST => 0,
                         CURLOPT_SSL_VERIFYPEER => 0,
                         CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                        CURLOPT_CUSTOMREQUEST => "POST",
+                        CURLOPT_CUSTOMREQUEST => 'POST',
                         CURLOPT_POSTFIELDS => http_build_query($params),
-                        CURLOPT_HTTPHEADER => array(
-                            "content-type: application/x-www-form-urlencoded"
-                        ),
-                    ));
+                        CURLOPT_HTTPHEADER => [
+                            'content-type: application/x-www-form-urlencoded',
+                        ],
+                    ]);
 
                     $response = curl_exec($curl);
                     $err = curl_error($curl);
@@ -1674,17 +1632,12 @@ class UtilsController extends Controller
     /**
      * Genera un nuevo correlativo para los recibos de cobro
      * del mudulo de administracion
-     * 
+     *
      * @author TuDrGroup
-     * 
-     * @param $correlativo
-     * 
-     * @return string
-     * 
      */
     public static function generateCorrelativeSale($correlativo): string
     {
-        
+
         // Obtenemos el mes y el número
         preg_match('/^(\d{2})-00(\d+)$/', $correlativo, $matches);
 
@@ -1698,13 +1651,8 @@ class UtilsController extends Controller
     /**
      * Genera un nuevo correlativo para los recibos de cobro
      * del mudulo de administracion
-     * 
+     *
      * @author TuDrGroup
-     * 
-     * @param $correlativo
-     * 
-     * @return string
-     * 
      */
     public static function generateCorrelativeCollection($correlativo): string
     {
@@ -1716,7 +1664,6 @@ class UtilsController extends Controller
 
         $nuevoNumero = $numero + 1;   // Sumamos 1
 
-
         // Formateamos el nuevo número con al menos 3 dígitos (por si llega a 1000, etc.)
         return sprintf('%s-00%d', date('m'), $nuevoNumero);
     }
@@ -1725,18 +1672,19 @@ class UtilsController extends Controller
     {
         $fecha = Carbon::createFromFormat('d/m/Y', $date);
         $soloDiaMes = $fecha->format('d/m');
+
         return $soloDiaMes;
 
     }
 
     public static function generateCaseCode()
     {
-        
+
         try {
-            
-            if(TelemedicineCase::max('id') == NULL) {
+
+            if (TelemedicineCase::max('id') == null) {
                 $parteEntera = 1;
-            }else{
+            } else {
                 $parteEntera = TelemedicineCase::max('id') + 1;
             }
 
@@ -1763,6 +1711,4 @@ class UtilsController extends Controller
 
         return $businessLineId;
     }
-
-    
 }

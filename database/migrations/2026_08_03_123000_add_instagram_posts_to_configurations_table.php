@@ -10,6 +10,10 @@ return new class extends Migration
 
     public function up(): void
     {
+        if (Schema::connection($this->connection)->hasColumn('configurations', 'web_instagram_posts')) {
+            return;
+        }
+
         Schema::connection($this->connection)->table('configurations', function (Blueprint $table) {
             $table->json('web_instagram_posts')->nullable()->after('web_url_instagram');
         });
