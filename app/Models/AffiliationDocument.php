@@ -4,6 +4,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\QueryException;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
 class AffiliationDocument extends Model
@@ -69,10 +71,43 @@ class AffiliationDocument extends Model
      */
     public static function latestFor(string $affiliationCode, string $documentType, string $affiliateIdentification = ''): ?self
     {
-        return static::where('affiliation_code', $affiliationCode)
-            ->where('document_type', $documentType)
-            ->where('affiliate_identification', $affiliateIdentification)
-            ->first();
+        try {
+            return static::where('affiliation_code', $affiliationCode)
+                ->where('document_type', $documentType)
+                ->where('affiliate_identification', $affiliateIdentification)
+                ->first();
+        } catch (QueryException $e) {
+            // Si la migración aún no corrió en este entorno, no tumbar el
+            // listado de afiliaciones (el hidden() de Filament consulta esto
+            // por cada fila). El webhook y el alta de documentos siguen
+            // fallando más abajo al escribir, que es lo correcto.
+            if (! static::isMissingDocumentsTable($e)) {
+                throw $e;
+            }
+
+            static::warnMissingDocumentsTableOnce();
+
+            return null;
+        }
+    }
+
+    private static bool $missingTableWarned = false;
+
+    private static function isMissingDocumentsTable(QueryException $e): bool
+    {
+        return $e->getCode() === '42S02'
+            || str_contains($e->getMessage(), 'affiliation_integracorp_documents');
+    }
+
+    private static function warnMissingDocumentsTableOnce(): void
+    {
+        if (self::$missingTableWarned) {
+            return;
+        }
+
+        self::$missingTableWarned = true;
+
+        Log::warning('La tabla affiliation_integracorp_documents no existe. Ejecutar php artisan migrate en este entorno.');
     }
 
     public function existsOnDisk(): bool

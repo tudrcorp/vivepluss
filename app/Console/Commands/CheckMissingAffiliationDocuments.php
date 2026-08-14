@@ -11,6 +11,7 @@ use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * Certificado y carnet ahora dependen 100% de que Integracorp los entregue
@@ -29,6 +30,12 @@ class CheckMissingAffiliationDocuments extends Command
 
     public function handle(): int
     {
+        if (! Schema::hasTable((new AffiliationDocument)->getTable())) {
+            $this->warn('La tabla affiliation_integracorp_documents no existe. Ejecutar php artisan migrate.');
+
+            return self::SUCCESS;
+        }
+
         $hours = (int) config('parametros.DOCUMENT_SYNC_ALERT_HOURS', 48);
         $cutoff = now()->subHours($hours);
 
