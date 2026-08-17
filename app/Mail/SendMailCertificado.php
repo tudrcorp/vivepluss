@@ -2,6 +2,7 @@
 
 namespace App\Mail;
 
+use App\Support\Mail\MailBranding;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
@@ -14,15 +15,14 @@ class SendMailCertificado extends Mailable
 {
     use Queueable, SerializesModels;
 
-    public string $certificadoPath;
-
     /**
      * @param  string  $certificadoPath  Ruta absoluta del certificado en disco.
+     * @param  int|string|null  $whiteCompanyId  Marca blanca dueña de la afiliación, para el logo/color del correo.
      */
-    public function __construct(string $certificadoPath)
-    {
-        $this->certificadoPath = $certificadoPath;
-    }
+    public function __construct(
+        public string $certificadoPath,
+        public int|string|null $whiteCompanyId = null,
+    ) {}
 
     /**
      * Get the message envelope.
@@ -42,6 +42,7 @@ class SendMailCertificado extends Mailable
     {
         return new Content(
             view: 'mails.certificado',
+            with: MailBranding::forWhiteCompany($this->whiteCompanyId),
         );
     }
 

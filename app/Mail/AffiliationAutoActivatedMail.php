@@ -27,6 +27,7 @@ class AffiliationAutoActivatedMail extends Mailable
         public array $documentPaths = [],
         public ?PaidMembership $paidMembership = null,
         public ?string $referenceZelle = null,
+        public string $primaryColor = '#A13DDB',
     ) {}
 
     /**

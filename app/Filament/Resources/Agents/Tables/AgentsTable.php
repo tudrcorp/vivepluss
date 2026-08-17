@@ -2,33 +2,31 @@
 
 namespace App\Filament\Resources\Agents\Tables;
 
+use App\Http\Controllers\UtilsController;
+use App\Models\Agency;
+use App\Models\Agent;
+use App\Models\User;
+use App\Support\SalesForceActivation;
+use Carbon\Carbon;
+use Filament\Actions\Action;
+use Filament\Actions\ActionGroup;
+use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
-use Filament\Actions\EditAction;
+use Filament\Forms\Components\DatePicker;
+use Filament\Notifications\Notification;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
-use Filament\Tables\Table;
-
-use Carbon\Carbon;
-use App\Models\User;
-use App\Models\Agent;
-use App\Models\Agency;
-use Filament\Actions\Action;
-use Filament\Actions\BulkAction;
-use Filament\Actions\ActionGroup;
-use Filament\Actions\DeleteAction;
 use Filament\Tables\Filters\Filter;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Crypt;
-use App\Http\Controllers\LogController;
-use Filament\Notifications\Notification;
-use App\Http\Controllers\UtilsController;
-use Filament\Forms\Components\DatePicker;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use App\Http\Controllers\NotificationController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AgentsTable
 {
@@ -37,6 +35,7 @@ class AgentsTable
         return $table
             ->query(function (Builder $query) {
                 $agents = Agent::query()->where('owner_code', Auth::user()->code_agency);
+
                 return $agents;
             })
             ->heading('AGENTES')
@@ -50,7 +49,7 @@ class AgentsTable
                             ->with('typeAgency')
                             ->first();
 
-                        return isset($agency_type) ? $agency_type->typeAgency->definition . ' - ' : 'MASTER - ';
+                        return isset($agency_type) ? $agency_type->typeAgency->definition.' - ' : 'MASTER - ';
                     })
                     ->alignCenter()
                     ->badge()
@@ -110,6 +109,7 @@ class AgentsTable
                         if ($record->commission_tdec > 0) {
                             return 'success';
                         }
+
                         return 'warning';
                     })
                     ->numeric()
@@ -124,6 +124,7 @@ class AgentsTable
                         if ($record->commission_tdec > 0) {
                             return 'success';
                         }
+
                         return 'warning';
                     })
                     ->numeric()
@@ -138,6 +139,7 @@ class AgentsTable
                         if ($record->commission_tdec > 0) {
                             return 'success';
                         }
+
                         return 'warning';
                     })
                     ->numeric()
@@ -152,6 +154,7 @@ class AgentsTable
                         if ($record->commission_tdec > 0) {
                             return 'success';
                         }
+
                         return 'warning';
                     })
                     ->numeric()
@@ -195,20 +198,20 @@ class AgentsTable
                         return $query
                             ->when(
                                 $data['desde'] ?? null,
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
                             )
                             ->when(
                                 $data['hasta'] ?? null,
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     })
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['desde'] ?? null) {
-                            $indicators['desde'] = 'Venta desde ' . Carbon::parse($data['desde'])->toFormattedDateString();
+                            $indicators['desde'] = 'Venta desde '.Carbon::parse($data['desde'])->toFormattedDateString();
                         }
                         if ($data['hasta'] ?? null) {
-                            $indicators['hasta'] = 'Venta hasta ' . Carbon::parse($data['hasta'])->toFormattedDateString();
+                            $indicators['hasta'] = 'Venta hasta '.Carbon::parse($data['hasta'])->toFormattedDateString();
                         }
 
                         return $indicators;
@@ -226,7 +229,7 @@ class AgentsTable
                     ]),
             ])
             ->filtersTriggerAction(
-                fn(Action $action) => $action
+                fn (Action $action) => $action
                     ->button()
                     ->label('Filtros'),
             )
@@ -237,7 +240,7 @@ class AgentsTable
                         ->action(function (Agent $record) {
 
                             try {
-                                $codeAgent = 'AGT-000' . $record->id;
+                                $codeAgent = 'AGT-000'.$record->id;
                                 $codeAgency = $record->owner_code;
 
                                 $record->status = 'ACTIVO';
@@ -245,18 +248,26 @@ class AgentsTable
                                 $record->code_agent = $codeAgent;
                                 $record->save();
 
-                                //4. creamos el usuario en la tabla users (AGENTES)
-                                $user = new User();
+                                // 4. creamos el usuario en la tabla users (AGENTES)
+                                $user = new User;
                                 $user->name = $record->name;
                                 $user->email = $record->email;
                                 $user->password = Hash::make('12345678');
                                 $user->is_agent = true;
                                 $user->code_agency = $codeAgency;
                                 $user->code_agent = $codeAgent;
-                                $user->link_agent = env('APP_URL') . '/at/lk/' . Crypt::encryptString($codeAgent);
+                                $user->link_agent = env('APP_URL').'/at/lk/'.Crypt::encryptString($codeAgent);
                                 $user->agent_id = $record->id;
                                 $user->status = 'ACTIVO';
                                 $user->save();
+
+                                SalesForceActivation::notify(
+                                    name: $record->name,
+                                    email: $record->email,
+                                    phone: $record->phone,
+                                    roleLabel: 'agente',
+                                    whiteCompanyId: $record->white_company_id,
+                                );
 
                                 Notification::make()
                                     ->title('AGENTE ACTIVADO')
@@ -267,7 +278,7 @@ class AgentsTable
                                     ->send();
 
                             } catch (\Throwable $th) {
-                                dd($th);
+                                Log::error('Falla al activar agente '.$record->id.': '.$th->getMessage());
                                 Notification::make()
                                     ->title('EXCEPCION')
                                     ->body('Falla al realizar la activacion. Por favor comuniquese con el administrador.')
@@ -283,12 +294,12 @@ class AgentsTable
                     Action::make('Inactivate')
                         ->label('Inactivar Agente')
                         ->requiresConfirmation()
-                        ->action(fn(Agent $record) => $record->update(['status' => 'INACTIVO']))
+                        ->action(fn (Agent $record) => $record->update(['status' => 'INACTIVO']))
                         ->icon('heroicon-s-x-circle')
                         ->color('danger'),
                     DeleteAction::make()
-                        ->color('danger')
-                ])->icon('heroicon-c-ellipsis-vertical')->color('azulOscuro')
+                        ->color('danger'),
+                ])->icon('heroicon-c-ellipsis-vertical')->color('azulOscuro'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
@@ -302,7 +313,6 @@ class AgentsTable
                         })
                         ->requiresConfirmation()
                         ->color('azulOscuro'),
-
 
                     DeleteBulkAction::make(),
                 ]),

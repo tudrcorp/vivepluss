@@ -2,31 +2,26 @@
 
 namespace App\Filament\Resources\Agencies\Tables;
 
-use Carbon\Carbon;
-use App\Models\User;
 use App\Models\Agency;
 use App\Models\AgencyType;
-use Filament\Tables\Table;
-use Filament\Actions\Action;
 use App\Models\Configuration;
-use Filament\Actions\EditAction;
-use Filament\Actions\ViewAction;
+use App\Models\User;
+use App\Support\SalesForceActivation;
+use Carbon\Carbon;
+use Filament\Actions\Action;
 use Filament\Actions\ActionGroup;
-use Filament\Tables\Filters\Filter;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
 use Filament\Actions\BulkActionGroup;
-use Illuminate\Support\Facades\Crypt;
 use Filament\Actions\DeleteBulkAction;
-use App\Http\Controllers\LogController;
-use Filament\Tables\Columns\IconColumn;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Notifications\Notification;
 use Filament\Forms\Components\DatePicker;
+use Filament\Notifications\Notification;
+use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\Filter;
+use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use App\Http\Controllers\AgencyController;
-use App\Http\Controllers\NotificationController;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Crypt;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AgenciesTable
 {
@@ -35,11 +30,12 @@ class AgenciesTable
         return $table
             ->query(function (Builder $query) {
                 $agencies = Agency::query()->where('owner_code', Auth::user()->code_agency);
+
                 return $agencies;
             })
             ->defaultSort('created_at', 'desc')
-            ->heading(fn (): string     => Configuration::first()->table_af_corp_table_title == NULL ? 'Agencias' : Configuration::first()->table_af_corp_table_title)
-            ->description(fn(): string  => Configuration::first()->table_af_corp_table_description == NULL ? '.....' : Configuration::first()->table_af_corp_table_description)
+            ->heading(fn (): string => Configuration::first()->table_af_corp_table_title == null ? 'Agencias' : Configuration::first()->table_af_corp_table_title)
+            ->description(fn (): string => Configuration::first()->table_af_corp_table_description == null ? '.....' : Configuration::first()->table_af_corp_table_description)
             ->columns([
                 TextColumn::make('owner_code')
                     ->label('De:')
@@ -59,7 +55,7 @@ class AgenciesTable
                             ->first()
                             ->definition;
 
-                        return $agency_type . ' - ';
+                        return $agency_type.' - ';
                     })
                     ->searchable()
                     ->toggleable(isToggledHiddenByDefault: false),
@@ -102,9 +98,10 @@ class AgenciesTable
                         if ($record->commission_tdec > 0) {
                             return 'success';
                         }
+
                         return 'warning';
                     })
-                    ->default(fn($record): string => $record->commission_tdec ?? '0')
+                    ->default(fn ($record): string => $record->commission_tdec ?? '0')
                     ->numeric()
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
@@ -117,10 +114,11 @@ class AgenciesTable
                         if ($record->commission_tdec > 0) {
                             return 'success';
                         }
+
                         return 'warning';
                     })
                     ->numeric()
-                    ->default(fn($record): string => $record->commission_tdec ?? '0')
+                    ->default(fn ($record): string => $record->commission_tdec ?? '0')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('commission_tdev')
@@ -132,10 +130,11 @@ class AgenciesTable
                         if ($record->commission_tdec > 0) {
                             return 'success';
                         }
+
                         return 'warning';
                     })
                     ->numeric()
-                    ->default(fn($record): string => $record->commission_tdec ?? '0')
+                    ->default(fn ($record): string => $record->commission_tdec ?? '0')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
                 TextColumn::make('commission_tdev_renewal')
@@ -147,10 +146,11 @@ class AgenciesTable
                         if ($record->commission_tdec > 0) {
                             return 'success';
                         }
+
                         return 'warning';
                     })
                     ->numeric()
-                    ->default(fn($record): string => $record->commission_tdec ?? '0')
+                    ->default(fn ($record): string => $record->commission_tdec ?? '0')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: false),
 
@@ -191,20 +191,20 @@ class AgenciesTable
                         return $query
                             ->when(
                                 $data['desde'] ?? null,
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '>=', $date),
                             )
                             ->when(
                                 $data['hasta'] ?? null,
-                                fn(Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
+                                fn (Builder $query, $date): Builder => $query->whereDate('created_at', '<=', $date),
                             );
                     })
                     ->indicateUsing(function (array $data): array {
                         $indicators = [];
                         if ($data['desde'] ?? null) {
-                            $indicators['desde'] = 'Venta desde ' . Carbon::parse($data['desde'])->toFormattedDateString();
+                            $indicators['desde'] = 'Venta desde '.Carbon::parse($data['desde'])->toFormattedDateString();
                         }
                         if ($data['hasta'] ?? null) {
-                            $indicators['hasta'] = 'Venta hasta ' . Carbon::parse($data['hasta'])->toFormattedDateString();
+                            $indicators['hasta'] = 'Venta hasta '.Carbon::parse($data['hasta'])->toFormattedDateString();
                         }
 
                         return $indicators;
@@ -218,15 +218,15 @@ class AgenciesTable
 
                             try {
 
-                                //1. creamos el usuario en la tabla users para la agencia tipo master o general
-                                $user = new User();
+                                // 1. creamos el usuario en la tabla users para la agencia tipo master o general
+                                $user = new User;
                                 $user->name = $record->name_corporative;
                                 $user->email = $record->email;
                                 $user->password = Hash::make('12345678');
                                 $user->is_agency = true;
                                 $user->code_agency = $record->code;
                                 $user->agency_type = $record->agency_type_id == 1 ? 'MASTER' : 'GENERAL';
-                                $user->link_agency = env('APP_URL') . '/ay/lk/' . Crypt::encryptString($record->code);
+                                $user->link_agency = env('APP_URL').'/ay/lk/'.Crypt::encryptString($record->code);
                                 $user->status = 'ACTIVO';
                                 $user->save();
 
@@ -234,13 +234,13 @@ class AgenciesTable
                                     $record->update(['status' => 'ACTIVO']);
                                 }
 
-                                /**
-                                 * Notificacion por whatsapp
-                                 * @param Agency $record
-                                 */
-                                $phone = $record->phone;
-                                $email = $record->email;
-                                $nofitication = NotificationController::agency_activated($record->code, $phone, $email, $record->agency_type_id == 1 ? config('parameters.PATH_MASTER') : config('parameters.PATH_GENERAL'));
+                                SalesForceActivation::notify(
+                                    name: $record->name_corporative,
+                                    email: $record->email,
+                                    phone: $record->phone,
+                                    roleLabel: 'agencia',
+                                    whiteCompanyId: $record->white_company_id,
+                                );
 
                                 Notification::make()
                                     ->title('ACTIVACION DE AGENCIA')
@@ -249,7 +249,7 @@ class AgenciesTable
                                     ->iconColor('success')
                                     ->color('success')
                                     ->send();
-                                    
+
                             } catch (\Throwable $th) {
                                 Log::error($th->getMessage());
                                 Notification::make()
@@ -265,14 +265,14 @@ class AgenciesTable
                         ->color('success')
                         ->requiresConfirmation(),
                     Action::make('Inactivate')
-                        ->action(fn(Agency $record) => $record->update(['status' => 'INACTIVO']))
+                        ->action(fn (Agency $record) => $record->update(['status' => 'INACTIVO']))
                         ->icon('heroicon-s-x-circle')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->hidden(fn() => Auth::user()->is_business_admin != 1),
+                        ->hidden(fn () => Auth::user()->is_business_admin != 1),
                 ])
                     ->icon('heroicon-c-ellipsis-vertical')
-                    ->color('info')
+                    ->color('info'),
             ])
             ->toolbarActions([
                 BulkActionGroup::make([

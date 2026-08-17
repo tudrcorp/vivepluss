@@ -2,24 +2,16 @@
 
 namespace App\Filament\Resources\IndividualQuotes\Pages;
 
-use App\Models\Fee;
-use App\Models\User;
-
-use App\Models\AgeRange;
-use Filament\Actions\Action;
-use App\Models\Configuration;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Mail;
-use App\Models\DetailIndividualQuote;
-use Illuminate\Support\Facades\Crypt;
-use Filament\Notifications\Notification;
+use App\Filament\Resources\IndividualQuotes\IndividualQuoteResource;
+use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\UtilsController;
 use App\Mail\SendMailCotizacionIndividual;
+use App\Models\Configuration;
+use Filament\Actions\Action;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
-use App\Http\Controllers\NotificationController;
-use App\Filament\Resources\IndividualQuotes\IndividualQuoteResource;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Mail;
 
 class CreateIndividualQuote extends CreateRecord
 {
@@ -49,24 +41,24 @@ class CreateIndividualQuote extends CreateRecord
         return $this->getResource()::getUrl('index');
     }
 
-    //mutateFormDataBeforeSave()
+    // mutateFormDataBeforeSave()
     protected function mutateFormDataBeforeCreate(array $data): array
     {
 
         if ($data['plan'] == 1) {
-            //guardar en la variable de sesion los detalles de la cotizacion
+            // guardar en la variable de sesion los detalles de la cotizacion
             session()->put('details_quote', $data['details_quote_plan_inicial']);
         }
         if ($data['plan'] == 2) {
-            //guardar en la variable de sesion los detalles de la cotizacion
+            // guardar en la variable de sesion los detalles de la cotizacion
             session()->put('details_quote', $data['details_quote_plan_ideal']);
         }
         if ($data['plan'] == 3) {
-            //guardar en la variable de sesion los detalles de la cotizacion
+            // guardar en la variable de sesion los detalles de la cotizacion
             session()->put('details_quote', $data['details_quote_plan_especial']);
         }
         if ($data['plan'] == 'CM') {
-            //guardar en la variable de sesion los detalles de la cotizacion
+            // guardar en la variable de sesion los detalles de la cotizacion
             session()->put('details_quote', $data['details_quote']);
         }
 
@@ -80,7 +72,7 @@ class CreateIndividualQuote extends CreateRecord
     {
         try {
 
-            //recupero la varaiable de sesion con los detalles de la cotizacion
+            // recupero la varaiable de sesion con los detalles de la cotizacion
             $details_quote = session()->get('details_quote');
             // dd($details_quote);
             if ($details_quote[0]['plan_id'] == null) {
@@ -97,17 +89,17 @@ class CreateIndividualQuote extends CreateRecord
 
             $res = UtilsController::storeDetailsIndividualQuote($record, $array_form, $array_details, $details_quote);
 
-            if (!$res) {
+            if (! $res) {
                 throw new \Exception('Error al guardar los detalles de la cotización.');
             }
 
             NotificationController::createdIndividualQuote($record->code, Auth::user()->name);
 
             $email = null;
-            if(isset($record->email)){
+            if (isset($record->email)) {
                 $email = $record->email;
-                $cotizacion = $record->code . '.pdf';
-                Mail::to($email)->send(new SendMailCotizacionIndividual($cotizacion));
+                $cotizacion = $record->code.'.pdf';
+                Mail::to($email)->send(new SendMailCotizacionIndividual($cotizacion, $record->white_company_id));
                 Notification::make()
                     ->title('NOTIFICACIÓN')
                     ->body('La cotización ha sido enviada a su correo electrónico indicado!')
@@ -116,8 +108,7 @@ class CreateIndividualQuote extends CreateRecord
                     ->success()
                     ->send();
             }
-            
-            
+
         } catch (\Throwable $th) {
             Notification::make()
                 ->title('ERROR')
@@ -129,7 +120,7 @@ class CreateIndividualQuote extends CreateRecord
         }
     }
 
-    //getCreatedNotification
+    // getCreatedNotification
     protected function getCreatedNotification(): Notification
     {
         return Notification::make()

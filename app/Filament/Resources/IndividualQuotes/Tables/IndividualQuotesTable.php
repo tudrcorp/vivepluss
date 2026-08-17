@@ -417,7 +417,7 @@ class IndividualQuotesTable
                                 if (isset($data['email'])) {
                                     $email = $data['email'];
                                     $cotizacion = $record->code.'.pdf';
-                                    Mail::to($email)->send(new SendMailCotizacionIndividual($cotizacion));
+                                    Mail::to($email)->send(new SendMailCotizacionIndividual($cotizacion, $record->white_company_id));
 
                                     Notification::make()
                                         ->title('Certificado enviado')

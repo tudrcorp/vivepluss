@@ -7,6 +7,7 @@ return [
 
     'TOKEN_WHATSAPP' => 'yuvh9eq5kn8bt666',
     'CURLOPT_URL_WHATSAPP' => 'https://api.ultramsg.com/instance117518/messages/chat',
+    'CURLOPT_URL_WHATSAPP_DOCUMENT' => 'https://api.ultramsg.com/instance117518/messages/document',
 
     /**
      * Destinatarios de la notificación de activación automática de afiliación

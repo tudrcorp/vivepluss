@@ -394,7 +394,7 @@ class CorporateQuotesTable
                                 if (isset($data['email'])) {
                                     $email = $data['email'];
                                     $cotizacion = $record->code.'.pdf';
-                                    Mail::to($email)->send(new SendMailCotizacionCorporativa($cotizacion));
+                                    Mail::to($email)->send(new SendMailCotizacionCorporativa($cotizacion, $record->white_company_id));
 
                                     Notification::make()
                                         ->title('Certificado enviado')

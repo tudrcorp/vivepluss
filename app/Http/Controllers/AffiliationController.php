@@ -583,6 +583,7 @@ class AffiliationController extends Controller
                 // reference_payment_zelle no está en el $fillable de PaidMembership (bug preexistente),
                 // así que no queda persistida; se toma del $data crudo del formulario como respaldo.
                 $data['reference_payment_zelle'] ?? null,
+                $configuration?->primaryColor ?: '#A13DDB',
             ));
         } catch (\Throwable $th) {
             Log::error('No se pudo enviar el correo de activación automática de la afiliación '.$record->code.': '.$th->getMessage());

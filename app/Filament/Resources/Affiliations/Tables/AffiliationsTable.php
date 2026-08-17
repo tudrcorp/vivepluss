@@ -5,7 +5,9 @@ namespace App\Filament\Resources\Affiliations\Tables;
 use App\Filament\Resources\Affiliations\AffiliationResource;
 use App\Filament\Resources\Affiliations\Pages\ManageAffiliates;
 use App\Http\Controllers\AffiliationController;
+use App\Jobs\SendAffiliationDocumentWhatsApp;
 use App\Mail\SendMailCertificado;
+use App\Mail\WelcomeKitMail;
 use App\Models\Affiliation;
 use App\Models\AffiliationDocument;
 use App\Models\Collection as PaymentCollection;
@@ -13,6 +15,7 @@ use App\Models\Configuration;
 use App\Models\CreditReconciliation;
 use App\Models\User;
 use App\Models\WhiteCompany;
+use App\Support\AffiliationWelcomeKit;
 use App\Support\Filament\InternalObservations;
 use Carbon\Carbon;
 use Filament\Actions\Action;
@@ -25,6 +28,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -1055,7 +1059,7 @@ class AffiliationsTable
                                         throw new \RuntimeException('El certificado aún no ha sido entregado por Integracorp.');
                                     }
 
-                                    Mail::to($email)->send(new SendMailCertificado($document->absolutePath()));
+                                    Mail::to($email)->send(new SendMailCertificado($document->absolutePath(), $record->white_company_id));
 
                                     Notification::make()
                                         ->title('Certificado enviado')
@@ -1084,6 +1088,120 @@ class AffiliationsTable
 
                         })
                         ->hidden(fn (Affiliation $record) => ! (self::latestDocument($record, AffiliationDocument::TYPE_CERTIFICADO)?->existsOnDisk() ?? false)),
+
+                    /**
+                     * Certificado + carnet(s) + condicionado del plan, agrupados
+                     * en un único zip generado al vuelo (AffiliationWelcomeKit).
+                     * Solo visible cuando Integracorp ya entregó el certificado y
+                     * el carnet de cada afiliado; el condicionado se incluye si
+                     * ya fue configurado (ver CondicionadosPorPlan), y si falta
+                     * se avisa con una notificación sin bloquear el envío.
+                     */
+                    ActionGroup::make([
+                        Action::make('welcome_kit_download')
+                            ->label('Descargar')
+                            ->icon('heroicon-o-arrow-down-tray')
+                            ->action(function (Affiliation $record) {
+                                $kit = AffiliationWelcomeKit::build($record);
+
+                                foreach ($kit['warnings'] as $warning) {
+                                    Notification::make()->title('Aviso')->body($warning)->warning()->send();
+                                }
+
+                                return response()->download($kit['path'], $kit['filename'])->deleteFileAfterSend();
+                            }),
+
+                        Action::make('welcome_kit_email')
+                            ->label('Enviar por Email')
+                            ->icon('heroicon-o-envelope')
+                            ->modalHeading('Enviar Kit de Bienvenida por email')
+                            ->modalDescription('El certificado, el/los carnet(s) y el condicionado del plan llegarán como archivos adjuntos separados, para que sea más fácil descargarlos.')
+                            ->modalWidth(Width::Large)
+                            ->form([
+                                TagsInput::make('emails')
+                                    ->label('Correos destinatarios')
+                                    ->helperText('Presiona Enter después de cada correo.')
+                                    ->placeholder('correo@ejemplo.com')
+                                    ->default(fn (Affiliation $record) => array_values(array_filter([$record->email_ti])))
+                                    ->required(),
+                            ])
+                            ->action(function (Affiliation $record, array $data) {
+                                try {
+                                    $kit = AffiliationWelcomeKit::collect($record);
+
+                                    Mail::to($data['emails'])->send(new WelcomeKitMail($record, $kit['files']));
+
+                                    foreach ($kit['warnings'] as $warning) {
+                                        Notification::make()->title('Aviso')->body($warning)->warning()->send();
+                                    }
+
+                                    Notification::make()
+                                        ->title('Kit de Bienvenida enviado')
+                                        ->body('Enviado a '.implode(', ', $data['emails']))
+                                        ->success()
+                                        ->send();
+                                } catch (\Throwable $th) {
+                                    Log::error($th->getMessage());
+                                    Notification::make()
+                                        ->title('ERROR')
+                                        ->body($th->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }
+                            }),
+
+                        Action::make('welcome_kit_whatsapp')
+                            ->label('Enviar por WhatsApp')
+                            ->icon('heroicon-o-chat-bubble-left-right')
+                            ->modalHeading('Enviar Kit de Bienvenida por WhatsApp')
+                            ->modalDescription('El certificado, el/los carnet(s) y el condicionado del plan llegarán como mensajes separados, cada uno con su propio archivo adjunto, para que sea más fácil descargarlos.')
+                            ->modalWidth(Width::Large)
+                            ->form([
+                                TagsInput::make('phones')
+                                    ->label('Números de WhatsApp')
+                                    ->helperText('Formato internacional sin espacios ni signos, ej. 584242271498. Presiona Enter después de cada número.')
+                                    ->placeholder('584242271498')
+                                    ->default(fn (Affiliation $record) => array_values(array_filter([preg_replace('/[^0-9]/', '', (string) $record->phone_ti)])))
+                                    ->required(),
+                            ])
+                            ->action(function (Affiliation $record, array $data) {
+                                try {
+                                    $kit = AffiliationWelcomeKit::collect($record);
+
+                                    $intro = "*Kit de Bienvenida — VivePlus* 🎉\n\n"
+                                        ."Hola, tu Kit de Bienvenida para la afiliación *{$record->code}* ya está listo. Te lo enviamos a continuación, un archivo por mensaje.";
+
+                                    foreach ($data['phones'] as $phone) {
+                                        SendAffiliationDocumentWhatsApp::dispatch($phone, $intro);
+
+                                        foreach ($kit['files'] as $label => $path) {
+                                            SendAffiliationDocumentWhatsApp::dispatch($phone, pathinfo($label, PATHINFO_FILENAME), $path, $label);
+                                        }
+                                    }
+
+                                    foreach ($kit['warnings'] as $warning) {
+                                        Notification::make()->title('Aviso')->body($warning)->warning()->send();
+                                    }
+
+                                    Notification::make()
+                                        ->title('Kit de Bienvenida enviado')
+                                        ->body('Enviado a '.implode(', ', $data['phones']))
+                                        ->success()
+                                        ->send();
+                                } catch (\Throwable $th) {
+                                    Log::error($th->getMessage());
+                                    Notification::make()
+                                        ->title('ERROR')
+                                        ->body($th->getMessage())
+                                        ->danger()
+                                        ->send();
+                                }
+                            }),
+                    ])
+                        ->label('Kit de Bienvenida')
+                        ->icon('heroicon-o-gift')
+                        ->color('success')
+                        ->hidden(fn (Affiliation $record) => ! AffiliationWelcomeKit::isReadyFor($record)),
 
                     Action::make('add_internal_observation')
                         ->label('Observaciones internas')

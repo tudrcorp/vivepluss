@@ -12,6 +12,13 @@ use Illuminate\Support\Facades\Log;
  * MiddlewareController::notificacionSesionDuplicada (el único envío de
  * WhatsApp que hoy funciona de verdad en este proyecto: la clase de job
  * referenciada en NotificationController para otros flujos no existe).
+ *
+ * Si se indica $documentPath, el mensaje se manda como adjunto nativo de
+ * WhatsApp (endpoint /messages/document de ultramsg) codificado en base64
+ * -no como URL- porque en local (dominios .test de Herd) ultramsg no puede
+ * alcanzar nuestro servidor para descargar el archivo; $body se usa como
+ * caption del archivo. $documentPath se lee en el propio job, no se borra
+ * (varios teléfonos pueden compartir el mismo archivo temporal).
  */
 class SendAffiliationDocumentWhatsApp implements ShouldQueue
 {
@@ -20,19 +27,44 @@ class SendAffiliationDocumentWhatsApp implements ShouldQueue
     public function __construct(
         public string $phone,
         public string $body,
+        public ?string $documentPath = null,
+        public ?string $documentFilename = null,
     ) {}
 
     public function handle(): void
     {
-        $params = [
-            'token' => config('parametros.TOKEN_WHATSAPP'),
-            'to' => $this->phone,
-            'body' => $this->body,
-        ];
+        $isDocument = filled($this->documentPath);
+
+        if ($isDocument && ! is_file($this->documentPath)) {
+            Log::error('No se pudo enviar el documento por WhatsApp: el archivo ya no existe.', [
+                'phone' => $this->phone,
+                'path' => $this->documentPath,
+            ]);
+
+            return;
+        }
+
+        $params = $isDocument
+            ? [
+                'token' => config('parametros.TOKEN_WHATSAPP'),
+                'to' => $this->phone,
+                'document' => 'data:'.(mime_content_type($this->documentPath) ?: 'application/octet-stream').';base64,'.base64_encode(file_get_contents($this->documentPath)),
+                'filename' => $this->documentFilename ?? 'documento.pdf',
+                'caption' => $this->body,
+            ]
+            : [
+                'token' => config('parametros.TOKEN_WHATSAPP'),
+                'to' => $this->phone,
+                'body' => $this->body,
+            ];
+
+        $url = $isDocument
+            ? config('parametros.CURLOPT_URL_WHATSAPP_DOCUMENT')
+            : config('parametros.CURLOPT_URL_WHATSAPP');
 
         $curl = curl_init();
         curl_setopt_array($curl, [
-            CURLOPT_URL => config('parametros.CURLOPT_URL_WHATSAPP'),
+            CURLOPT_URL => $url,
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_ENCODING => '',
             CURLOPT_MAXREDIRS => 10,
@@ -54,6 +86,7 @@ class SendAffiliationDocumentWhatsApp implements ShouldQueue
         if ($error || $statusCode >= 300) {
             Log::error('No se pudo enviar la notificación de WhatsApp de documento disponible.', [
                 'phone' => $this->phone,
+                'is_document' => $isDocument,
                 'error' => $error,
                 'status_code' => $statusCode,
                 'response' => $response,

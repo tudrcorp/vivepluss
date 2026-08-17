@@ -15,6 +15,7 @@ Laravel 12 + Filament 4 admin panel for ViVEplus (an insurance/health-plan affil
 - Run a single test: `./vendor/bin/pest tests/Feature/Auth/AuthenticationTest.php` or filter by name with `./vendor/bin/pest --filter=<name>`.
 - `vendor/bin/pint` — code style fixer (Laravel Pint, no custom `pint.json`, defaults apply). CI runs this on every push/PR to `main`/`develop`.
 - `php artisan migrate` — migrations run against the default DB connection (see "Two database connections" below).
+- `php artisan documents:check-missing` — scans for affiliations/employees whose Integracorp-generated certificate or carnet hasn't arrived within the configured tolerance window; scheduled hourly (see `routes/console.php`), but useful to run manually when diagnosing the webhook flow.
 
 CI (`.github/workflows/tests.yml`, `lint.yml`) runs Pint and the full Pest suite on push/PR to `develop` and `main`.
 

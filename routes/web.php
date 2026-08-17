@@ -1,9 +1,9 @@
 <?php
 
-use Livewire\Volt\Volt;
-use Laravel\Fortify\Features;
 use Filament\Facades\Filament;
 use Illuminate\Support\Facades\Route;
+use Laravel\Fortify\Features;
+use Livewire\Volt\Volt;
 
 Route::get('/', function () {
     return view('welcome');
@@ -13,6 +13,7 @@ Route::post('/external', function () {
     Filament::auth()->logout();
     session()->invalidate();
     session()->regenerateToken();
+
     return redirect()->to(config('parametros.REDIRECT_LOGOUT_EXTERNAL_URL'));
 })->name('external');
 
@@ -23,7 +24,7 @@ Route::view('dashboard', 'dashboard')
 Volt::route('/agent/c/{code?}', 'agentFormCreate')->name('volt.agent.create');
 Volt::route('/agency/c/{code?}', 'agencyFormCreate')->name('volt.agency.create');
 
-//Ruta para crear la estructura de una agencia master
+// Ruta para crear la estructura de una agencia master
 Volt::route('/m/o/c/{code?}', 'agencyMasterCreate')->name('master.organization.create');
 
 Route::middleware(['auth'])->group(function () {

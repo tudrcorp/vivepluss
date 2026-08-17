@@ -2,14 +2,14 @@
 
 namespace App\Mail;
 
+use App\Support\Mail\MailBranding;
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
+use Illuminate\Mail\Mailables\Address;
+use Illuminate\Mail\Mailables\Attachment;
 use Illuminate\Mail\Mailables\Content;
 use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
-use Illuminate\Mail\Mailables\Address;
-
 
 class SendMailCotizacionCorporativa extends Mailable
 {
@@ -18,12 +18,11 @@ class SendMailCotizacionCorporativa extends Mailable
     public $cotizacion;
 
     /**
-     * Create a new message instance.
+     * @param  int|string|null  $whiteCompanyId  Marca blanca dueña de la cotización, para el logo/color del correo.
      */
-    public function __construct($cotizacion)
+    public function __construct($cotizacion, public int|string|null $whiteCompanyId = null)
     {
         $this->cotizacion = $cotizacion;
-        //
     }
 
     /**
@@ -44,19 +43,19 @@ class SendMailCotizacionCorporativa extends Mailable
     {
         return new Content(
             view: 'mails.cotizacion-corporativa',
+            with: MailBranding::forWhiteCompany($this->whiteCompanyId),
         );
     }
 
     /**
      * Get the attachments for the message.
      *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * @return array<int, Attachment>
      */
     public function attachments(): array
     {
         return [
-            public_path('storage/quotes/' . $this->cotizacion),
-            // $this->attachFromStorage('public/ejemploCSV.csv', 'ejemploCSV.csv'),
+            public_path('storage/quotes/'.$this->cotizacion),
         ];
     }
 }

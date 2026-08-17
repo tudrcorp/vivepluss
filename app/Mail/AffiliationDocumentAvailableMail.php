@@ -3,6 +3,7 @@
 namespace App\Mail;
 
 use App\Models\AffiliationDocument;
+use App\Support\Mail\MailBranding;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\Address;
@@ -42,8 +43,13 @@ class AffiliationDocumentAvailableMail extends Mailable
 
     public function content(): Content
     {
+        $whiteCompanyId = $this->document->affiliation_kind === AffiliationDocument::KIND_INDIVIDUAL
+            ? $this->document->affiliation?->white_company_id
+            : $this->document->affiliationCorporate?->white_company_id;
+
         return new Content(
             view: 'mails.documento-disponible',
+            with: MailBranding::forWhiteCompany($whiteCompanyId),
         );
     }
 

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\CondicionadosPorPlan;
 use App\Filament\Pages\Dashboard;
 use App\Filament\Pages\EstructuraViveplus;
 use App\Filament\Resources\Agencies\AgencyResource;
@@ -110,6 +111,12 @@ class ViveadminPanelProvider extends PanelProvider
                     ->color('primary')
                     ->hidden(fn () => Auth::user()->is_whiteCompanyAdmin != 1 && Auth::user()->agency_type != 'MASTER')
                     ->url(fn () => EstructuraViveplus::getUrl(panel: 'viveadmin')),
+                Action::make('condicionados_por_plan')
+                    ->label('Condicionados por Plan')
+                    ->icon('heroicon-o-document-text')
+                    ->color('primary')
+                    ->hidden(fn () => Auth::user()->is_whiteCompanyAdmin != 1 && Auth::user()->agency_type != 'MASTER')
+                    ->url(fn () => CondicionadosPorPlan::getUrl(panel: 'viveadmin')),
                 // ...
                 'logout' => fn (Action $action) => $action
                     ->label('Cerrar Sesión')

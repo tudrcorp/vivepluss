@@ -3,13 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Plan extends Model
 {
     protected $connection = 'mysql_vivepluss';
-    
+
     protected $table = 'plans';
 
     protected $fillable = [
@@ -23,8 +24,6 @@ class Plan extends Model
 
     /**
      * Get all of the comments for the Plan
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function benefits(): HasMany
     {
@@ -33,8 +32,6 @@ class Plan extends Model
 
     /**
      * The servicios that belong to the User
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function benefitPlans(): BelongsToMany
     {
@@ -45,8 +42,6 @@ class Plan extends Model
 
     /**
      * The servicios that belong to the User
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function coveragePlans(): BelongsToMany
     {
@@ -57,14 +52,12 @@ class Plan extends Model
 
     /**
      * The servicios that belong to the User
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
      */
     public function feePlans(): BelongsToMany
     {
         return $this->belongsToMany(Fee::class, 'fee_plans')
             ->using(FeePlan::class)
-            ->withPivot(['range','price']);
+            ->withPivot(['range', 'price']);
     }
 
     public function coverages(): HasMany
@@ -72,18 +65,15 @@ class Plan extends Model
         return $this->hasMany(Coverage::class, 'plan_id', 'id');
     }
 
-
     public function businessLine()
     {
         return $this->belongsTo(BusinessLine::class, 'business_line_id', 'id');
     }
 
-
     public function businessUnit()
     {
         return $this->hasOne(BusinessUnit::class, 'id', 'business_unit_id');
     }
-
 
     public function ageRanges(): HasMany
     {
@@ -95,5 +85,8 @@ class Plan extends Model
         return $this->belongsToMany(AffiliationCorporate::class);
     }
 
-    
+    public function condicionado(): HasOne
+    {
+        return $this->hasOne(PlanCondicionado::class);
+    }
 }

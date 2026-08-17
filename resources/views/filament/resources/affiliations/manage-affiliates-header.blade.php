@@ -21,4 +21,22 @@
     <p class="mt-4 max-w-xl text-sm text-gray-500 sm:text-base dark:text-gray-400">
         Consulta y edita la información principal de las personas afiliadas a esta afiliación.
     </p>
+
+    @if ($affiliation->plan || $affiliation->coverage)
+        <div class="mt-4 flex flex-wrap items-center gap-2">
+            @if ($affiliation->plan)
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-primary-50 px-3 py-1 text-xs font-medium text-primary-700 dark:bg-primary-500/10 dark:text-primary-400">
+                    {{ svg('heroicon-o-clipboard-document-check', 'h-3.5 w-3.5') }}
+                    Plan: {{ $affiliation->plan->description }}
+                </span>
+            @endif
+
+            @if ($affiliation->coverage)
+                <span class="inline-flex items-center gap-1.5 rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-gray-700 dark:bg-white/5 dark:text-gray-300">
+                    {{ svg('heroicon-o-shield-check', 'h-3.5 w-3.5') }}
+                    Cobertura: {{ \App\Models\Configuration::coverageCurrencySymbol() }} {{ number_format($affiliation->coverage->price, 0) }}
+                </span>
+            @endif
+        </div>
+    @endif
 </div>

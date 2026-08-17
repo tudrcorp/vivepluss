@@ -35,7 +35,7 @@ class ManageAffiliates extends ManageRelatedRecords
     public function getHeader(): ?View
     {
         return view('filament.resources.affiliations.manage-affiliates-header', [
-            'affiliation' => $this->getRecord(),
+            'affiliation' => $this->getRecord()->loadMissing(['plan', 'coverage']),
         ]);
     }
 
