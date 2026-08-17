@@ -588,6 +588,29 @@ class ConfigurationForm
                         ->columnSpanFull(),
                 ])->columnSpanFull(),
 
+            Fieldset::make('Notificaciones de Comprobantes de Pago (Integracorp)')
+                ->schema([
+                    ToggleButtons::make('payment_notifications_enabled')
+                        ->label('¿Notificar cuando un analista cargue un comprobante de pago?')
+                        ->boolean()
+                        ->inline()
+                        ->live()
+                        ->default(false)
+                        ->helperText('Se dispara cada vez que se carga un comprobante de pago, para cualquier método. Si el pago es a CRÉDITO, el adjunto es la nota de crédito generada en vez del comprobante. Si está desactivado, no se envía ninguna notificación.'),
+                    TagsInput::make('payment_notification_emails')
+                        ->label('Correos a notificar')
+                        ->helperText('Presiona Enter después de cada correo. Reciben un email con el comprobante (o la nota de crédito) adjunto.')
+                        ->placeholder('correo@ejemplo.com')
+                        ->visible(fn (Get $get) => (bool) $get('payment_notifications_enabled'))
+                        ->columnSpanFull(),
+                    TagsInput::make('payment_notification_phones')
+                        ->label('Teléfonos WhatsApp a notificar')
+                        ->helperText('Presiona Enter después de cada número, en formato internacional sin espacios ni signos (ej. 584242271498).')
+                        ->placeholder('584242271498')
+                        ->visible(fn (Get $get) => (bool) $get('payment_notifications_enabled'))
+                        ->columnSpanFull(),
+                ])->columnSpanFull(),
+
             Fieldset::make('Seguridad del Sistema')
                 ->schema([
                     Radio::make('duplicatedSession')

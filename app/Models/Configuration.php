@@ -138,6 +138,10 @@ class Configuration extends Model
         'document_notifications_enabled',
         'document_notification_emails',
         'document_notification_phones',
+
+        'payment_notifications_enabled',
+        'payment_notification_emails',
+        'payment_notification_phones',
     ];
 
     protected $casts = [
@@ -146,6 +150,9 @@ class Configuration extends Model
         'document_notifications_enabled' => 'boolean',
         'document_notification_emails' => 'array',
         'document_notification_phones' => 'array',
+        'payment_notifications_enabled' => 'boolean',
+        'payment_notification_emails' => 'array',
+        'payment_notification_phones' => 'array',
     ];
 
     public function agency()

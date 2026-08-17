@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SendAffiliationDocumentWhatsApp;
 use App\Mail\AffiliationAutoActivatedMail;
+use App\Mail\PaymentProofUploadedMail;
 use App\Models\Affiliate;
 use App\Models\Affiliation;
 use App\Models\Collection;
@@ -500,7 +502,10 @@ class AffiliationController extends Controller
                 $paidMembershipUpdate['invoice_number'] = $paidCollections->pluck('collection_invoice_number')->implode(', ');
             }
 
-            $record->paid_memberships()->latest()->first()?->update($paidMembershipUpdate);
+            $paidMembership = $record->paid_memberships()->latest()->first();
+            $paidMembership?->update($paidMembershipUpdate);
+
+            self::notifyPaymentProofUploaded($record, $paidMembership);
 
             /**
              * Solo el pago a crédito se aprueba y activa de forma automática (sin paso
@@ -735,7 +740,7 @@ class AffiliationController extends Controller
      *
      * @return array<int, string>
      */
-    private static function resolvePaymentDocumentPaths(?PaidMembership $paidMembership): array
+    public static function resolvePaymentDocumentPaths(?PaidMembership $paidMembership): array
     {
         if (! $paidMembership) {
             return [];
@@ -772,6 +777,72 @@ class AffiliationController extends Controller
         }
 
         return $paths;
+    }
+
+    /**
+     * Avisa por correo y WhatsApp, a los contactos que Integracorp le indicó a
+     * ViVEplus (configurados en Configuration::payment_notification_emails/phones
+     * por marca blanca), que se cargó un comprobante de pago -para cualquier
+     * método, en cada carga, no solo la primera vez ni solo para CREDITO. El
+     * adjunto sale de resolvePaymentDocumentPaths(), que ya devuelve la nota de
+     * crédito cuando el método es CREDITO (se guarda como document_ves en
+     * generateCreditNote()), así que no hace falta ninguna rama especial aquí.
+     * Un fallo de envío solo se loggea: nunca debe revertir ni bloquear la carga
+     * del comprobante ya persistida.
+     */
+    private static function notifyPaymentProofUploaded(Affiliation $record, ?PaidMembership $paidMembership): void
+    {
+        if (! $paidMembership) {
+            return;
+        }
+
+        try {
+            $configuration = Configuration::where('white_company_id', $record->white_company_id)->first();
+
+            if (! $configuration || ! $configuration->payment_notifications_enabled) {
+                return;
+            }
+
+            $emails = $configuration->payment_notification_emails ?? [];
+            $phones = $configuration->payment_notification_phones ?? [];
+
+            if (blank($emails) && blank($phones)) {
+                return;
+            }
+
+            $documentPaths = self::resolvePaymentDocumentPaths($paidMembership);
+
+            if (filled($emails)) {
+                Mail::to($emails)->queue(new PaymentProofUploadedMail(
+                    $record,
+                    $paidMembership,
+                    $configuration->white_company_name ?? 'N/A',
+                ));
+            }
+
+            if (filled($phones)) {
+                $isCredito = $paidMembership->payment_method === 'CREDITO';
+                $label = $isCredito ? 'Nota de crédito' : 'Comprobante de pago';
+                $body = "📄 {$label} cargado — Afiliación {$record->code}\n\n"
+                    ."Método: {$paidMembership->payment_method}\n"
+                    ."Monto: {$paidMembership->total_amount}\n\n"
+                    .'Detalle disponible en el panel de ViVEplus.';
+
+                foreach ($documentPaths as $path) {
+                    foreach ($phones as $phone) {
+                        SendAffiliationDocumentWhatsApp::dispatch($phone, $body, $path, basename($path));
+                    }
+                }
+
+                if (empty($documentPaths)) {
+                    foreach ($phones as $phone) {
+                        SendAffiliationDocumentWhatsApp::dispatch($phone, $body);
+                    }
+                }
+            }
+        } catch (\Throwable $th) {
+            Log::error('No se pudo enviar la notificación de comprobante de pago de la afiliación '.$record->code.': '.$th->getMessage());
+        }
     }
 
     /**
@@ -1250,6 +1321,13 @@ class AffiliationController extends Controller
                  * una, no el total combinado del modal). Igual que en uploadPayment().
                  */
                 if ($data['payment_method'] == 'CREDITO') {
+                    /**
+                     * Se resuelve (y bloquea si falta) la tarifa negociada con Integracorp
+                     * ANTES de escribir nada, igual que en uploadPayment(), para que "falta
+                     * tarifa negociada" no deje esta afiliación del lote a medio aprobar.
+                     */
+                    $settlement = (new WhiteCompanyNegotiatedRateResolver)->settlementForAffiliation($record);
+
                     $noteNumber = 'NC-'.$record->code.'-'.now()->format('YmdHis');
                     $remainingCreditBefore = CreditReconciliation::remainingCredit($record->white_company_id);
 
@@ -1290,9 +1368,12 @@ class AffiliationController extends Controller
                  * Igual que en uploadPayment(): se propaga el white_company_id de cada
                  * afiliación a su comprobante recién creado, sin tocar los 12 create() de arriba.
                  */
-                $record->paid_memberships()->latest()->first()?->update([
+                $paidMembership = $record->paid_memberships()->latest()->first();
+                $paidMembership?->update([
                     'white_company_id' => $record->white_company_id,
                 ]);
+
+                self::notifyPaymentProofUploaded($record, $paidMembership);
 
                 /**
                  * A diferencia del resto de los métodos de pago (que en este flujo
@@ -1300,7 +1381,7 @@ class AffiliationController extends Controller
                  * se aprueba y activa de inmediato, igual que en uploadPayment().
                  */
                 if ($data['payment_method'] == 'CREDITO') {
-                    self::approveAndActivate($record, $data);
+                    self::approveAndActivate($record, $data, $settlement);
                 }
             }
 
