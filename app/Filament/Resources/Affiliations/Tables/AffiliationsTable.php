@@ -481,6 +481,7 @@ class AffiliationsTable
 
                                             Grid::make(1)->schema([
                                                 FileUpload::make('document_usd')
+                                                    ->disk('public')
                                                     ->label("Comprobante({$currency})")
                                                     ->uploadingMessage('Cargando...')
                                                     ->required(),
@@ -527,6 +528,7 @@ class AffiliationsTable
 
                                                 Grid::make(1)->schema([
                                                     FileUpload::make('document_usd')
+                                                        ->disk('public')
                                                         ->label("Comprobante({$currency})")
                                                         ->uploadingMessage('Cargando...')
                                                         ->required(),
@@ -562,6 +564,7 @@ class AffiliationsTable
 
                                                 Grid::make()->schema([
                                                     FileUpload::make('document_usd')
+                                                        ->disk('public')
                                                         ->label("Comprobante({$currency})")
                                                         ->uploadingMessage('Cargando...')
                                                         ->required(),
@@ -1356,6 +1359,7 @@ class AffiliationsTable
 
                                                 Grid::make(1)->schema([
                                                     FileUpload::make('document_usd')
+                                                        ->disk('public')
                                                         ->label("Comprobante({$currency})")
                                                         ->uploadingMessage('Cargando...')
                                                         ->required(),
@@ -1402,6 +1406,7 @@ class AffiliationsTable
 
                                                     Grid::make(1)->schema([
                                                         FileUpload::make('document_usd')
+                                                            ->disk('public')
                                                             ->label("Comprobante({$currency})")
                                                             ->uploadingMessage('Cargando...')
                                                             ->required(),
@@ -1437,6 +1442,7 @@ class AffiliationsTable
 
                                                     Grid::make()->schema([
                                                         FileUpload::make('document_usd')
+                                                            ->disk('public')
                                                             ->label("Comprobante({$currency})")
                                                             ->uploadingMessage('Cargando...')
                                                             ->required(),

@@ -503,6 +503,12 @@ class AffiliationController extends Controller
             }
 
             $paidMembership = $record->paid_memberships()->latest()->first();
+
+            if ($paidMembership) {
+                $paidMembershipUpdate['document_usd'] = self::publicDocumentUrl($paidMembership->document_usd);
+                $paidMembershipUpdate['document_ves'] = self::publicDocumentUrl($paidMembership->document_ves);
+            }
+
             $paidMembership?->update($paidMembershipUpdate);
 
             self::notifyPaymentProofUploaded($record, $paidMembership);
@@ -733,10 +739,42 @@ class AffiliationController extends Controller
     }
 
     /**
-     * El comprobante de pago se guarda con document_usd (disco 'local', sin
-     * declarar explícitamente en el FileUpload) y/o document_ves (disco 'public',
-     * declarado con ->disk('public')); según el método de pago puede venir uno
-     * o ambos. Se resuelven a rutas absolutas para adjuntarlos al correo.
+     * Convierte la ruta relativa con la que Filament guarda un comprobante en la
+     * URL pública absoluta de ViVEplus, con el mismo criterio que generateCreditNote():
+     * Integracorp comparte esta base de datos pero no el almacenamiento, así que una
+     * ruta relativa la interpretaría como archivo propio y daría 404 al abrirla desde
+     * su panel. Con la URL absoluta sus analistas descargan el comprobante igual que
+     * ya hacen con la nota de crédito.
+     *
+     * Solo aplica a lo que se carga de aquí en adelante: los comprobantes anteriores
+     * conservan su ruta relativa (no se hizo backfill). Un valor vacío, 'N/A' o que ya
+     * sea una URL se devuelve intacto, y si el archivo no aparece en el disco 'public'
+     * -por ejemplo un registro viejo que quedó en 'local'- se deja como está en vez de
+     * fabricar un enlace roto.
+     */
+    public static function publicDocumentUrl(?string $value): ?string
+    {
+        if (blank($value) || $value === 'N/A' || Str::startsWith($value, ['http://', 'https://'])) {
+            return $value;
+        }
+
+        if (! Storage::disk('public')->exists($value)) {
+            Log::warning('No se pudo publicar la URL del comprobante de pago: el archivo no está en el disco public.', [
+                'path' => $value,
+            ]);
+
+            return $value;
+        }
+
+        return Storage::disk('public')->url($value);
+    }
+
+    /**
+     * El comprobante de pago se guarda en document_usd y/o document_ves (según el
+     * método de pago puede venir uno o ambos), hoy siempre en el disco 'public' y
+     * como URL absoluta -ver publicDocumentUrl()-. Aquí se revierten a rutas de
+     * disco para adjuntarlos al correo/WhatsApp; los registros anteriores al cambio
+     * siguen siendo rutas relativas, y las de document_usd pueden estar en 'local'.
      *
      * @return array<int, string>
      */
@@ -1366,12 +1404,18 @@ class AffiliationController extends Controller
 
                 /**
                  * Igual que en uploadPayment(): se propaga el white_company_id de cada
-                 * afiliación a su comprobante recién creado, sin tocar los 12 create() de arriba.
+                 * afiliación a su comprobante recién creado y se publican los comprobantes
+                 * como URL absoluta para Integracorp, sin tocar los 12 create() de arriba.
                  */
                 $paidMembership = $record->paid_memberships()->latest()->first();
-                $paidMembership?->update([
-                    'white_company_id' => $record->white_company_id,
-                ]);
+
+                if ($paidMembership) {
+                    $paidMembership->update([
+                        'white_company_id' => $record->white_company_id,
+                        'document_usd' => self::publicDocumentUrl($paidMembership->document_usd),
+                        'document_ves' => self::publicDocumentUrl($paidMembership->document_ves),
+                    ]);
+                }
 
                 self::notifyPaymentProofUploaded($record, $paidMembership);
 
@@ -1389,7 +1433,6 @@ class AffiliationController extends Controller
 
             // code...
         } catch (\Throwable $th) {
-            dd($th);
             Log::error($th->getMessage());
             Notification::make()
                 ->title('EXCEPTION')
