@@ -2,13 +2,12 @@
 
 namespace App\Models;
 
-use App\Models\Agent;
-use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\LogController;
-use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Models\DetailsCorporateQuoteRequest;
 use App\Jobs\SendNotificacionSolicitudCotizacion;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Auth;
 
 class CorporateQuoteRequest extends Model
 {
@@ -54,7 +53,7 @@ class CorporateQuoteRequest extends Model
     /**
      * Get the user that owns the Agent
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function accountManager()
     {
@@ -76,12 +75,16 @@ class CorporateQuoteRequest extends Model
         return $this->belongsTo(Agent::class);
     }
 
-
     public function state()
     {
         return $this->belongsTo(State::class);
     }
 
+    /**
+     * Bitácora de observaciones internas. Vive en mysql_vivepluss; esta
+     * solicitud se queda en mysql. Eloquent resuelve el hasMany con una
+     * query aparte en cada conexión, sin join.
+     */
     public function corporateQuoteRequestObservations(): HasMany
     {
         return $this->hasMany(CorporateQuoteRequestObservation::class)->orderByDesc('created_at');
@@ -91,12 +94,12 @@ class CorporateQuoteRequest extends Model
      * JOB
      * Este Job se ejecuta para enviar una notificacion al correo de administrador
      * despues de crear la cotizacion
-     * 
+     *
      * @author Gustavo Camacho
+     *
      * @version 1.0
-     * 
+     *
      * @see SendNotificacionSolicitudCotizacion
-     * 
      */
     public function sendNotification($record)
     {

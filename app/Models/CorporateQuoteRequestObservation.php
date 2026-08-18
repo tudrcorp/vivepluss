@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CorporateQuoteRequestObservation extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+
     protected $fillable = [
         'corporate_quote_request_id',
         'description',
