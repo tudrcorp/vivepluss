@@ -37,6 +37,15 @@ return [
 
         'database' => [
             'driver' => 'database',
+            /**
+             * DB_QUEUE_CONNECTION debe apuntar a mysql_vivepluss: la conexión
+             * por defecto (`mysql`) es la base `operaciones` que ViVEplus
+             * comparte con Integracorp, y ahí ambos workers escuchan la cola
+             * `default` sobre la MISMA tabla `jobs`, robándose los trabajos
+             * entre sí (cada uno falla al deserializar clases que no existen
+             * en su propio código). Ver la migración
+             * 2026_08_18_190000_create_viveplus_queue_tables.
+             */
             'connection' => env('DB_QUEUE_CONNECTION'),
             'table' => env('DB_QUEUE_TABLE', 'jobs'),
             'queue' => env('DB_QUEUE', 'default'),
@@ -99,7 +108,9 @@ return [
     */
 
     'batching' => [
-        'database' => env('DB_CONNECTION', 'sqlite'),
+        // Misma base que la tabla `jobs` (ver DB_QUEUE_CONNECTION arriba): la
+        // cola de ViVEplus no debe compartir tablas con la de Integracorp.
+        'database' => env('DB_QUEUE_CONNECTION', env('DB_CONNECTION', 'sqlite')),
         'table' => 'job_batches',
     ],
 
@@ -118,7 +129,8 @@ return [
 
     'failed' => [
         'driver' => env('QUEUE_FAILED_DRIVER', 'database-uuids'),
-        'database' => env('DB_CONNECTION', 'sqlite'),
+        // Idem: los fallidos de ViVEplus se registran junto a su propia cola.
+        'database' => env('DB_QUEUE_CONNECTION', env('DB_CONNECTION', 'sqlite')),
         'table' => 'failed_jobs',
     ],
 
