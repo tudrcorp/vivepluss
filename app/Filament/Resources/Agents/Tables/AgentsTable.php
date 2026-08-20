@@ -6,6 +6,7 @@ use App\Http\Controllers\UtilsController;
 use App\Models\Agency;
 use App\Models\Agent;
 use App\Models\User;
+use App\Support\SalesForce\AgencyHierarchy;
 use App\Support\SalesForceActivation;
 use Carbon\Carbon;
 use Filament\Actions\Action;
@@ -23,7 +24,6 @@ use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
@@ -33,11 +33,12 @@ class AgentsTable
     public static function configure(Table $table): Table
     {
         return $table
-            ->query(function (Builder $query) {
-                $agents = Agent::query()->where('owner_code', Auth::user()->code_agency);
-
-                return $agents;
-            })
+            // Una master ve a sus agentes directos y a los de sus agencias
+            // generales; una agencia general, solo los suyos. Antes se filtraba
+            // por `owner_code = code_agency` a secas, así que la master no veía
+            // a nadie que colgara de una general.
+            ->query(fn (Builder $query): Builder => Agent::query()
+                ->whereIn('owner_code', AgencyHierarchy::visibleAgencyCodes()))
             ->heading('AGENTES')
             ->description('Lista de agentes registrados en el sistema')
             ->columns([
@@ -49,7 +50,9 @@ class AgentsTable
                             ->with('typeAgency')
                             ->first();
 
-                        return isset($agency_type) ? $agency_type->typeAgency->definition.' - ' : 'MASTER - ';
+                        return $agency_type?->typeAgency?->definition
+                            ? $agency_type->typeAgency->definition.' - '
+                            : 'MASTER - ';
                     })
                     ->alignCenter()
                     ->badge()

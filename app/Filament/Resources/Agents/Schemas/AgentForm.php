@@ -5,17 +5,14 @@ namespace App\Filament\Resources\Agents\Schemas;
 use App\Models\City;
 use App\Models\User;
 use App\Models\State;
-use App\Models\Agency;
 use App\Models\Region;
 use App\Models\Country;
-use App\Models\AgencyType;
-use App\Models\Configuration;
+use App\Support\SalesForce\AgencyHierarchy;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -48,7 +45,9 @@ class AgentForm
                             ->preload(),
                         Select::make('owner_agent')
                             ->label('Agente Responsable')
-                            ->options(DB::table('agents')->select('name', 'id', 'status', 'agent_type_id', 'owner_code')->where('agent_type_id', 2)->where('status', 'ACTIVO')->where('owner_code', Auth::user()->code_agency)->pluck('name', 'id'))
+                            // Agentes activos de toda la estructura visible: para una
+                            // agencia master, tambien los de sus agencias generales.
+                            ->options(fn () => DB::table('agents')->where('agent_type_id', 2)->where('status', 'ACTIVO')->whereIn('owner_code', AgencyHierarchy::visibleAgencyCodes())->pluck('name', 'id'))
                             ->searchable()
                             ->live()
                             ->hidden(fn(Get $get) => $get('agent_type_id') == 2)
@@ -56,16 +55,16 @@ class AgentForm
                             ->helperText('Esta lista despliega solo los agentes activos'),
                         Select::make('owner_code')
                             ->label('Jerarquia')
-                            ->options(function (Get $get) {
-                                return Agency::select('code', 'id', 'agency_type_id', 'status', 'owner_code')
-                                    ->where('status', 'ACTIVO')
-                                    ->where('owner_code', Auth::user()->code_agency)
-                                    ->get()
-                                    ->mapWithKeys(function ($agency) {
-                                        $type = AgencyType::find($agency->agency_type_id)->definition;
-                                        return [$agency->code => "{$type} - {$agency->code}"];
-                                    });
-                            })
+                            // Incluye la agencia del propio usuario. Antes la lista se
+                            // armaba solo con las agencias que cuelgan de el, asi que
+                            // una agencia general se quedaba sin ninguna opcion que
+                            // elegir y no podia registrar a nadie.
+                            ->options(fn (Get $get) => AgencyHierarchy::assignableAgencyOptions($get('owner_code')))
+                            ->default(fn () => AgencyHierarchy::currentCode())
+                            ->required()
+                            ->validationMessages([
+                                'required' => 'Campo requerido',
+                            ])
                             ->searchable()
                             ->preload(),
                     ])->columnSpanFull()->columns(4),
@@ -507,48 +506,6 @@ class AgentForm
                             ->prefixIcon('heroicon-s-identification')
                             ->maxLength(255),
                     ])->columnSpanFull()->columns(4),
-                Section::make('COMISIONES')
-                    ->collapsed()
-                    ->description('Fomulario. Campo Requerido(*)')
-                    ->icon('heroicon-m-chart-pie')
-                    ->schema([
-                        Toggle::make('tdec')
-                            ->label('TDEC'),
-                        Toggle::make('tdev')
-                            ->label('TDEV'),
-                        TextInput::make('commission_tdec')
-                            ->label(fn (): string => 'Comisión TDEC ' . Configuration::currencySymbol())
-                            ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
-                            ->prefix('%')
-                            ->numeric()
-                            ->validationMessages([
-                                'numeric'   => 'Campo tipo numerico.',
-                            ]),
-                        TextInput::make('commission_tdec_renewal')
-                            ->label(fn (): string => 'Comisión Renovacion TDEC ' . Configuration::currencySymbol())
-                            ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
-                            ->prefix('%')
-                            ->numeric()
-                            ->validationMessages([
-                                'numeric'   => 'Campo tipo numerico.',
-                            ]),
-                        TextInput::make('commission_tdev')
-                            ->label(fn (): string => 'Comisión TDEV ' . Configuration::currencySymbol())
-                            ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
-                            ->prefix('%')
-                            ->numeric()
-                            ->validationMessages([
-                                'numeric'   => 'Campo tipo numerico.',
-                            ]),
-                        TextInput::make('commission_tdev_renewal')
-                            ->label(fn (): string => 'Comisión Renovacion TDEV ' . Configuration::currencySymbol())
-                            ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
-                            ->prefix('%')
-                            ->numeric()
-                            ->validationMessages([
-                                'numeric'   => 'Campo tipo numerico.',
-                            ]),
-                    ])->columnSpanFull()->columns(2),
                 Section::make('COMENTARIOS')
                     ->collapsed()
                     ->icon('heroicon-m-folder-plus')

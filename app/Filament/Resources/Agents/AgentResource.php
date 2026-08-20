@@ -4,19 +4,17 @@ namespace App\Filament\Resources\Agents;
 
 use UnitEnum;
 use BackedEnum;
-use PSpell\Config;
 use App\Models\Agent;
 use Filament\Tables\Table;
 use Filament\Schemas\Schema;
-use App\Models\Configuration;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
-use Illuminate\Support\Facades\Auth;
 use App\Filament\Resources\Agents\Pages\EditAgent;
 use App\Filament\Resources\Agents\Pages\ListAgents;
 use App\Filament\Resources\Agents\Pages\CreateAgent;
 use App\Filament\Resources\Agents\Schemas\AgentForm;
 use App\Filament\Resources\Agents\Tables\AgentsTable;
+use App\Support\SalesForce\AgencyHierarchy;
 
 class AgentResource extends Resource
 {
@@ -54,17 +52,23 @@ class AgentResource extends Resource
         ];
     }
 
+    /**
+     * Lo ven el administrador de la aliada y la agencia master, y también las
+     * agencias generales, que administran a los agentes de su propia
+     * estructura. El alcance de cada uno lo decide `AgencyHierarchy`.
+     */
     public static function shouldRegisterNavigation(): bool
     {
-        //SI ES UNA AGENCIA MASTER O ES ADMINISTRADOR DE WHITE COMPANY MOSTRAR EL RECURSO EN EL MENÚ
-        if (Auth::user()->is_whiteCompanyAdmin == 1 || Auth::user()->agency_type == 'MASTER') {
-            $configuration = Configuration::where('white_company_id', Auth::user()->white_company_id)->first()
-                ?? Configuration::query()->first();
+        return AgencyHierarchy::canManageAgents();
+    }
 
-            if ($configuration?->agents_module_enabled == 1) {
-                return true; // ← Muestra el recurso del menú
-            }
-        }
-        return false; // ← No Muestra el recurso del menú
+    public static function canAccess(): bool
+    {
+        return AgencyHierarchy::canManageAgents();
+    }
+
+    public static function canCreate(): bool
+    {
+        return AgencyHierarchy::canManageAgents();
     }
 }

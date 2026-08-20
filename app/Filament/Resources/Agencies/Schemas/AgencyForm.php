@@ -9,12 +9,10 @@ use App\Models\Agency;
 use App\Models\Region;
 use App\Models\Country;
 use App\Models\AgencyType;
-use App\Models\Configuration;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Auth;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Grid;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -496,58 +494,6 @@ class AgencyForm
 
 
                     ])->columnSpanFull()->columns(4),
-                Section::make('COMISIONES')
-                    ->collapsed()
-                    ->description('Fomulario. Campo Requerido(*)')
-                    ->icon('heroicon-m-chart-pie')
-                    ->schema([
-                        Toggle::make('tdec')
-                            ->hidden(fn () => Auth::user()->agency_type == 'GENERAL')
-                            ->live()
-                            ->default(false)
-                            ->label('TDEC'),
-                        Toggle::make('tdev')
-                            ->hidden(fn () => Auth::user()->agency_type == 'GENERAL')
-                            ->live()
-                            ->default(false)
-                            ->label('TDEV'),
-                        TextInput::make('commission_tdec')
-                            ->disabled(fn () => Auth::user()->agency_type == 'GENERAL')
-                            ->label(fn (): string => 'Comisión TDEC ' . Configuration::currencySymbol())
-                            ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
-                            ->prefix('%')
-                            ->numeric()
-                            ->validationMessages([
-                                'numeric'   => 'Campo tipo numerico.',
-                            ]),
-                        TextInput::make('commission_tdec_renewal')
-                            ->disabled(fn () => Auth::user()->agency_type == 'GENERAL')
-                            ->label(fn (): string => 'Comisión Renovacion TDEC ' . Configuration::currencySymbol())
-                            ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
-                            ->prefix('%')
-                            ->numeric()
-                            ->validationMessages([
-                                'numeric'   => 'Campo tipo numerico.',
-                            ]),
-                        TextInput::make('commission_tdev')
-                            ->disabled(fn () => Auth::user()->agency_type == 'GENERAL')
-                            ->label(fn (): string => 'Comisión TDEV ' . Configuration::currencySymbol())
-                            ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
-                            ->prefix('%')
-                            ->numeric()
-                            ->validationMessages([
-                                'numeric'   => 'Campo tipo numerico.',
-                            ]),
-                        TextInput::make('commission_tdev_renewal')
-                            ->disabled(fn () => Auth::user()->agency_type == 'GENERAL')
-                            ->label(fn (): string => 'Comisión Renovacion TDEV ' . Configuration::currencySymbol())
-                            ->helperText('Valor expresado en porcentaje. Utilice separador decimal(.)')
-                            ->prefix('%')
-                            ->numeric()
-                            ->validationMessages([
-                                'numeric'   => 'Campo tipo numerico.',
-                            ]),
-                    ])->columnSpanFull()->columns(2),
                 Section::make('COMENTARIOS')
                     ->collapsed()
                     ->icon('heroicon-m-folder-plus')
