@@ -556,12 +556,13 @@ $plansTitleFormatted = preg_replace(
             position: absolute;
             top: 1rem;
             left: 1rem;
-            z-index: 20;
+            z-index: 25;
             display: none;
             /* Oculto por defecto */
             cursor: pointer;
             color: white;
             font-size: 1.5rem;
+            padding: 0.5rem;
             transition: var(--transition);
         }
 
@@ -582,7 +583,7 @@ $plansTitleFormatted = preg_replace(
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            z-index: 30;
+            z-index: 40;
             transform: translateY(-100%);
             opacity: 0;
             visibility: hidden;
@@ -598,12 +599,15 @@ $plansTitleFormatted = preg_replace(
         .mobile-menu-panel ul {
             list-style: none;
             text-align: center;
-            width: 80%;
-            max-width: 300px;
+            width: 85%;
+            max-width: 360px;
         }
 
         .mobile-menu-panel a {
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
             color: white;
             text-decoration: none;
             font-size: 1.3rem;
@@ -656,9 +660,24 @@ $plansTitleFormatted = preg_replace(
         }
 
         /* === NAVBAR HERO (mismo blanco / azul que redes) === */
+        .hero-nav-wrap {
+            position: absolute;
+            top: 2rem;
+            left: 1.5rem;
+            z-index: 30;
+            max-width: min(720px, calc(100vw - 10rem));
+        }
+
+        .hero-nav-links,
+        .hero-nav-links [data-flux-navbar-items] {
+            flex-wrap: nowrap;
+            white-space: nowrap;
+        }
+
         .hero-nav-links [data-flux-navbar-items] {
             color: white !important;
             transition: var(--transition);
+            flex-shrink: 0;
         }
 
         .hero-nav-links [data-flux-navbar-items]:hover {
@@ -1319,7 +1338,21 @@ $plansTitleFormatted = preg_replace(
 
         /* === RESPONSIVE: Breakpoints === */
 
-        /* Mostrar hamburguesa y ocultar menú desktop en móviles */
+        /* Mostrar hamburguesa y ocultar menú desktop en móviles/tablets */
+        @media (max-width: 1024px) {
+            .hero-nav-wrap {
+                display: none;
+            }
+
+            .menu-desktop {
+                display: none;
+            }
+
+            .menu-mobile {
+                display: block;
+            }
+        }
+
         @media (max-width: 768px) {
             .menu-desktop {
                 display: none;
@@ -2060,7 +2093,7 @@ $plansTitleFormatted = preg_replace(
 
 
         <!-- Menú desplegable - Esquina superior izquierda con iconos y glow -->
-        <div class="absolute top-8 left-6 z-30">
+        <div class="hero-nav-wrap">
             <!-- Botón con ícono + texto "Menú" -->
             {{-- <button @click="open = !open" class="flex items-center space-x-2 px-4 py-2 rounded-full bg-black bg-opacity-30 backdrop-blur-sm border border-white border-opacity-20 hover:bg-opacity-50 transition-all duration-200 group focus:outline-none text-white text-sm font-medium" aria-label="Menú">
                 <div class="flex space-x-1">
@@ -2123,7 +2156,7 @@ $plansTitleFormatted = preg_replace(
         </nav> --}}
 
         <!-- Menú Hamburguesa (solo en móviles) -->
-        <div class="menu-mobile" id="menu-toggle">
+        <div class="menu-mobile" id="menu-toggle" role="button" tabindex="0" aria-label="Abrir menú">
             <i class="fas fa-bars"></i>
         </div>
 
@@ -2133,12 +2166,24 @@ $plansTitleFormatted = preg_replace(
                 <i class="fas fa-times"></i>
             </div>
             <ul>
-                {{-- <li><a href="#home" onclick="closeMobileMenu()"><span>Inicio</span></a></li>
-                <li><a href="{{ route('inConstruccion') }}" onclick="closeMobileMenu()"><span>Nosotros</span></a></li>
-                <li><a href="{{ route('inConstruccion') }}" onclick="closeMobileMenu()"><span>Contáctanos</span></a></li>
-                <li><a href="https://integracorp.tudrgroup.com/agents" onclick="closeMobileMenu()" class="menu-agent"><span>Portal del Agente</span></a></li>
-                <li><a href="https://integracorp.tudrgroup.com/master" onclick="closeMobileMenu()" class="menu-agent"><span>Portal Agencia Master</span></a></li>
-                <li><a href="https://integracorp.tudrgroup.com/general" onclick="closeMobileMenu()" class="menu-agent"><span>Portal Agencia General</span></a></li> --}}
+                <li>
+                    <a href="https://vivepluss.com/viveadmin">
+                        <i class="fas fa-home" aria-hidden="true"></i>
+                        <span>VivePlusAdmin</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://vivepluss.com/viveadmin">
+                        <i class="fas fa-puzzle-piece" aria-hidden="true"></i>
+                        <span>Agencias</span>
+                    </a>
+                </li>
+                <li>
+                    <a href="https://tudrenviajes.xyz/app/pages/login.php">
+                        <i class="fas fa-user" aria-hidden="true"></i>
+                        <span>Asistencia en Viajes</span>
+                    </a>
+                </li>
             </ul>
         </div>
 
@@ -2740,10 +2785,17 @@ $plansTitleFormatted = preg_replace(
         const mobileMenu = document.getElementById('mobile-menu');
         const closeMenu = document.getElementById('close-menu');
 
-        // Abrir menú
-        menuToggle.addEventListener('click', () => {
+        function openMobileMenu() {
             mobileMenu.classList.add('active');
-            document.body.style.overflow = 'hidden'; // Evita scroll de fondo
+            document.body.style.overflow = 'hidden';
+        }
+
+        menuToggle.addEventListener('click', openMobileMenu);
+        menuToggle.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault();
+                openMobileMenu();
+            }
         });
 
         // Cerrar menú
