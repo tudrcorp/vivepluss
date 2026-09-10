@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\UsesDefaultConnection;
 use Illuminate\Database\Eloquent\Model;
 
 class Bitacora extends Model
 {
+    use UsesDefaultConnection;
+
     protected $table = 'bitacoras';
 
     protected $fillable = [

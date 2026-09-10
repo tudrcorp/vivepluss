@@ -6,12 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 use App\Jobs\SendCartaBienvenidaAgenteAgencia;
 use App\Jobs\SendCartaBienvenidaAgenteAgenciaTwo;
+use App\Models\Concerns\UsesDefaultConnection;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Agency extends Model
 {
+    use UsesDefaultConnection;
+
     protected $table = 'agencies';
 
     protected $fillable = [

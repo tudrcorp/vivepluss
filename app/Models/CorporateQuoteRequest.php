@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Http\Controllers\LogController;
 use App\Jobs\SendNotificacionSolicitudCotizacion;
+use App\Models\Concerns\UsesDefaultConnection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -11,6 +12,8 @@ use Illuminate\Support\Facades\Auth;
 
 class CorporateQuoteRequest extends Model
 {
+    use UsesDefaultConnection;
+
     protected $table = 'corporate_quote_requests';
 
     protected $fillable = [

@@ -2,10 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\UsesDefaultConnection;
 use Illuminate\Database\Eloquent\Model;
 
 class State extends Model
 {
+    use UsesDefaultConnection;
+
     protected $table = 'states';
 
     protected $fillable = [

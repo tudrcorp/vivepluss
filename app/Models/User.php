@@ -3,21 +3,21 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Filament\Panel;
-use Illuminate\Support\Str;
-use Filament\Panel\Concerns\HasAvatars;
-use Illuminate\Notifications\Notifiable;
+use App\Models\Concerns\UsesDefaultConnection;
+use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
-
-use Laravel\Fortify\TwoFactorAuthenticatable;
+use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Str;
+use Laravel\Fortify\TwoFactorAuthenticatable;
 
 class User extends Authenticatable implements FilamentUser
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, TwoFactorAuthenticatable;
-    /** @use HasFactory<\Database\Factories\UserFactory> */
+    /** @use HasFactory<UserFactory> */
+    use HasFactory, Notifiable, TwoFactorAuthenticatable, UsesDefaultConnection;
+    /** @use HasFactory<UserFactory> */
 
     /**
      * The attributes that are mass assignable.
