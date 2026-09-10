@@ -6,13 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 
 class StatusLogInQuote extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+
     protected $table = 'status_log_in_quotes';
 
     protected $fillable = [
         'action',
         'individual_quote_id',
         'updated_by',
-        'observation'
+        'observation',
     ];
 
     public function individualQuote()

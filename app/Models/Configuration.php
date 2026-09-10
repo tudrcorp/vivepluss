@@ -167,7 +167,10 @@ class Configuration extends Model
      */
     public static function currentWhiteCompanyId(): int|string|null
     {
-        return static::where('white_company_id', Auth::user()->white_company_id)->value('white_company_id')
+        // `Auth::user()` es null cuando esto corre fuera de una request (comandos
+        // programados como catalog:sync-assigned-plans), y ahí vale el fallback
+        // al primer tenant configurado.
+        return static::where('white_company_id', Auth::user()?->white_company_id)->value('white_company_id')
             ?? static::query()->value('white_company_id');
     }
 

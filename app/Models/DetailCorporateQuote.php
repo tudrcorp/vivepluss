@@ -7,7 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetailCorporateQuote extends Model
 {
-    //detail_corporate_quotes
+    protected $connection = 'mysql_vivepluss';
+
+    // detail_corporate_quotes
     protected $table = 'detail_corporate_quotes';
 
     protected $fillable = [
@@ -32,8 +34,6 @@ class DetailCorporateQuote extends Model
 
     /**
      * Get the user that owns the DetailIndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function corporateQuote(): BelongsTo
     {
@@ -42,8 +42,6 @@ class DetailCorporateQuote extends Model
 
     /**
      * Get the user that owns the DetailIndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function plan(): BelongsTo
     {
@@ -52,8 +50,6 @@ class DetailCorporateQuote extends Model
 
     /**
      * Get the user that owns the DetailIndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function ageRange(): BelongsTo
     {
@@ -62,8 +58,6 @@ class DetailCorporateQuote extends Model
 
     /**
      * Get the user that owns the DetailIndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function coverage(): BelongsTo
     {

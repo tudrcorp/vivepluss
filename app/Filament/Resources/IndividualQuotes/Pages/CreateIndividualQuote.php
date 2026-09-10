@@ -7,6 +7,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\UtilsController;
 use App\Mail\SendMailCotizacionIndividual;
 use App\Models\Configuration;
+use App\Support\Catalog\QuotablePlans;
 use Filament\Actions\Action;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\CreateRecord;
@@ -60,6 +61,14 @@ class CreateIndividualQuote extends CreateRecord
         if ($data['plan'] == 'CM') {
             // guardar en la variable de sesion los detalles de la cotizacion
             session()->put('details_quote', $data['details_quote']);
+        }
+        // Planes asignados por Integracorp: usan el repeater genérico, que no
+        // lleva plan_id como campo porque el plan ya se eligió en el paso anterior.
+        if (QuotablePlans::usesGenericRepeater($data['plan'] ?? null)) {
+            session()->put('details_quote', QuotablePlans::withPlanId(
+                $data['details_quote_plan_asignado'] ?? null,
+                $data['plan'],
+            ));
         }
 
         $data['white_company_id'] = Configuration::where('white_company_id', Auth::user()->white_company_id)->value('white_company_id')

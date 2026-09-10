@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\DB;
 
@@ -11,46 +10,57 @@ class PdfController extends Controller
     public function generatePdf()
     {
         $pdf = Pdf::loadView('documents.certificate');
+
         return $pdf->stream();
     }
 
     public function generatePdfInformeMedicoGeneral()
     {
         $pdf = Pdf::loadView('documents.informe-medico-general');
+
         return $pdf->stream();
     }
 
     public function generatePdf_propuestaEconomica()
     {
         $pdf = Pdf::loadView('documents.propuesta-economica');
+
         return $pdf->stream();
     }
 
     public function generatePdf_cartaBienvenida()
     {
         $pdf = Pdf::loadView('documents.carta-bienvenida-agente');
+
         return $pdf->stream();
     }
 
     public function generatePdf_targetaAfiliado()
     {
         $pdf = Pdf::loadView('pruebaPdf');
+
         return $pdf->stream();
     }
 
     public function generatePdf_aviso_de_pago()
     {
         $pdf = Pdf::loadView('documents.aviso-de-pago');
+
         return $pdf->stream();
     }
 
+    /**
+     * $record es siempre una cotización propia de ViVEplus (App\Models\IndividualQuote,
+     * conexión mysql_vivepluss) -las legacy de Integracorp nunca llegan aquí,
+     * por eso el detalle se consulta explícitamente en esa conexión.
+     */
     public static function generatePdfIndividualQuote($record)
     {
 
         try {
-            
+
             if ($record->plan == 1) {
-                $detalle = DB::table('detail_individual_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_individual_quotes')
                     ->join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_individual_quotes.age_range_id', '=', 'age_ranges.id')
                     ->select('detail_individual_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range')
@@ -69,15 +79,15 @@ class PdfController extends Controller
                     'email' => $record->email,
                     'phone' => $record->phone,
                     'date' => $record->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
 
                 $record->sendPropuestaEconomicaPlanInicial($details);
             }
-            
+
             if ($record->plan != 1) {
-                
-                $detalle = DB::table('detail_individual_quotes')
+
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_individual_quotes')
                     ->join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_individual_quotes.age_range_id', '=', 'age_ranges.id')
                     ->join('coverages', 'detail_individual_quotes.coverage_id', '=', 'coverages.id')
@@ -98,7 +108,7 @@ class PdfController extends Controller
                     'email' => $record->email,
                     'phone' => $record->phone,
                     'date' => $record->created_at->format('d-m-Y'),
-                    'data' => $detalle
+                    'data' => $detalle,
                 ];
 
                 $record->sendPropuestaEconomicaPlanIdeal($details);
@@ -120,7 +130,7 @@ class PdfController extends Controller
 
                 for ($i = 0; $i < count($details_quote); $i++) {
                     if ($details_quote[$i]['plan_id'] == 1) {
-                        $detalle_1 = DB::table('detail_individual_quotes')
+                        $detalle_1 = DB::connection('mysql_vivepluss')->table('detail_individual_quotes')
                             ->join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_individual_quotes.age_range_id', '=', 'age_ranges.id')
                             ->select('detail_individual_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range')
@@ -136,13 +146,13 @@ class PdfController extends Controller
                             'email' => $record->email,
                             'phone' => $record->phone,
                             'date' => $record->created_at->format('d-m-Y'),
-                            'data' => $detalle_1
+                            'data' => $detalle_1,
                         ];
 
                         array_push($group_details, $details_inicial);
                     }
                     if ($details_quote[$i]['plan_id'] != 1) {
-                        $detalle = DB::table('detail_individual_quotes')
+                        $detalle = DB::connection('mysql_vivepluss')->table('detail_individual_quotes')
                             ->join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_individual_quotes.age_range_id', '=', 'age_ranges.id')
                             ->join('coverages', 'detail_individual_quotes.coverage_id', '=', 'coverages.id')
@@ -159,11 +169,11 @@ class PdfController extends Controller
                             'email' => $record->email,
                             'phone' => $record->phone,
                             'date' => $record->created_at->format('d-m-Y'),
-                            'data' => $detalle
+                            'data' => $detalle,
                         ];
 
                         array_push($group_details, $details_ideal);
-                    } 
+                    }
                 }
 
                 usort($group_details, function ($a, $b) {
@@ -184,11 +194,8 @@ class PdfController extends Controller
                 $record->sendPropuestaEconomicaMultiple($collect_final);
             }
 
-
-
-            
-    } catch (\Throwable $th) {
-            //throw $th;
+        } catch (\Throwable $th) {
+            // throw $th;
         }
     }
 
@@ -196,6 +203,7 @@ class PdfController extends Controller
     {
         $pdf = Pdf::loadView('livewire.volt.individual_quote');
         $pdf->setPaper('A4', 'portrait');
+
         return $pdf->stream();
     }
 }

@@ -2,20 +2,19 @@
 
 namespace App\Filament\Resources\CorporateQuotes;
 
-use UnitEnum;
-use BackedEnum;
-use Filament\Tables\Table;
-use Filament\Schemas\Schema;
-use App\Models\CorporateQuote;
-use Filament\Resources\Resource;
-use Filament\Support\Icons\Heroicon;
+use App\Filament\Resources\CorporateQuotes\Pages\CreateCorporateQuote;
 use App\Filament\Resources\CorporateQuotes\Pages\EditCorporateQuote;
 use App\Filament\Resources\CorporateQuotes\Pages\ListCorporateQuotes;
-use App\Filament\Resources\CorporateQuotes\Pages\CreateCorporateQuote;
-use App\Filament\Resources\CorporateQuotes\Schemas\CorporateQuoteForm;
-use App\Filament\Resources\CorporateQuotes\Tables\CorporateQuotesTable;
 use App\Filament\Resources\CorporateQuotes\RelationManagers\DetailCoporateQuotesRelationManager;
 use App\Filament\Resources\CorporateQuotes\RelationManagers\ObservationsRelationManager;
+use App\Filament\Resources\CorporateQuotes\Schemas\CorporateQuoteForm;
+use App\Filament\Resources\CorporateQuotes\Tables\CorporateQuotesTable;
+use App\Models\CorporateQuote;
+use BackedEnum;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables\Table;
+use UnitEnum;
 
 class CorporateQuoteResource extends Resource
 {
@@ -23,7 +22,7 @@ class CorporateQuoteResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-document-plus';
 
-    protected static string | UnitEnum | null $navigationGroup = 'CORPORATIVAS';
+    protected static string|UnitEnum|null $navigationGroup = 'CORPORATIVAS';
 
     protected static ?string $navigationLabel = 'Cotizar';
 

@@ -99,6 +99,16 @@ class IndividualQuoteController extends Controller
         }
     }
 
+    /**
+     * Propuesta de un plan asignado por Integracorp. Misma forma que la del plan
+     * ideal —agrupada por rango de edad— porque es la general; lo específico de
+     * cada plan (sus coberturas) lo resuelve la vista.
+     */
+    public static function generatePdfPlanAsignado($details, $user)
+    {
+        return static::generatePdfPlanIdeal($details, $user);
+    }
+
     public static function generatePdfPlanEspecial($details, $user)
     {
         try {

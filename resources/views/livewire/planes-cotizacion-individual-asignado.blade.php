@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notificación</title>
+    <style>
+        @page {
+            margin: 0px;
+            /* background-color: white;  */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 0;
+            padding: 0;
+
+            /* margin-top: 0cm;
+            margin-left: 0cm;
+            margin-right: 0cm;
+            margin-bottom: 0cm; */
+            /* Centra todo el contenido */
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        .cover {
+            position: relative;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            /* page-break-after: always; */
+        }
+
+        .content {
+            margin-top: 30px;
+            padding: 20px;
+        }
+
+        /* Página vacía */
+        .blank-page {
+            width: 100%;
+            height: 100vh;
+            page-break-after: auto;
+        }
+
+        .caja {
+            position: relative;
+            width: 300px;
+            height: 5px;
+            background-color: rgba(255, 255, 255, 0.3);
+            /* Blanco con 30% de opacidad */
+            border-radius: 20px;
+            /* Esquinas redondeadas */
+            padding: 15px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-family: Arial, sans-serif;
+            color: #000000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px auto;
+
+        }
+
+        h1 {
+            font-size: 30px;
+            margin-bottom: 10px;
+            color: white;
+        }
+
+        /* Logos */
+        .logo-top-right {
+            width: 50px;
+            height: 50px;
+            float: right;
+        }
+
+        .logo-bottom-left {
+            width: 50px;
+            height: 50px;
+            float: left;
+        }
+
+        .sin-margen {
+            margin: 2;
+        }
+
+        table {
+            /* width: 100%;
+            max-width: 800px; */
+            border-collapse: collapse;
+            margin: 20px auto;
+            font-family: Arial, sans-serif;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        th,
+        td {
+            padding: 5px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+
+         /* Configuración del Footer para ancho completo */
+            footer {
+                position: fixed;
+                bottom: 0px;
+                left: -100px;
+                right: 0px;
+                width: 100%;
+                height: auto;
+                margin: 0;
+                padding: 0;
+                line-height: 0; /* Elimina espacio extra debajo de la imagen */
+            }
+
+            footer img {
+                width: 100%;
+                display: block; /* Evita espacios en blanco residuales */
+                margin: 0;
+                padding: 0;
+            }
+
+    </style>
+</head>
+<body>
+    @php
+        use App\Models\Configuration;
+        $setting = Configuration::first();
+            $currency = $setting?->currency_symbol ?? 'EUR€';
+            $coverageCurrency = \App\Models\Configuration::coverageCurrencySymbol();
+    @endphp
+
+    <!-- Primera página: Imagen de fondo -->
+    <div class="cover" style="background-color: white;">
+
+        <div style="position: absolute; top: 0px; left: 0px; margin-top: 15px; padding: 20px; margin-left: 20px">
+            <p class="sin-margen" style="margin-bottom: 5px; font-family: 'quicksand', sans-serif; font-size: 18px;">
+                <span style="font-family: 'quicksand', sans-serif; font-weight: bold; color: {{ $setting->primaryColor }}; font-size: 25px; font-style: italic;">Propuesta</span>
+                <span style="font-family: 'quicksand', sans-serif; font-weight: bold; color: {{ $setting->infoColor }}; font-size: 25px; font-style: italic;">Económica</span>
+            </p>
+
+            <p class="sin-margen" style="font-size: 16px;">
+                <span style="font-weight: bold; color: #000000;">
+                    Datos del afiliado titular:
+                </span>
+                <span style="">
+                    Sr(a): {{ $name }}
+                </span>
+            </p>
+            <p class="sin-margen" style="font-size: 16px;">
+                <span style="font-weight: bold; color: #000000;">
+                    Nombre del Agente:
+                </span>
+                <span style="margin-left: 38px">
+                    {{ $name_user }}
+                </span>
+            </p>
+            <p class="sin-margen" style="font-size: 16px; margin-top: 2px">
+                <span style="font-weight: bold; color: #000000;">
+                    Fecha de emisión:
+                </span>
+                <span style="margin-left: 50px">
+                    {{ now()->format('d/m/Y') }}
+                    <br>
+                    <span style="font-size: 12px; font-style: italic; font-weight: bold">
+                        Propuesta válida por 15 días a partir de la fecha de emisión.
+                    </span>
+                </span>
+            </p>
+        </div>
+        <div style="position: absolute; top: 200px; left: 40px; width: 700px; max-width: 700px; font-family: 'quicksand', sans-serif;">
+            @livewire('tabla-beneficio-cobertura', ['id' => $planId])
+        </div>
+
+
+        <div style="position: absolute; top: 500px; right: 10px; margin-top: 20px; padding: 20px; margin-right: 20px; width: 700px;">
+    @php
+        // Anchos compartidos por la tabla de tarifas y la de totales, para que las
+        // columnas de importe queden exactamente una debajo de otra. La etiqueta
+        // "TARIFA GRUPAL ..." ocupa las dos primeras (rango + población).
+        $anchoRango = 20;
+        $anchoPoblacion = 15;
+        $anchoTarifa = count($coverages) > 0 ? (100 - $anchoRango - $anchoPoblacion) / count($coverages) : 0;
+        $anchoEtiquetaTotales = $anchoRango + $anchoPoblacion;
+    @endphp
+            <table style="width: 100%; table-layout: fixed; font-type: Helvetica, sans-serif;">
+                <tr style="background-color: {{ $setting->infoColor }}; font-size: 10px;">
+
+
+                    <th style="font-weight: bold; color: white; width: {{ $anchoRango }}%;">RANGO DE EDAD</th>
+                    <th style="font-weight: bold; color: white; width: {{ $anchoPoblacion }}%;">POBLACIÓN</th>
+                    @foreach ($coverages as $coverage)
+                    <th style="font-weight: bold; color: white; width: {{ $anchoTarifa }}%;">TARIFA ANUAL<br>{{ $coverageCurrency }} {{ \App\Support\Catalog\QuotablePlans::coverageLabel($coverage->price) }}</th>
+                    @endforeach
+
+                </tr>
+                @foreach ($data as $key => $value)
+                    <tr>
+                        <td style="font-weight: bold; font-size: 10px;">{{ $key }} años</td>
+                        <td style="font-weight: bold; font-size: 10px;">{{ $value[0]->total_persons . ' Persona(s)' }}</td>
+                        @foreach ($coverages as $coverage)
+                            @php
+                                $fila = collect($value)->first(fn ($item) => (int) $item->coverage_id === (int) $coverage->id);
+                            @endphp
+                            <td style="font-weight: bold; font-size: 10px;">
+                                {{ $fila ? round($fila->subtotal_anual) . ' ' . $currency : '—' }}
+                            </td>
+                        @endforeach
+                    </tr>
+                @endforeach
+            </table>
+            @php
+                // Totales por cobertura, sumados por coverage_id para que cada
+                // columna reciba lo suyo aunque las filas vengan en otro orden.
+                $totalColumns = [];
+
+                foreach ($coverages as $coverage) {
+                    $total = 0;
+
+                    foreach ($data as $value) {
+                        foreach ($value as $item) {
+                            if ((int) $item->coverage_id === (int) $coverage->id) {
+                                $total += round($item->subtotal_anual);
+                            }
+                        }
+                    }
+
+                    $totalColumns[] = $total;
+                }
+            @endphp
+            <table style="width: 100%; table-layout: fixed; border-collapse: collapse; font-type: Helvetica, sans-serif;">
+                <tbody>
+                    <tr>
+                        <td colspan="2" style="font-weight: bold; color: white; font-size: 10px; width: {{ $anchoEtiquetaTotales }}%; background-color: {{ $setting->infoColor }};">TARIFA GRUPAL ANUAL</td>
+
+                        @foreach ($totalColumns as $total)
+                        <td style="text-align: center; font-weight: bold; font-size: 10px; width: {{ $anchoTarifa }}%;">
+                            {{ round($total, 2) }} {{ $currency }}
+                        </td>
+                        @endforeach
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-weight: bold; color: white; font-size: 10px; width: {{ $anchoEtiquetaTotales }}%; background-color: {{ $setting->infoColor }};">TARIFA GRUPAL SEMESTRAL</td>
+
+
+                        @foreach ($totalColumns as $total)
+                        <td style="text-align: center; font-weight: bold; font-size: 10px; width: {{ $anchoTarifa }}%;">
+                            {{ round($total / 2) }} {{ $currency }}
+                        </td>
+                        @endforeach
+                    </tr>
+                    <tr>
+                        <td colspan="2" style="font-weight: bold; color: white; font-size: 10px; width: {{ $anchoEtiquetaTotales }}%; background-color: {{ $setting->infoColor }};">TARIFA GRUPAL TRIMESTRAL</td>
+
+
+                        @foreach ($totalColumns as $total)
+                        <td style="text-align: center; font-weight: bold; font-size: 10px; width: {{ $anchoTarifa }}%;">
+                            {{ round($total / 4) }} {{ $currency }}
+                        </td>
+                        @endforeach
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div style="position: absolute; top: 0px; right: 0px; margin-top: 20px; padding: 20px; margin-right: 20px">
+            <div>
+                <img class="logo-bottom-left" src="{{ public_path('storage/' . $setting->brandLogo) }}" style="width: 100px; height: auto;" alt="">
+            </div>
+        </div>
+        <!-- Primera página: Imagen de fondo -->
+        <!-- El footer debe declararse idealmente al inicio para que DomPDF lo repita en cada página -->
+        <footer>
+            <img src="{{ public_path('storage/images-cotizacion/footer.png') }}" alt="Footer">
+        </footer>
+    </div>
+</body>
+</html>
+
+

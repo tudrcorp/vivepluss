@@ -3,14 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class DetailIndividualQuote extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+
     protected $table = 'detail_individual_quotes';
-    
+
     protected $fillable = [
         'individual_quote_id',
         'plan_id',
@@ -24,7 +24,7 @@ class DetailIndividualQuote extends Model
         'details_quote',
         'status',
         'created_by',
-        'fee'
+        'fee',
 
     ];
 
@@ -34,8 +34,6 @@ class DetailIndividualQuote extends Model
 
     /**
      * Get the user that owns the DetailIndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function individualQuote(): BelongsTo
     {
@@ -44,8 +42,6 @@ class DetailIndividualQuote extends Model
 
     /**
      * Get the user that owns the DetailIndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function plan(): BelongsTo
     {
@@ -54,8 +50,6 @@ class DetailIndividualQuote extends Model
 
     /**
      * Get the user that owns the DetailIndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function ageRange(): BelongsTo
     {
@@ -64,15 +58,9 @@ class DetailIndividualQuote extends Model
 
     /**
      * Get the user that owns the DetailIndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
      */
     public function coverage(): BelongsTo
     {
         return $this->belongsTo(Coverage::class, 'coverage_id', 'id');
     }
-
-    
-
-    
 }

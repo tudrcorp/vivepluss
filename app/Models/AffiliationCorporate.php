@@ -2,9 +2,10 @@
 
 namespace App\Models;
 
+use App\Support\CorporateQuoteResolver;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class AffiliationCorporate extends Model
 {
@@ -45,18 +46,18 @@ class AffiliationCorporate extends Model
         'poblation',
         'activated_at',
 
-        //...Unidad de Negocio y linea de servicio
+        // ...Unidad de Negocio y linea de servicio
         'business_unit_id',
         'business_line_id',
         'ownerAccountManagers',
 
-        //PROVEEDORRES DE SERVICIOS
+        // PROVEEDORRES DE SERVICIOS
         'service_providers',
 
-        //...Fecha de Vigencia de la afiliacion
+        // ...Fecha de Vigencia de la afiliacion
         'effective_date',
 
-        //Unidades e Negocio y Lineas de Servicio
+        // Unidades e Negocio y Lineas de Servicio
         'business_unit_id',
         'business_line_id',
     ];
@@ -68,7 +69,7 @@ class AffiliationCorporate extends Model
     /**
      * Get the user that owns the Agent
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function accountManager()
     {
@@ -90,9 +91,15 @@ class AffiliationCorporate extends Model
         return $this->belongsTo(Coverage::class);
     }
 
-    public function corporate_quote()
+    /**
+     * Ya no es una relación belongsTo estándar: corporate_quote_id puede
+     * apuntar a la tabla legacy de Integracorp (conexión mysql) o a la
+     * propia de ViVEplus (mysql_vivepluss), según el rango de id. Ver
+     * App\Support\CorporateQuoteResolver.
+     */
+    public function getCorporateQuoteAttribute(): CorporateQuote|IntegracorpCorporateQuote|null
     {
-        return $this->belongsTo(CorporateQuote::class);
+        return CorporateQuoteResolver::find($this->corporate_quote_id);
     }
 
     public function paid_membership_corporates()

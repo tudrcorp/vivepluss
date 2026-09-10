@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Jobs\SendTarjetaAfiliado;
+use App\Support\IndividualQuoteResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -172,9 +173,15 @@ class Affiliation extends Model
         return $this->belongsTo(Coverage::class);
     }
 
-    public function individual_quote()
+    /**
+     * Ya no es una relación belongsTo estándar: individual_quote_id puede
+     * apuntar a la tabla legacy de Integracorp (conexión mysql) o a la
+     * propia de ViVEplus (mysql_vivepluss), según el rango de id. Ver
+     * App\Support\IndividualQuoteResolver.
+     */
+    public function getIndividualQuoteAttribute(): IndividualQuote|IntegracorpIndividualQuote|null
     {
-        return $this->belongsTo(IndividualQuote::class);
+        return IndividualQuoteResolver::find($this->individual_quote_id);
     }
 
     public function paid_memberships()

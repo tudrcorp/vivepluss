@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -21,6 +22,36 @@ class Plan extends Model
         'created_by',
         'type',
     ];
+
+    /**
+     * Planes que se pueden ofrecer en una cotización: los activos que tienen al
+     * menos una tarifa con precio.
+     *
+     * La sincronización desde Integracorp (`AssignedPlanCatalogSync`) solo crea
+     * tarifas locales para lo que tiene neta pactada en la matriz de
+     * negociación, así que "tiene tarifas" equivale a "el analista ya le puso
+     * precio de venta". Un plan asignado pero todavía sin netas llega al
+     * catálogo con sus beneficios y no se ofrece: sin precio no hay nada que
+     * cotizar.
+     *
+     * @param  Builder<Plan>  $query
+     */
+    public function scopeCotizable(Builder $query): void
+    {
+        $query->where('type', 'BASICO')
+            ->where(function (Builder $builder): void {
+                $builder->whereNull('status')->orWhere('status', 'ACTIVO');
+            })
+            ->whereHas('fees');
+    }
+
+    /**
+     * Tarifas del plan. `fees.plan_id` es la columna canónica del catálogo.
+     */
+    public function fees(): HasMany
+    {
+        return $this->hasMany(Fee::class, 'plan_id', 'id');
+    }
 
     /**
      * Get all of the comments for the Plan

@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class StatusLogCorpQuote extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+
     protected $table = 'status_log_corp_quotes';
 
     protected $fillable = [
@@ -13,7 +15,7 @@ class StatusLogCorpQuote extends Model
         'corporate_quote_id',
         'created_by',
         'observation',
-        'updated_by'
+        'updated_by',
     ];
 
     public function corporateQuote()

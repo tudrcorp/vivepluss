@@ -47,4 +47,14 @@ return [
      */
     'DOCUMENT_SYNC_ALERT_HOURS' => (int) env('DOCUMENT_SYNC_ALERT_HOURS', 48),
 
+    /**
+     * Token del endpoint de solo lectura por el que Integracorp consulta
+     * las cotizaciones individuales propias de ViVEplus (mysql_vivepluss)
+     * para sus estadísticas -distinto del INTEGRACORP_WEBHOOK_TOKEN de
+     * arriba, que es para el sentido contrario (ellos empujando documentos
+     * hacia ViVEplus). Sin HMAC aquí: no hay payload entrante cuya
+     * integridad verificar, solo una lectura autenticada.
+     */
+    'INTEGRACORP_STATS_API_TOKEN' => env('INTEGRACORP_STATS_API_TOKEN'),
+
 ];

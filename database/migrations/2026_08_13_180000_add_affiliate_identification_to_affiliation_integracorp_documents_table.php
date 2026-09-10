@@ -87,9 +87,21 @@ return new class extends Migration
         return false;
     }
 
+    /**
+     * `SHOW INDEX` es de MySQL; en el sqlite de los tests hay que usar la API
+     * portable de Schema.
+     */
     private function indexExists(string $indexName): bool
     {
-        return collect(Schema::getConnection()->select('SHOW INDEX FROM `affiliation_integracorp_documents`'))
+        $connection = Schema::getConnection();
+
+        if ($connection->getDriverName() !== 'mysql') {
+            return collect(Schema::getIndexes('affiliation_integracorp_documents'))
+                ->pluck('name')
+                ->contains($indexName);
+        }
+
+        return collect($connection->select('SHOW INDEX FROM `affiliation_integracorp_documents`'))
             ->pluck('Key_name')
             ->contains($indexName);
     }

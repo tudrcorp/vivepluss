@@ -100,6 +100,16 @@ class CorporateQuoteController extends Controller
         }
     }
 
+    /**
+     * Propuesta corporativa de un plan asignado por Integracorp. Misma forma que
+     * la del plan ideal —agrupada por rango de edad—; lo específico de cada plan
+     * (sus coberturas) lo resuelve la vista.
+     */
+    public static function generatePdfPlanAsignado($details, $user)
+    {
+        return static::generatePdfPlanIdeal($details, $user);
+    }
+
     public static function generatePdfPlanEspecial($details, $user)
     {
         try {

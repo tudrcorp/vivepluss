@@ -2,16 +2,27 @@
 
 namespace App\Models;
 
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class IndividualQuote extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+
     protected $table = 'individual_quotes';
+
+    /**
+     * Arranque del AUTO_INCREMENT de esta tabla (ver migración
+     * 2026_08_17_180000), muy por encima del máximo histórico de la tabla
+     * legacy de Integracorp. Cualquier id por debajo de este valor en
+     * affiliations.individual_quote_id pertenece a esa tabla legacy, nunca
+     * a esta. Ver App\Support\IndividualQuoteResolver.
+     */
+    public const ID_OFFSET = 1_000_000;
 
     protected $fillable = [
         'code',
@@ -37,7 +48,7 @@ class IndividualQuote extends Model
     /**
      * Get the user that owns the Agent
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function accountManager()
     {
@@ -47,7 +58,7 @@ class IndividualQuote extends Model
     /**
      * Get all of the comments for the IndividualQuote
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function agent(): BelongsTo
     {
@@ -57,7 +68,7 @@ class IndividualQuote extends Model
     /**
      * Get all of the comments for the IndividualQuote
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function state(): BelongsTo
     {
@@ -66,8 +77,6 @@ class IndividualQuote extends Model
 
     /**
      * Get all of the comments for the IndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function detailsQuote(): HasMany
     {
@@ -76,8 +85,6 @@ class IndividualQuote extends Model
 
     /**
      * Get all of the comments for the IndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function statusLogs(): HasMany
     {
@@ -87,7 +94,7 @@ class IndividualQuote extends Model
     /**
      * The servicios that belong to the User
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany
+     * @return BelongsToMany
      */
     // public function benefit_individual_quotes(): BelongsToMany
     // {
@@ -99,12 +106,12 @@ class IndividualQuote extends Model
     /**
      * Funciones para la ejecucion de jobs
      * para el envio de los correos de propuesta economica
-     * 
-     * @return void
+     *
      * @author TuDrEnCasa
-     * 
-     * @param array $details
-     * -----------------------------------------------------------------
+     *
+     * @param  array  $details
+     *                          -----------------------------------------------------------------
+     * @return void
      */
     public function sendPropuestaEconomicaPlanInicial($details)
     {
@@ -161,14 +168,14 @@ class IndividualQuote extends Model
             }
 
             // SendEmailPropuestaEconomicaMultiple::dispatch($collect_final, $details_generals, Auth::user());
-            //code...
+            // code...
         } catch (\Throwable $th) {
             dd($th);
         }
     }
-    /*------------------------------------------------------------------- */
+    /* ------------------------------------------------------------------- */
 
-    //hasMany 
+    // hasMany
     public function bitacoras()
     {
         return $this->hasMany(Bitacora::class);

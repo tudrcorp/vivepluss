@@ -7,8 +7,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CorporateQuoteData extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+
     protected $table = 'corporate_quote_data';
-    
+
     protected $fillable = [
         'corporate_quote_id',
         'last_name',
@@ -31,6 +33,4 @@ class CorporateQuoteData extends Model
     {
         return $this->belongsTo(CorporateQuote::class, 'id', 'corporate_quote_id');
     }
-
-    
 }

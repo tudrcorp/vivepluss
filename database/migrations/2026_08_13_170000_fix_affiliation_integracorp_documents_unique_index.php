@@ -41,9 +41,20 @@ return new class extends Migration
         });
     }
 
+    /**
+     * `SHOW INDEX` es de MySQL. En el sqlite de los tests hay que preguntar por
+     * el esquema con la API portable, o la migración revienta y se lleva puesta
+     * toda la suite Feature.
+     */
     private function indexExists(string $table, string $indexName): bool
     {
         $connection = Schema::getConnection();
+
+        if ($connection->getDriverName() !== 'mysql') {
+            return collect(Schema::getIndexes($table))
+                ->pluck('name')
+                ->contains($indexName);
+        }
 
         return collect($connection->select("SHOW INDEX FROM `{$table}`"))
             ->pluck('Key_name')

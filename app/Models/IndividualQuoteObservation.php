@@ -7,6 +7,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class IndividualQuoteObservation extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+
     protected $fillable = [
         'individual_quote_id',
         'description',

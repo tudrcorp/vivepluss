@@ -17,6 +17,7 @@ use App\Models\Plan;
 use App\Models\Region;
 use App\Models\State;
 use App\Models\TelemedicineCase;
+use App\Support\Catalog\QuotablePlans;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Crypt;
@@ -122,7 +123,7 @@ class UtilsController extends Controller
      */
     public static function getPlans()
     {
-        return Plan::where('type', 'BASICO')->get();
+        return Plan::cotizable()->get();
     }
 
     /**
@@ -412,7 +413,7 @@ class UtilsController extends Controller
              *                 ----------------------------------------------------------------------------------------------------
              */
             if ($corporate_quote->plan == 1) {
-                $detalle = DB::table('detail_corporate_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                     ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                     ->select('detail_corporate_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range')
@@ -438,7 +439,7 @@ class UtilsController extends Controller
             }
 
             if ($corporate_quote->plan == 2) {
-                $detalle = DB::table('detail_corporate_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                     ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                     ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -467,7 +468,7 @@ class UtilsController extends Controller
 
             if ($corporate_quote->plan == 3) {
                 // dd('aqui plan 3');
-                $detalle = DB::table('detail_corporate_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                     ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                     ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -495,6 +496,35 @@ class UtilsController extends Controller
             }
 
             /**
+             * Planes asignados por Integracorp a la empresa aliada. El leftJoin a
+             * coberturas cubre por igual a los planes que tienen y a los que no.
+             */
+            if (QuotablePlans::usesGenericRepeater($corporate_quote->plan)) {
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
+                    ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
+                    ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
+                    ->leftJoin('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
+                    ->select('detail_corporate_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range', 'coverages.price as coverage')
+                    ->where('corporate_quote_id', $corporate_quote->id)
+                    ->orderBy('age_ranges.age_init')
+                    ->orderBy('coverages.price')
+                    ->get()
+                    ->toArray();
+
+                $details = [
+                    'plan' => (int) $corporate_quote->plan,
+                    'code' => $corporate_quote->code,
+                    'name' => $corporate_quote->full_name,
+                    'email' => $corporate_quote->email,
+                    'phone' => $corporate_quote->phone,
+                    'date' => $corporate_quote->created_at->format('d-m-Y'),
+                    'data' => $detalle,
+                ];
+
+                CorporateQuoteController::generatePdfPlanAsignado($details, Auth::id());
+            }
+
+            /**
              * COTIZACION MULTIPLE
              * ----------------------------------------------------------------------------------------------------
              */
@@ -508,7 +538,7 @@ class UtilsController extends Controller
 
                 for ($i = 0; $i < count($details); $i++) {
                     if ($details[$i]['plan_id'] == 1) {
-                        $detalle_1 = DB::table('detail_corporate_quotes')
+                        $detalle_1 = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                             ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                             ->select('detail_corporate_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range')
@@ -532,7 +562,7 @@ class UtilsController extends Controller
 
                     // prueba
                     if ($details[$i]['plan_id'] != 1) {
-                        $detalle = DB::table('detail_corporate_quotes')
+                        $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                             ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                             ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -556,7 +586,7 @@ class UtilsController extends Controller
                     }
 
                     // if ($details[$i]['plan_id'] == 2) {
-                    //     $detalle_2 = DB::table('detail_corporate_quotes')
+                    //     $detalle_2 = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                     //         ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                     //         ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                     //         ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -579,7 +609,7 @@ class UtilsController extends Controller
                     //     array_push($group_details, $details_ideal);
                     // }
                     // if ($details[$i]['plan_id'] == 3) {
-                    //     $detalle_3 = DB::table('detail_corporate_quotes')
+                    //     $detalle_3 = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                     //         ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                     //         ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                     //         ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -707,7 +737,7 @@ class UtilsController extends Controller
              *                 ----------------------------------------------------------------------------------------------------
              */
             if ($record->plan == 1) {
-                $detalle = DB::table('detail_corporate_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                     ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                     ->select('detail_corporate_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range')
@@ -733,7 +763,7 @@ class UtilsController extends Controller
             }
 
             if ($record->plan == 2) {
-                $detalle = DB::table('detail_corporate_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                     ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                     ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -761,7 +791,7 @@ class UtilsController extends Controller
             }
 
             if ($record->plan == 3) {
-                $detalle = DB::table('detail_corporate_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                     ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                     ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -789,6 +819,35 @@ class UtilsController extends Controller
             }
 
             /**
+             * Planes asignados por Integracorp a la empresa aliada. El leftJoin a
+             * coberturas cubre por igual a los planes que tienen y a los que no.
+             */
+            if (QuotablePlans::usesGenericRepeater($record->plan)) {
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
+                    ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
+                    ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
+                    ->leftJoin('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
+                    ->select('detail_corporate_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range', 'coverages.price as coverage')
+                    ->where('corporate_quote_id', $record->id)
+                    ->orderBy('age_ranges.age_init')
+                    ->orderBy('coverages.price')
+                    ->get()
+                    ->toArray();
+
+                $details = [
+                    'plan' => (int) $record->plan,
+                    'code' => $record->code,
+                    'name' => $record->full_name,
+                    'email' => $record->email,
+                    'phone' => $record->phone,
+                    'date' => $record->created_at->format('d-m-Y'),
+                    'data' => $detalle,
+                ];
+
+                CorporateQuoteController::generatePdfPlanAsignado($details, Auth::id());
+            }
+
+            /**
              * COTIZACION MULTIPLE
              * ----------------------------------------------------------------------------------------------------
              */
@@ -802,7 +861,7 @@ class UtilsController extends Controller
 
                 for ($i = 0; $i < count($array_details); $i++) {
                     if ($details_quote[$i]['plan_id'] == 1) {
-                        $detalle_1 = DB::table('detail_corporate_quotes')
+                        $detalle_1 = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                             ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                             ->select('detail_corporate_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range')
@@ -824,7 +883,7 @@ class UtilsController extends Controller
                         array_push($group_details, $details_inicial);
                     }
                     if ($details_quote[$i]['plan_id'] == 2) {
-                        $detalle_2 = DB::table('detail_corporate_quotes')
+                        $detalle_2 = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                             ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                             ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -847,7 +906,7 @@ class UtilsController extends Controller
                         array_push($group_details, $details_ideal);
                     }
                     if ($details_quote[$i]['plan_id'] == 3) {
-                        $detalle_3 = DB::table('detail_corporate_quotes')
+                        $detalle_3 = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                             ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                             ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -1034,7 +1093,7 @@ class UtilsController extends Controller
              *                 ----------------------------------------------------------------------------------------------------
              */
             if ($corporate_quote->plan == 1) {
-                $detalle = DB::table('detail_corporate_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                     ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                     ->select('detail_corporate_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range')
@@ -1060,7 +1119,7 @@ class UtilsController extends Controller
             }
 
             if ($corporate_quote->plan == 2) {
-                $detalle = DB::table('detail_corporate_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                     ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                     ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -1088,7 +1147,7 @@ class UtilsController extends Controller
             }
 
             if ($corporate_quote->plan == 3) {
-                $detalle = DB::table('detail_corporate_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                     ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                     ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -1115,6 +1174,34 @@ class UtilsController extends Controller
             }
 
             /**
+             * Planes asignados por Integracorp a la empresa aliada.
+             */
+            if (QuotablePlans::usesGenericRepeater($corporate_quote->plan)) {
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
+                    ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
+                    ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
+                    ->leftJoin('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
+                    ->select('detail_corporate_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range', 'coverages.price as coverage')
+                    ->where('corporate_quote_id', $corporate_quote->id)
+                    ->orderBy('age_ranges.age_init')
+                    ->orderBy('coverages.price')
+                    ->get()
+                    ->toArray();
+
+                $details = [
+                    'plan' => (int) $corporate_quote->plan,
+                    'code' => $corporate_quote->code,
+                    'name' => $corporate_quote->full_name,
+                    'email' => $corporate_quote->email,
+                    'phone' => $corporate_quote->phone,
+                    'date' => $corporate_quote->created_at->format('d-m-Y'),
+                    'data' => $detalle,
+                ];
+
+                $corporate_quote->sendPropuestaEconomicaPlanAsignado($details);
+            }
+
+            /**
              * COTIZACION MULTIPLE
              * ----------------------------------------------------------------------------------------------------
              */
@@ -1128,7 +1215,7 @@ class UtilsController extends Controller
 
                 for ($i = 0; $i < count($resultado); $i++) {
                     if ($resultado[$i]['plan_id'] == 1) {
-                        $detalle_1 = DB::table('detail_corporate_quotes')
+                        $detalle_1 = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                             ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                             ->select('detail_corporate_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range')
@@ -1150,7 +1237,7 @@ class UtilsController extends Controller
                         array_push($group_details, $details_inicial);
                     }
                     if ($resultado[$i]['plan_id'] == 2) {
-                        $detalle_2 = DB::table('detail_corporate_quotes')
+                        $detalle_2 = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                             ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                             ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -1173,7 +1260,7 @@ class UtilsController extends Controller
                         array_push($group_details, $details_ideal);
                     }
                     if ($resultado[$i]['plan_id'] == 3) {
-                        $detalle_3 = DB::table('detail_corporate_quotes')
+                        $detalle_3 = DB::connection('mysql_vivepluss')->table('detail_corporate_quotes')
                             ->join('plans', 'detail_corporate_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_corporate_quotes.age_range_id', '=', 'age_ranges.id')
                             ->join('coverages', 'detail_corporate_quotes.coverage_id', '=', 'coverages.id')
@@ -1331,7 +1418,7 @@ class UtilsController extends Controller
              *                 ----------------------------------------------------------------------------------------------------
              */
             if ($record->plan == 1) {
-                $detalle = DB::table('detail_individual_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_individual_quotes')
                     ->join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_individual_quotes.age_range_id', '=', 'age_ranges.id')
                     ->select('detail_individual_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range')
@@ -1357,7 +1444,7 @@ class UtilsController extends Controller
             }
 
             if ($record->plan == 2) {
-                $detalle = DB::table('detail_individual_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_individual_quotes')
                     ->join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_individual_quotes.age_range_id', '=', 'age_ranges.id')
                     ->join('coverages', 'detail_individual_quotes.coverage_id', '=', 'coverages.id')
@@ -1385,7 +1472,7 @@ class UtilsController extends Controller
             }
 
             if ($record->plan == 3) {
-                $detalle = DB::table('detail_individual_quotes')
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_individual_quotes')
                     ->join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
                     ->join('age_ranges', 'detail_individual_quotes.age_range_id', '=', 'age_ranges.id')
                     ->join('coverages', 'detail_individual_quotes.coverage_id', '=', 'coverages.id')
@@ -1412,6 +1499,35 @@ class UtilsController extends Controller
             }
 
             /**
+             * Planes asignados por Integracorp a la empresa aliada. El leftJoin a
+             * coberturas cubre por igual a los planes que tienen y a los que no.
+             */
+            if (QuotablePlans::usesGenericRepeater($record->plan)) {
+                $detalle = DB::connection('mysql_vivepluss')->table('detail_individual_quotes')
+                    ->join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
+                    ->join('age_ranges', 'detail_individual_quotes.age_range_id', '=', 'age_ranges.id')
+                    ->leftJoin('coverages', 'detail_individual_quotes.coverage_id', '=', 'coverages.id')
+                    ->select('detail_individual_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range', 'coverages.price as coverage')
+                    ->where('individual_quote_id', $record->id)
+                    ->orderBy('age_ranges.age_init')
+                    ->orderBy('coverages.price')
+                    ->get()
+                    ->toArray();
+
+                $details = [
+                    'plan' => (int) $record->plan,
+                    'code' => $record->code,
+                    'name' => $record->full_name,
+                    'email' => $record->email,
+                    'phone' => $record->phone,
+                    'date' => $record->created_at->format('d-m-Y'),
+                    'data' => $detalle,
+                ];
+
+                IndividualQuoteController::generatePdfPlanAsignado($details, Auth::id());
+            }
+
+            /**
              * COTIZACION MULTIPLE
              * ----------------------------------------------------------------------------------------------------
              */
@@ -1425,7 +1541,7 @@ class UtilsController extends Controller
 
                 for ($i = 0; $i < count($array_details); $i++) {
                     if ($details_quote[$i]['plan_id'] == 1) {
-                        $detalle_1 = DB::table('detail_individual_quotes')
+                        $detalle_1 = DB::connection('mysql_vivepluss')->table('detail_individual_quotes')
                             ->join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_individual_quotes.age_range_id', '=', 'age_ranges.id')
                             ->select('detail_individual_quotes.*', 'plans.description as plan', 'age_ranges.range as age_range')
@@ -1447,7 +1563,7 @@ class UtilsController extends Controller
                         array_push($group_details, $details_inicial);
                     }
                     if ($details_quote[$i]['plan_id'] == 2) {
-                        $detalle_2 = DB::table('detail_individual_quotes')
+                        $detalle_2 = DB::connection('mysql_vivepluss')->table('detail_individual_quotes')
                             ->join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_individual_quotes.age_range_id', '=', 'age_ranges.id')
                             ->join('coverages', 'detail_individual_quotes.coverage_id', '=', 'coverages.id')
@@ -1470,7 +1586,7 @@ class UtilsController extends Controller
                         array_push($group_details, $details_ideal);
                     }
                     if ($details_quote[$i]['plan_id'] == 3) {
-                        $detalle_3 = DB::table('detail_individual_quotes')
+                        $detalle_3 = DB::connection('mysql_vivepluss')->table('detail_individual_quotes')
                             ->join('plans', 'detail_individual_quotes.plan_id', '=', 'plans.id')
                             ->join('age_ranges', 'detail_individual_quotes.age_range_id', '=', 'age_ranges.id')
                             ->join('coverages', 'detail_individual_quotes.coverage_id', '=', 'coverages.id')

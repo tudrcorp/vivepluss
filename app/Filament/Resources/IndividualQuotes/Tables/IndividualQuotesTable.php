@@ -7,6 +7,7 @@ use App\Mail\SendMailCertificado;
 use App\Mail\SendMailCotizacionIndividual;
 use App\Models\Configuration;
 use App\Models\IndividualQuote;
+use App\Support\Catalog\QuotablePlans;
 use App\Support\Filament\InternalObservations;
 use Carbon\Carbon;
 use Filament\Actions\Action;
@@ -91,31 +92,17 @@ class IndividualQuotesTable
                     ->searchable(),
                 TextColumn::make('type')
                     ->label('Tipo de Cotizacion')
-                    ->default(function ($record) {
-                        if ($record->plan == '1') {
-                            return 'Plan Escencial';
-                        }
-                        if ($record->plan == '2') {
-                            return 'Plan Bienestar';
-                        }
-                        if ($record->plan == '3') {
-                            return 'Plan Premium';
-                        }
-                        if ($record->plan == 'CM') {
-                            return 'MultiPlan';
-                        }
-                        if ($record->plan == null) {
-                            return '-----';
-                        }
-                    })
+                    // El nombre sale del catálogo: los planes que Integracorp
+                    // asigna a la aliada no están en ninguna lista fija.
+                    ->default(fn ($record): string => QuotablePlans::quoteLabel($record->plan))
                     ->badge()
                     ->alignCenter()
-                    ->color(function (string $state): string {
-                        return match ($state) {
-                            'Plan Escencial' => 'primary',
-                            'Plan Bienestar' => 'info',
-                            'Plan Premium' => 'success',
-                            'MultiPlan' => 'warning',
+                    ->color(function ($record): string {
+                        return match ((string) $record->plan) {
+                            '1' => 'primary',
+                            '2' => 'info',
+                            '3' => 'success',
+                            'CM' => 'warning',
                             default => 'info',
                         };
                     })

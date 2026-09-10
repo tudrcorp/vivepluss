@@ -2,34 +2,26 @@
 
 namespace App\Filament\Resources\IndividualQuotes\Schemas;
 
-use App\Models\Plan;
-use App\Models\Agent;
-use App\Models\State;
-use App\Models\Agency;
-use App\Models\Region;
-use App\Models\AgeRange;
-use Filament\Schemas\Schema;
-use App\Models\IndividualQuote;
-use Illuminate\Support\HtmlString;
-use Illuminate\Support\Facades\Log;
-use Filament\Forms\Components\Radio;
-use Filament\Support\Icons\Heroicon;
-use Illuminate\Support\Facades\Auth;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Grid;
-use Illuminate\Support\Facades\Blade;
-use Filament\Forms\Components\Repeater;
-use Filament\Schemas\Components\Wizard;
-use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Section;
 use App\Http\Controllers\UtilsController;
-use Filament\Forms\Components\DatePicker;
-use Filament\Schemas\Components\Fieldset;
-use Filament\Schemas\Components\Wizard\Step;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Schemas\Components\Utilities\Set;
+use App\Models\Agency;
+use App\Models\Agent;
+use App\Models\Plan;
+use App\Support\Catalog\QuotablePlans;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Radio;
+use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Repeater\TableColumn;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Components\Wizard;
+use Filament\Schemas\Components\Wizard\Step;
+use Filament\Schemas\Schema;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\HtmlString;
 
 class IndividualQuoteForm
 {
@@ -49,16 +41,9 @@ class IndividualQuoteForm
                                             TextInput::make('code')
                                                 ->label('Nro. de cotización')
                                                 ->prefixIcon('heroicon-m-clipboard-document-check')
-                                                ->default(function () {
-                                                    if (IndividualQuote::max('id') == null) {
-                                                        $parte_entera = 0;
-                                                    } else {
-                                                        $parte_entera = IndividualQuote::max('id');
-                                                    }
-                                                    return 'COT-IND-000' . $parte_entera + 1;
-                                                })
+                                                ->placeholder('Se generará al guardar')
                                                 ->disabled()
-                                                ->dehydrated()
+                                                ->dehydrated(false)
                                                 ->maxLength(255),
 
                                         ])->columnSpanFull(),
@@ -77,12 +62,12 @@ class IndividualQuoteForm
 
                                             Select::make('country_code')
                                                 ->label('Código de país')
-                                                ->options(fn() => UtilsController::getCountries())
+                                                ->options(fn () => UtilsController::getCountries())
                                                 ->searchable()
                                                 ->default('+58')
                                                 ->live(onBlur: true)
                                                 ->validationMessages([
-                                                    'required'  => 'Campo Requerido',
+                                                    'required' => 'Campo Requerido',
                                                 ])
                                                 ->hiddenOn('edit'),
                                             TextInput::make('phone')
@@ -90,14 +75,14 @@ class IndividualQuoteForm
                                                 ->tel()
                                                 ->label('Número de teléfono')
                                                 ->validationMessages([
-                                                    'required'  => 'Campo Requerido',
+                                                    'required' => 'Campo Requerido',
                                                 ])
                                                 ->live(onBlur: true)
                                                 ->afterStateUpdated(function ($state, callable $set, Get $get) {
                                                     $countryCode = $get('country_code');
                                                     if ($countryCode) {
                                                         $cleanNumber = ltrim(preg_replace('/[^0-9]/', '', $state), '0');
-                                                        $set('phone', $countryCode . $cleanNumber);
+                                                        $set('phone', $countryCode.$cleanNumber);
                                                     }
                                                 }),
                                             TextInput::make('email')
@@ -110,48 +95,53 @@ class IndividualQuoteForm
                                         ])->columnSpanFull(),
                                     Hidden::make('status')->default('PRE-APROBADA'),
                                     Hidden::make('created_by')->default(Auth::user()->name),
-                                    //Calculo de la jerarquia segun la agencia que esta conectada
-                                    
-                                    //Codigo de agencia
+                                    // Calculo de la jerarquia segun la agencia que esta conectada
+
+                                    // Codigo de agencia
                                     Hidden::make('code_agency')->default(function () {
                                         if (Auth::user()->agency_type == 'GENERAL') {
                                             return Auth::user()->code_agency;
                                         }
+
                                         return Auth::user()->code_agency;
                                     }),
 
-                                    //Calculo de OWNER_CODE segun la agencia que esta conectada o el agente que esta conectado
+                                    // Calculo de OWNER_CODE segun la agencia que esta conectada o el agente que esta conectado
                                     Hidden::make('owner_code')->default(function () {
-                                        
-                                        //1.- Agencia GENERAL
+
+                                        // 1.- Agencia GENERAL
                                         if (Auth::user()->agency_type == 'GENERAL') {
                                             $owner = Agency::where('code', Auth::user()->code_agency)->value('owner_code');
+
                                             return $owner;
                                         }
 
-                                        //2.- Agencia MASTER
+                                        // 2.- Agencia MASTER
                                         if (Auth::user()->agency_type == 'MASTER') {
                                             return Auth::user()->code_agency;
                                         }
 
-                                        //3.- Agente o Subagente
+                                        // 3.- Agente o Subagente
                                         if (Auth::user()->is_agent == 1 || Auth::user()->is_subagent == 1) {
                                             $agent = Agent::where('id', Auth::user()->agent_id)->value('owner_code');
+
                                             return $agent;
                                         }
+
                                         return null;
                                     }),
 
-                                    //Si manejan agentes
+                                    // Si manejan agentes
                                     Hidden::make('agent_id')->default(function () {
                                         if (Auth::user()->is_agent == 1) {
                                             return Auth::user()->agent_id;
                                         }
+
                                         return null;
                                     }),
                                 ])
                                 ->columns(3)
-                                ->columnSpanFull()
+                                ->columnSpanFull(),
 
                         ]),
                     Step::make('PLANES A COTIZAR')
@@ -166,22 +156,11 @@ class IndividualQuoteForm
                                         ->label('Selecciona el/los planes que desea cotizar:')
                                         ->required()
                                         ->live()
-                                        ->options(function () {
-
-                                            $planesConBeneficios = Plan::where('type', 'BASICO')->get()->pluck('description', 'id');
-
-                                            //agregar el plan livewire
-                                            $planesConBeneficios->put('CM', 'COTIZACIÓN MULTIPLE');
-
-                                            return $planesConBeneficios;
-                                        })
-                                        ->descriptions([
-                                            1    => 'Edad: 0 a +99 años/ilimitado.',
-                                            2    => 'Edad: 0 a 85 años.',
-                                            3    => 'Edad: 0 a 85 años.',
-                                            'CM' => 'Seleccione más de dos (2) planes.'
-                                        ])
-                                ])
+                                        // Incluye los planes que Integracorp asignó a la
+                                        // aliada, con su rango de edad real.
+                                        ->options(fn (): array => QuotablePlans::options())
+                                        ->descriptions(fn (): array => QuotablePlans::descriptions()),
+                                ]),
                         ]),
                     Step::make('RANGO DE EDAD')
                         ->description('Rango de edad y/o población:')
@@ -196,17 +175,18 @@ class IndividualQuoteForm
                                     Repeater::make('details_quote_plan_inicial')
                                         ->grid(4)
                                         ->label('Indique edad y número de afiliados al plan:')
-                                        ->defaultItems(fn(Get $get) => AgeRange::where('plan_id', 1)->count())
+                                        ->defaultItems(fn (): int => QuotablePlans::ageRangeCount(1))
                                         ->addable(false)
                                         ->hidden(function (Get $get) {
                                             if ($get('plan') == 1) {
                                                 return false;
                                             }
+
                                             return true;
                                         })
                                         ->table([
                                             TableColumn::make('Rango de Edad')->width('150px'),
-                                            TableColumn::make('Total de personas')
+                                            TableColumn::make('Total de personas'),
                                         ])
                                         ->schema([
                                             Hidden::make('plan_id')->default(1),
@@ -215,13 +195,11 @@ class IndividualQuoteForm
                                                 ->inLine()
                                                 ->disableOptionWhen(function ($value, $state, Get $get) {
                                                     return collect($get('../*.age_range_id'))
-                                                        ->reject(fn($id) => $id == $state)
+                                                        ->reject(fn ($id) => $id == $state)
                                                         ->filter()
                                                         ->contains($value);
                                                 })
-                                                ->options(function (Get $get) {
-                                                    return AgeRange::where('plan_id', 1)->pluck('range', 'id');
-                                                })->columnSpan(4),
+                                                ->options(fn (): array => QuotablePlans::ageRangeOptions(1))->columnSpan(4),
                                             Select::make('total_persons')
                                                 // ->label(false)
                                                 ->options([
@@ -245,12 +223,13 @@ class IndividualQuoteForm
                                     Repeater::make('details_quote_plan_ideal')
                                         ->grid(2)
                                         ->label('Indique edad y número de afiliados al plan:')
-                                        ->defaultItems(fn(Get $get) => AgeRange::where('plan_id', 2)->count())
+                                        ->defaultItems(fn (): int => QuotablePlans::ageRangeCount(2))
                                         ->addable(false)
                                         ->hidden(function (Get $get) {
                                             if ($get('plan') == 2) {
                                                 return false;
                                             }
+
                                             return true;
                                         })
                                         ->table([
@@ -265,13 +244,11 @@ class IndividualQuoteForm
                                                 ->live()
                                                 ->disableOptionWhen(function ($value, $state, Get $get) {
                                                     return collect($get('../*.age_range_id'))
-                                                        ->reject(fn($id) => $id == $state)
+                                                        ->reject(fn ($id) => $id == $state)
                                                         ->filter()
                                                         ->contains($value);
                                                 })
-                                                ->options(function (Get $get) {
-                                                    return AgeRange::where('plan_id', 2)->pluck('range', 'id');
-                                                })->columnSpan(4),
+                                                ->options(fn (): array => QuotablePlans::ageRangeOptions(2))->columnSpan(4),
                                             Select::make('total_persons')
                                                 ->label(false)
                                                 // ->native(false)
@@ -296,12 +273,13 @@ class IndividualQuoteForm
                                     Repeater::make('details_quote_plan_especial')
                                         ->grid(2)
                                         ->label('Indique edad y número de afiliados al plan:')
-                                        ->defaultItems(fn(Get $get) => AgeRange::where('plan_id', 3)->count())
+                                        ->defaultItems(fn (): int => QuotablePlans::ageRangeCount(3))
                                         ->addable(false)
                                         ->hidden(function (Get $get) {
                                             if ($get('plan') == 3) {
                                                 return false;
                                             }
+
                                             return true;
                                         })
                                         ->table([
@@ -316,13 +294,11 @@ class IndividualQuoteForm
                                                 ->live()
                                                 ->disableOptionWhen(function ($value, $state, Get $get) {
                                                     return collect($get('../*.age_range_id'))
-                                                        ->reject(fn($id) => $id == $state)
+                                                        ->reject(fn ($id) => $id == $state)
                                                         ->filter()
                                                         ->contains($value);
                                                 })
-                                                ->options(function (Get $get) {
-                                                    return AgeRange::where('plan_id', 3)->pluck('range', 'id');
-                                                })->columnSpan(4),
+                                                ->options(fn (): array => QuotablePlans::ageRangeOptions(3))->columnSpan(4),
                                             Select::make('total_persons')
                                                 ->options([
                                                     1 => 1,
@@ -340,6 +316,42 @@ class IndividualQuoteForm
                                         ])->columns(2),
 
                                     /**
+                                     * REPETER PLAN ASIGNADO
+                                     *
+                                     * Los tres planes históricos tienen su propio repeater arriba;
+                                     * cualquier plan que Integracorp asigne a la aliada usa este,
+                                     * que se arma con los rangos de edad del plan elegido.
+                                     */
+                                    Repeater::make('details_quote_plan_asignado')
+                                        ->grid(2)
+                                        ->label('Indique edad y número de afiliados al plan:')
+                                        ->defaultItems(fn (Get $get) => max(1, QuotablePlans::ageRangeCount($get('plan'))))
+                                        ->addable(false)
+                                        ->hidden(fn (Get $get): bool => ! QuotablePlans::usesGenericRepeater($get('plan')))
+                                        ->table([
+                                            TableColumn::make('Rango de Edad')->width('300px'),
+                                            TableColumn::make('Total de personas'),
+                                        ])
+                                        ->schema([
+                                            Radio::make('age_range_id')
+                                                ->label(false)
+                                                ->inLine()
+                                                ->live()
+                                                ->disableOptionWhen(function ($value, $state, Get $get) {
+                                                    return collect($get('../*.age_range_id'))
+                                                        ->reject(fn ($id) => $id == $state)
+                                                        ->filter()
+                                                        ->contains($value);
+                                                })
+                                                ->options(fn (Get $get) => QuotablePlans::ageRangeOptions($get('../../plan')))
+                                                ->columnSpan(4),
+                                            Select::make('total_persons')
+                                                ->label(false)
+                                                ->options(array_combine(range(1, 10), range(1, 10)))
+                                                ->placeholder('Cantidad de personas'),
+                                        ])->columns(4),
+
+                                    /**
                                      * REPETER PLAN MULTIPLE
                                      */
                                     Repeater::make('details_quote')
@@ -349,6 +361,7 @@ class IndividualQuoteForm
                                             if ($get('plan') == 'CM') {
                                                 return false;
                                             }
+
                                             return true;
                                         })
                                         ->schema([
@@ -358,25 +371,23 @@ class IndividualQuoteForm
                                                 ->inLine()
                                                 ->live()
                                                 ->options(function (Get $get) {
-                                                    return Plan::where('type', 'BASICO')->pluck('description', 'id');
+                                                    return Plan::cotizable()->pluck('description', 'id');
                                                 })->columnSpan(3),
                                             Select::make('age_range_id')
                                                 ->label('Rango de edad')
                                                 ->placeholder('Rango de edad')
-                                                ->options(function (Get $get) {
-                                                    return AgeRange::where('plan_id', $get('plan_id'))->pluck('range', 'id');
-                                                })
+                                                ->options(fn (Get $get) => QuotablePlans::ageRangeOptions($get('plan_id')))
                                                 ->live()
                                                 ->searchable()
                                                 ->prefixIcon('heroicon-s-globe-europe-africa')
                                                 ->disableOptionWhen(function ($value, $state, Get $get) {
                                                     return collect($get('../*.age_range_id'))
-                                                        ->reject(fn($id) => $id == $state)
+                                                        ->reject(fn ($id) => $id == $state)
                                                         ->filter()
                                                         ->contains($value);
                                                 })
                                                 ->validationMessages([
-                                                    'required'  => 'Campo Requerido',
+                                                    'required' => 'Campo Requerido',
                                                 ])
                                                 ->preload(),
                                             TextInput::make('total_persons')
@@ -384,10 +395,10 @@ class IndividualQuoteForm
                                                 ->placeholder('Cantidad de personas')
                                                 ->numeric(),
                                         ])->columns(2),
-                                ])
-                        ])
+                                ]),
+                        ]),
                 ])
-                ->submitAction(new HtmlString(Blade::render(<<<BLADE
+                    ->submitAction(new HtmlString(Blade::render(<<<'BLADE'
                 <x-filament::button
                     type="submit"
                     size="sm"
@@ -407,7 +418,7 @@ class IndividualQuoteForm
                     </span>
                 </x-filament::button>
             BLADE)))
-                ->columnSpanFull()
-        ]);
+                    ->columnSpanFull(),
+            ]);
     }
 }

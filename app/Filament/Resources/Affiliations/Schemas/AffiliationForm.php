@@ -10,11 +10,11 @@ use App\Models\City;
 use App\Models\Configuration;
 use App\Models\Country;
 use App\Models\Coverage;
-use App\Models\DetailIndividualQuote;
 use App\Models\IndividualQuote;
 use App\Models\Plan;
 use App\Models\Region;
 use App\Models\State;
+use App\Support\IndividualQuoteResolver;
 use Filament\Forms\Components\Checkbox;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\FileUpload;
@@ -73,19 +73,40 @@ class AffiliationForm
                                     ->disabled()
                                     ->dehydrated()
                                     ->prefixIcon('heroicon-m-clipboard-document-check')
-                                    ->options(function () {
-                                        if (Auth::user()->agency_type == 'GENERAL') {
-                                            return IndividualQuote::select('id', 'code_agency', 'status', 'full_name')->where('code_agency', Auth::user()->code_agency)->where('status', 'APROBADA')->pluck('full_name', 'id');
-                                        }
-                                        if (Auth::user()->agency_type == 'MASTER') {
-                                            return IndividualQuote::select('id', 'owner_code', 'status', 'full_name')->where('owner_code', Auth::user()->code_agency)->where('status', 'APROBADA')->pluck('full_name', 'id');
-                                        }
-                                        if (Auth::user()->is_agent == 1) {
-                                            return IndividualQuote::select('id', 'agent_id', 'status', 'full_name')->where('agent_id', Auth::user()->agent_id)->where('status', 'APROBADA')->pluck('full_name', 'id');
+                                    ->options(function (?Affiliation $record) {
+                                        /**
+                                         * Solo cotizaciones propias de ViVEplus, APROBADA: las legacy de
+                                         * Integracorp ya no se pueden seleccionar para afiliar (evita
+                                         * escribir su status en la tabla de Integracorp). El fallback de
+                                         * abajo es solo para que una afiliación YA existente, enlazada a
+                                         * una cotización legacy antes del corte, siga mostrando su nombre
+                                         * correctamente al editarla -no habilita volver a seleccionarla.
+                                         */
+                                        $options = match (true) {
+                                            Auth::user()->agency_type == 'GENERAL' => IndividualQuote::select('id', 'code_agency', 'status', 'full_name')
+                                                ->where('code_agency', Auth::user()->code_agency)
+                                                ->where('status', 'APROBADA')
+                                                ->pluck('full_name', 'id'),
+                                            Auth::user()->agency_type == 'MASTER' => IndividualQuote::select('id', 'owner_code', 'status', 'full_name')
+                                                ->where('owner_code', Auth::user()->code_agency)
+                                                ->where('status', 'APROBADA')
+                                                ->pluck('full_name', 'id'),
+                                            Auth::user()->is_agent == 1 => IndividualQuote::select('id', 'agent_id', 'status', 'full_name')
+                                                ->where('agent_id', Auth::user()->agent_id)
+                                                ->where('status', 'APROBADA')
+                                                ->pluck('full_name', 'id'),
+                                            default => IndividualQuote::all()->pluck('full_name', 'id'),
+                                        };
+
+                                        if ($record?->individual_quote_id && ! $options->has($record->individual_quote_id)) {
+                                            $existing = IndividualQuoteResolver::find($record->individual_quote_id);
+
+                                            if ($existing) {
+                                                $options->put($record->individual_quote_id, $existing->full_name);
+                                            }
                                         }
 
-                                        return IndividualQuote::all()->pluck('full_name', 'id');
-
+                                        return $options;
                                     })
                                     ->default(function () {
                                         $id = request()->query('id');
@@ -99,8 +120,7 @@ class AffiliationForm
                                     ->searchable()
                                     ->preload()
                                     ->afterStateUpdated(function (Set $set, $state) {
-                                        $code = IndividualQuote::select('code', 'id')->where('id', $state)->first()->code;
-                                        $set('code_individual_quote', $code);
+                                        $set('code_individual_quote', IndividualQuoteResolver::find($state)?->code);
                                     })
                                     ->required()
                                     ->validationMessages([
@@ -160,18 +180,10 @@ class AffiliationForm
                                         return false;
                                     })
                                     ->dehydrated()
-                                    ->options(function (Get $get) {
-                                        $coverages = DetailIndividualQuote::join('coverages', 'detail_individual_quotes.coverage_id', '=', 'coverages.id')
-                                            ->join('individual_quotes', 'detail_individual_quotes.individual_quote_id', '=', 'individual_quotes.id')
-                                            ->where('individual_quotes.id', $get('individual_quote_id'))
-                                            ->where('detail_individual_quotes.plan_id', $get('plan_id'))
-                                            ->select('coverages.id as coverage_id', 'coverages.price as description')
-                                            ->distinct() // Asegurarse de que no haya duplicados
-                                            ->get()
-                                            ->pluck('description', 'coverage_id');
-
-                                        return $coverages;
-                                    })
+                                    ->options(fn (Get $get) => IndividualQuoteResolver::coverageOptions(
+                                        $get('individual_quote_id'),
+                                        $get('plan_id'),
+                                    ))
                                     ->relationship(
                                         name: 'coverage',
                                         modifyQueryUsing: fn (Builder $query, Get $get) => $query->where('plan_id', $get('plan_id'))->orderBy('price', 'asc'),
@@ -230,18 +242,13 @@ class AffiliationForm
                                             ->filter()
                                             ->map(fn ($id) => (int) $id);
 
-                                        $quoteQuery = function (string $column) use ($get, $detailIds) {
-                                            return DetailIndividualQuote::query()
-                                                ->where('individual_quote_id', $get('individual_quote_id'))
-                                                ->where('plan_id', $get('plan_id'))
-                                                ->when($get('plan_id') != 1, function ($query) use ($get) {
-                                                    return $query->where('coverage_id', $get('coverage_id'));
-                                                })
-                                                ->when($detailIds->isNotEmpty(), function ($query) use ($detailIds) {
-                                                    return $query->whereIn('id', $detailIds);
-                                                })
-                                                ->sum($column);
-                                        };
+                                        $quoteQuery = fn (string $column) => IndividualQuoteResolver::detailSum(
+                                            $get('individual_quote_id'),
+                                            $get('plan_id'),
+                                            $get('coverage_id'),
+                                            $detailIds->all(),
+                                            $column,
+                                        );
 
                                         $set('total_amount', match ($get('payment_frequency')) {
                                             'ANUAL' => $quoteQuery('subtotal_anual'),

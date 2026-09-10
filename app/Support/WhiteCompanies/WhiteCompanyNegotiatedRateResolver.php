@@ -193,7 +193,13 @@ final class WhiteCompanyNegotiatedRateResolver
     {
         $isInitial = $planId === self::INITIAL_PLAN_ID;
 
-        $query = IntegracorpFee::query()->with('ageRange');
+        // El plan sale de `fees.plan_id`, la columna canónica del catálogo de
+        // Integracorp desde 2026-08-18. Antes se deducía por
+        // `age_ranges.plan_id`, que obligaba a traer todas las tarifas de la
+        // cobertura y descartarlas en PHP.
+        $query = IntegracorpFee::query()
+            ->with('ageRange')
+            ->where('plan_id', $planId);
 
         if ($isInitial) {
             $query->where('age_range_id', 1);
@@ -210,17 +216,17 @@ final class WhiteCompanyNegotiatedRateResolver
 
     private function feeMatchesAge(int $age, IntegracorpFee $fee, int $planId): bool
     {
+        if ($fee->plan_id === null || (int) $fee->plan_id !== $planId) {
+            return false;
+        }
+
         $ageRange = $fee->ageRange;
 
         if (! $ageRange instanceof IntegracorpAgeRange) {
             return false;
         }
 
-        if (! $this->ageMatchesRange($age, $ageRange)) {
-            return false;
-        }
-
-        return $planId === self::INITIAL_PLAN_ID || (int) $ageRange->plan_id === $planId;
+        return $this->ageMatchesRange($age, $ageRange);
     }
 
     private function ageMatchesRange(int $age, IntegracorpAgeRange $ageRange): bool

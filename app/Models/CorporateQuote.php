@@ -2,21 +2,31 @@
 
 namespace App\Models;
 
+use App\Jobs\SendEmailPropuestaEconomicaEspecialCor;
+use App\Jobs\SendEmailPropuestaEconomicaIdealCor;
+use App\Jobs\SendEmailPropuestaEconomicaInicialCor;
+use App\Jobs\SendEmailPropuestaEconomicaMultiple;
 use Barryvdh\DomPDF\Facade\Pdf;
+use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
-use Illuminate\Database\Eloquent\Model;
-use Filament\Notifications\Notification;
-use App\Jobs\SendEmailPropuestaEconomicaIdealCor;
-use App\Jobs\SendEmailPropuestaEconomicaMultiple;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use App\Jobs\SendEmailPropuestaEconomicaInicialCor;
-use Illuminate\Database\Eloquent\Relations\HasMany;
-use App\Jobs\SendEmailPropuestaEconomicaEspecialCor;
 
 class CorporateQuote extends Model
 {
+    protected $connection = 'mysql_vivepluss';
+
     protected $table = 'corporate_quotes';
+
+    /**
+     * Ver App\Models\IndividualQuote::ID_OFFSET (mismo mecanismo, mismo
+     * valor): un id por debajo de esto en affiliation_corporates.corporate_quote_id
+     * pertenece a la tabla legacy de Integracorp. Ver App\Support\CorporateQuoteResolver.
+     */
+    public const ID_OFFSET = 1_000_000;
 
     protected $fillable = [
         'code',
@@ -49,7 +59,7 @@ class CorporateQuote extends Model
     /**
      * Get the user that owns the Agent
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function accountManager()
     {
@@ -58,8 +68,6 @@ class CorporateQuote extends Model
 
     /**
      * Get all of the comments for the IndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function detailCoporateQuotes(): HasMany
     {
@@ -68,8 +76,6 @@ class CorporateQuote extends Model
 
     /**
      * Get all of the comments for the IndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function corporateQuoteData(): HasMany
     {
@@ -78,8 +84,6 @@ class CorporateQuote extends Model
 
     /**
      * Get all of the comments for the IndividualQuote
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
      */
     public function statusLogs(): HasMany
     {
@@ -96,7 +100,7 @@ class CorporateQuote extends Model
         return $this->belongsTo(CorporateQuoteRequest::class);
     }
 
-    //hasOne
+    // hasOne
     public function agent(): HasOne
     {
         return $this->hasOne(Agent::class, 'id', 'agent_id');
@@ -110,17 +114,17 @@ class CorporateQuote extends Model
     /**
      * Funciones para la ejecucion de jobs
      * para el envio de los correos de propuesta economica
-     * 
-     * @return void
+     *
      * @author TuDrEnCasa
-     * 
-     * @param array $details
+     *
+     * @param  array  $details
+     * @return void
      */
     public function sendPropuestaEconomicaPlanInicial($details)
     {
         try {
-            
-            //code...
+
+            // code...
             $collect = collect($details['data'][0]);
             // dd($collect);
 
@@ -132,20 +136,19 @@ class CorporateQuote extends Model
 
             $name_user = Auth::user()->name;
             $pdf = Pdf::loadView('documents.propuesta-economica-cor', compact('details', 'collect', 'name_user'));
-            $name_pdf = $details['code'] . '.pdf';
+            $name_pdf = $details['code'].'.pdf';
             $quotesDirectory = public_path('storage/quotes');
             File::ensureDirectoryExists($quotesDirectory);
-            $pdf->save($quotesDirectory . DIRECTORY_SEPARATOR . $name_pdf);
-            
+            $pdf->save($quotesDirectory.DIRECTORY_SEPARATOR.$name_pdf);
+
         } catch (\Throwable $th) {
-            //throw $th;
+            // throw $th;
             Notification::make()
-            ->title('Error')
-            ->body($th->getMessage())
-            ->error()
-            ->send();
+                ->title('Error')
+                ->body($th->getMessage())
+                ->error()
+                ->send();
         }
-        
 
         /**
          * Despues de guardar el pdf lo enviamos por email
@@ -157,11 +160,11 @@ class CorporateQuote extends Model
     /**
      * Funciones para la ejecucion de jobs
      * para el envio de los correos de propuesta economica
-     * 
-     * @return void
+     *
      * @author TuDrEnCasa
-     * 
-     * @param array $details
+     *
+     * @param  array  $details
+     * @return void
      */
     public function sendPropuestaEconomicaPlanIdeal($details)
     {
@@ -177,11 +180,11 @@ class CorporateQuote extends Model
     /**
      * Funciones para la ejecucion de jobs
      * para el envio de los correos de propuesta economica
-     * 
-     * @return void
+     *
      * @author TuDrEnCasa
-     * 
-     * @param array $details
+     *
+     * @param  array  $details
+     * @return void
      */
     public function sendPropuestaEconomicaPlanEspecial($details)
     {
@@ -200,6 +203,16 @@ class CorporateQuote extends Model
     public function isAffiliated($id): bool
     {
         return $this->where('id', $id)->exists();
+    }
+
+    /**
+     * Propuesta de un plan asignado por Integracorp: misma forma que la del plan
+     * ideal (agrupada por rango de edad); lo específico de cada plan lo resuelve
+     * la vista, que arma sus columnas desde las coberturas reales.
+     */
+    public function sendPropuestaEconomicaPlanAsignado($details)
+    {
+        $this->sendPropuestaEconomicaPlanIdeal($details);
     }
 
     public function sendPropuestaEconomicaMultiple($collect_final)
@@ -225,10 +238,9 @@ class CorporateQuote extends Model
             }
 
             SendEmailPropuestaEconomicaMultiple::dispatch($collect_final, $details_generals, Auth::user());
-            //code...
+            // code...
         } catch (\Throwable $th) {
             dd($th);
         }
     }
-
 }

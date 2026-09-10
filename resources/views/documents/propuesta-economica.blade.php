@@ -111,6 +111,18 @@
     ])
     @endif
 
+    {{-- Planes que Integracorp asigna a la empresa aliada: mismo diseño, con las
+         columnas de cobertura del plan --}}
+    @if(\App\Support\Catalog\QuotablePlans::usesGenericRepeater($details['plan']))
+    @livewire('planes-cotizacion-individual-asignado',
+    [
+    'data' => $group_collect,
+    'name' => $details['name'],
+    'name_user' => $name_user,
+    'planId' => $details['plan']
+    ])
+    @endif
+
 
     @livewire('contraportada-individual')
 </body>
