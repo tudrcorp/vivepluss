@@ -14,7 +14,6 @@ use App\Models\Collection as PaymentCollection;
 use App\Models\Configuration;
 use App\Models\CreditReconciliation;
 use App\Models\User;
-use App\Models\WhiteCompany;
 use App\Support\AffiliationWelcomeKit;
 use App\Support\Filament\InternalObservations;
 use Carbon\Carbon;
@@ -82,17 +81,18 @@ class AffiliationsTable
      * modal de pago. Muestra tres cifras -asignado (fijo), disponible antes de este
      * pago (ya descontando pagos a crédito previos) y restante después de este
      * pago- para que quede claro que cada pago descuenta del saldo restante real,
-     * no del total asignado original.
+     * no del total asignado original. Si Integracorp no cargó cupo, no hay tope.
      */
     private static function renderCreditSummary(int|string|null $whiteCompanyId, string $currency, float $paymentAmount): HtmlString
     {
-        $assigned = (float) (WhiteCompany::find($whiteCompanyId)?->assigned_credit ?? 0);
+        $assigned = CreditReconciliation::assignedCredit($whiteCompanyId);
         $availableBefore = CreditReconciliation::remainingCredit($whiteCompanyId);
         $availableAfter = $availableBefore - $paymentAmount;
 
         $percentAfter = $assigned > 0 ? max(0, min(100, ($availableAfter / $assigned) * 100)) : 0;
-        $afterColor = $availableAfter < 0 ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400';
-        $barColor = $availableAfter < 0 ? 'bg-red-500' : 'bg-emerald-500';
+        $overLimit = $assigned > 0 && $availableAfter < 0;
+        $afterColor = $overLimit ? 'text-red-600 dark:text-red-400' : 'text-emerald-600 dark:text-emerald-400';
+        $barColor = $overLimit ? 'bg-red-500' : 'bg-emerald-500';
 
         $assignedFormatted = $currency.' '.number_format($assigned, 2, ',', '.');
         $beforeFormatted = $currency.' '.number_format($availableBefore, 2, ',', '.');
@@ -843,19 +843,16 @@ class AffiliationsTable
                             // dd($data, $record);
                             try {
 
-                                if ($data['payment_method'] === 'CREDITO') {
-                                    $remaining = CreditReconciliation::remainingCredit($record->white_company_id);
+                                if ($data['payment_method'] === 'CREDITO'
+                                    && ! CreditReconciliation::canCoverPayment($record->white_company_id, (float) $data['total_amount'])) {
+                                    Notification::make()
+                                        ->title('Crédito insuficiente')
+                                        ->body('El total a pagar supera el crédito restante disponible para esta marca blanca.')
+                                        ->icon('heroicon-m-x-circle')
+                                        ->danger()
+                                        ->send();
 
-                                    if ((float) $data['total_amount'] > $remaining) {
-                                        Notification::make()
-                                            ->title('Crédito insuficiente')
-                                            ->body('El total a pagar supera el crédito restante disponible para esta marca blanca.')
-                                            ->icon('heroicon-m-x-circle')
-                                            ->danger()
-                                            ->send();
-
-                                        return;
-                                    }
+                                    return;
                                 }
 
                                 $upload = AffiliationController::uploadPayment($record, $data, 'AGENTE');
@@ -1704,7 +1701,7 @@ class AffiliationsTable
                                     ->map(fn (Collection $group) => $group->sum('total_amount'));
 
                                 foreach ($neededByWhiteCompany as $whiteCompanyId => $needed) {
-                                    if ((float) $needed > CreditReconciliation::remainingCredit($whiteCompanyId)) {
+                                    if (! CreditReconciliation::canCoverPayment($whiteCompanyId, (float) $needed)) {
                                         Notification::make()
                                             ->title('Crédito insuficiente')
                                             ->body('El total a pagar de la(s) afiliación(es) seleccionada(s) supera el crédito restante disponible para esa marca blanca.')

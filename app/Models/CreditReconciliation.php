@@ -48,6 +48,19 @@ class CreditReconciliation extends Model
     }
 
     /**
+     * Cupo que Integracorp cargó en white_companies.assigned_credit.
+     * Cero (o marca blanca inexistente) significa que no hay tope configurado.
+     */
+    public static function assignedCredit(int|string|null $whiteCompanyId): float
+    {
+        if (blank($whiteCompanyId)) {
+            return 0.0;
+        }
+
+        return (float) (WhiteCompany::find($whiteCompanyId)?->assigned_credit ?? 0);
+    }
+
+    /**
      * Crédito de la marca blanca ($assigned_credit) menos todo lo ya
      * consumido a través de movimientos de crédito registrados aquí.
      */
@@ -57,9 +70,22 @@ class CreditReconciliation extends Model
             return 0.0;
         }
 
-        $assigned = (float) (WhiteCompany::find($whiteCompanyId)?->assigned_credit ?? 0);
         $used = (float) static::where('white_company_id', $whiteCompanyId)->sum('total_to_pay');
 
-        return $assigned - $used;
+        return static::assignedCredit($whiteCompanyId) - $used;
+    }
+
+    /**
+     * Si Integracorp no asignó cupo (assigned_credit = 0), no hay tope y el
+     * pago a crédito no se bloquea. El tope solo aplica cuando el cupo es
+     * mayor que cero: entonces el monto no puede superar el saldo restante.
+     */
+    public static function canCoverPayment(int|string|null $whiteCompanyId, float $amount): bool
+    {
+        if (static::assignedCredit($whiteCompanyId) <= 0) {
+            return true;
+        }
+
+        return $amount <= static::remainingCredit($whiteCompanyId);
     }
 }
