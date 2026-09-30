@@ -43,6 +43,22 @@ class Sale extends Model
         'white_company_id',
     ];
 
+    /**
+     * Método de pago que nunca debe convertirse en venta en Integracorp: el pago a
+     * crédito consume la línea de crédito de la marca blanca y se registra solo en
+     * credit_reconciliations, porque ese dinero no existe en las cuentas de Integracorp.
+     */
+    public const PAYMENT_METHOD_CREDITO = 'CREDITO';
+
+    protected static function booted(): void
+    {
+        static::saving(function (Sale $sale): void {
+            if (strtoupper(trim((string) $sale->payment_method)) === self::PAYMENT_METHOD_CREDITO) {
+                throw new \RuntimeException('Un pago a CRÉDITO no registra venta en Integracorp; se concilia solo en credit_reconciliations.');
+            }
+        });
+    }
+
     public function affiliation()
     {
         return $this->belongsTo(Affiliation::class);

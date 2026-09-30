@@ -11,15 +11,11 @@ use App\Models\Collection;
 use App\Models\Configuration;
 use App\Models\CreditReconciliation;
 use App\Models\PaidMembership;
-use App\Models\Sale;
 use App\Models\WhiteCompany;
-use App\Support\WhiteCompanies\WhiteCompanyNegotiatedRateResolver;
-use App\Support\WhiteCompanies\WhiteCompanyPaymentSettlement;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Carbon\Carbon;
 use Filament\Notifications\Notification;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
@@ -438,13 +434,6 @@ class AffiliationController extends Controller
              * por ella (igual que el resto de los métodos de pago arriba).
              */
             if ($data['payment_method'] == 'CREDITO') {
-                /**
-                 * Se resuelve (y bloquea si falta) la tarifa negociada con Integracorp
-                 * ANTES de escribir nada, para que "falta tarifa negociada" no deje la
-                 * afiliación a medio aprobar (nota de crédito, comprobante, ledger).
-                 */
-                $settlement = (new WhiteCompanyNegotiatedRateResolver)->settlementForAffiliation($record);
-
                 $noteNumber = 'NC-'.$record->code.'-'.now()->format('YmdHis');
                 $remainingCreditBefore = CreditReconciliation::remainingCredit($record->white_company_id);
 
@@ -522,7 +511,7 @@ class AffiliationController extends Controller
              * afiliación las realiza el equipo de Integracorp, no ViVEplus.
              */
             if ($data['payment_method'] == 'CREDITO') {
-                self::approveAndActivate($record, $data, $settlement);
+                self::approveAndActivate($record, $data);
             }
 
             return true;
@@ -546,7 +535,7 @@ class AffiliationController extends Controller
      * los valide/apruebe. Notifica el resultado por correo; un fallo de envío no debe
      * revertir la activación.
      */
-    private static function approveAndActivate(Affiliation $record, array $data, WhiteCompanyPaymentSettlement $settlement): void
+    private static function approveAndActivate(Affiliation $record, array $data): void
     {
         $paidMembership = $record->paid_memberships()->latest()->first();
         $paidMembership?->update(['status' => 'APROBADO']);
@@ -554,10 +543,13 @@ class AffiliationController extends Controller
         /**
          * Con pagos a crédito este método puede invocarse en cuotas posteriores a la
          * activación (no solo en el primer pago), así que la generación de cuotas
-         * futuras, el registro de venta/comisión y el correo de activación solo deben
-         * dispararse la primera vez que la afiliación pasa a ACTIVA, no en cada
-         * aprobación de pago subsiguiente (igual que hace Integracorp: venta y
-         * comisión se registran una sola vez, en el primer pago).
+         * futuras y el correo de activación solo deben dispararse la primera vez que
+         * la afiliación pasa a ACTIVA, no en cada aprobación de pago subsiguiente.
+         *
+         * Un pago a CREDITO NO registra venta ni comisión en Integracorp (sales/commissions):
+         * ese dinero no entra a las cuentas de Integracorp, solo consume la línea de crédito
+         * de la marca blanca y queda en credit_reconciliations (ver recordCreditMovement()).
+         * App\Models\Sale además bloquea cualquier venta con payment_method CREDITO.
          */
         if ($record->activated_at !== null) {
             return;
@@ -569,10 +561,6 @@ class AffiliationController extends Controller
         $record->save();
 
         self::createUpcomingCollections($record, $paidMembership);
-
-        if ($paidMembership instanceof PaidMembership) {
-            self::registerSaleAndCommission($record, $paidMembership, $settlement);
-        }
 
         try {
             $recipients = app()->environment('production')
@@ -599,53 +587,6 @@ class AffiliationController extends Controller
         } catch (\Throwable $th) {
             Log::error('No se pudo enviar el correo de activación automática de la afiliación '.$record->code.': '.$th->getMessage());
         }
-    }
-
-    /**
-     * Registra en las tablas compartidas con Integracorp (sales/commissions) la
-     * venta y la comisión de esta afiliación de empresa aliada, igual que hace
-     * Integracorp para sus propias aprobaciones: el total de la venta y la
-     * comisión de agencia master salen de la tarifa negociada (neta/margen),
-     * no del monto que el analista cargó en el comprobante.
-     */
-    private static function registerSaleAndCommission(
-        Affiliation $record,
-        PaidMembership $paidMembership,
-        WhiteCompanyPaymentSettlement $settlement,
-    ): void {
-        DB::transaction(function () use ($record, $paidMembership, $settlement) {
-            $lastInvoiceNumber = Sale::query()->latest('id')->value('invoice_number');
-
-            $sale = Sale::create([
-                'date_activation' => $record->activated_at,
-                'owner_code' => $record->owner_code,
-                'code_agency' => $record->code_agency,
-                'plan_id' => $record->plan_id,
-                'coverage_id' => $record->coverage_id,
-                'agent_id' => $record->agent_id,
-                'invoice_number' => UtilsController::generateCorrelativeSale($lastInvoiceNumber ?? (now()->format('m').'-00000')),
-                'affiliation_code' => $record->code,
-                'affiliate_full_name' => $record->full_name_ti,
-                'affiliate_contact' => $record->full_name_payer,
-                'affiliate_ci_rif' => $record->nro_identificacion_ti,
-                'affiliate_phone' => $record->phone_ti,
-                'affiliate_email' => $record->email_ti,
-                'service' => 'servicio',
-                'persons' => $record->family_members,
-                'total_amount' => $settlement->installmentNeta(),
-                'type' => 'AFILIACION INDIVIDUAL',
-                'payment_method' => 'CREDITO',
-                'payment_frequency' => $record->payment_frequency,
-                'created_by' => Auth::user()->name,
-                'pay_amount_usd' => $paidMembership->pay_amount_usd,
-                'pay_amount_ves' => $paidMembership->pay_amount_ves,
-                'type_roll' => $paidMembership->type_roll,
-                'payment_date' => $paidMembership->payment_date,
-                'white_company_id' => $record->white_company_id,
-            ]);
-
-            $settlement->storeCommission($sale, $paidMembership);
-        });
     }
 
     /**
@@ -1359,13 +1300,6 @@ class AffiliationController extends Controller
                  * una, no el total combinado del modal). Igual que en uploadPayment().
                  */
                 if ($data['payment_method'] == 'CREDITO') {
-                    /**
-                     * Se resuelve (y bloquea si falta) la tarifa negociada con Integracorp
-                     * ANTES de escribir nada, igual que en uploadPayment(), para que "falta
-                     * tarifa negociada" no deje esta afiliación del lote a medio aprobar.
-                     */
-                    $settlement = (new WhiteCompanyNegotiatedRateResolver)->settlementForAffiliation($record);
-
                     $noteNumber = 'NC-'.$record->code.'-'.now()->format('YmdHis');
                     $remainingCreditBefore = CreditReconciliation::remainingCredit($record->white_company_id);
 
@@ -1425,7 +1359,7 @@ class AffiliationController extends Controller
                  * se aprueba y activa de inmediato, igual que en uploadPayment().
                  */
                 if ($data['payment_method'] == 'CREDITO') {
-                    self::approveAndActivate($record, $data, $settlement);
+                    self::approveAndActivate($record, $data);
                 }
             }
 
